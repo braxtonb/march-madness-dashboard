@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tournament Lens | DoorDash AP 2026 Bracket Lab</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space_Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#0a0f14",
+                        "on-secondary-fixed-variant": "#006266",
+                        "background": "#0a0f14",
+                        "surface-container-high": "#1a2027",
+                        "on-primary-fixed": "#000000",
+                        "secondary-fixed-dim": "#00e5ee",
+                        "tertiary": "#c97cff",
+                        "on-primary": "#531e00",
+                        "outline": "#71767c",
+                        "secondary-fixed": "#00f4fe",
+                        "secondary-dim": "#00e5ee",
+                        "on-surface": "#e7ebf3",
+                        "on-primary-container": "#401500",
+                        "on-tertiary-container": "#000000",
+                        "surface-variant": "#1f262e",
+                        "on-secondary-container": "#dffdff",
+                        "inverse-on-surface": "#51555c",
+                        "on-secondary-fixed": "#004346",
+                        "on-tertiary-fixed": "#290044",
+                        "surface": "#0a0f14",
+                        "outline-variant": "#43484e",
+                        "inverse-primary": "#a14100",
+                        "secondary": "#00f4fe",
+                        "error-container": "#b92902",
+                        "tertiary-dim": "#aa30fa",
+                        "error-dim": "#d53d18",
+                        "on-error": "#450900",
+                        "primary-fixed-dim": "#f66700",
+                        "secondary-container": "#00696e",
+                        "on-error-container": "#ffd2c8",
+                        "surface-container-lowest": "#000000",
+                        "on-tertiary": "#350056",
+                        "on-tertiary-fixed-variant": "#5a008d",
+                        "inverse-surface": "#f7f9ff",
+                        "surface-bright": "#252d35",
+                        "primary-dim": "#ff7524",
+                        "primary": "#ff9159",
+                        "tertiary-fixed-dim": "#cc84ff",
+                        "primary-fixed": "#ff7a2f",
+                        "surface-tint": "#ff9159",
+                        "on-secondary": "#00575b",
+                        "on-surface-variant": "#a7abb2",
+                        "surface-container": "#141a20",
+                        "primary-container": "#ff7a2f",
+                        "error": "#ff7351",
+                        "tertiary-fixed": "#d597ff",
+                        "on-background": "#e7ebf3",
+                        "surface-container-highest": "#1f262e",
+                        "on-primary-fixed-variant": "#4f1c00",
+                        "tertiary-container": "#ad34fd",
+                        "surface-container-low": "#0e1419"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0f14; }
+        ::-webkit-scrollbar-thumb { background: #43484e; border-radius: 10px; }
+        .glass-panel {
+            background: rgba(20, 26, 32, 0.6);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-8 z-40 bg-[#141a20]/80 backdrop-blur-2xl border-r border-[#43484e]/15 shadow-[48px_0_48px_0_rgba(0,0,0,0.3)] docked left-0 h-screen w-20 hover:w-64 transition-all duration-500 ease-in-out group">
+<div class="px-6 mb-12 flex items-center overflow-hidden">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(255,145,89,0.4)]">
+<span class="material-symbols-outlined text-on-primary text-sm" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<p class="font-headline font-black text-on-surface text-lg tracking-tighter whitespace-nowrap">2026 Lab</p>
+<p class="font-label text-[10px] text-primary tracking-widest uppercase">Kinetic Terminal</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2 px-3">
+<a class="flex items-center h-12 px-3 rounded-lg text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all overflow-hidden group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="grid_view">grid_view</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity group-hover/item:translate-x-1 duration-300 whitespace-nowrap">Home</span>
+</a>
+<!-- Active State: Insights maps to Tournament Lens -->
+<a class="flex items-center h-12 px-3 rounded-lg bg-gradient-to-r from-[#ff9159]/20 to-transparent text-[#ff9159] border-l-4 border-[#ff9159] overflow-hidden group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity group-hover/item:translate-x-1 duration-300 whitespace-nowrap">Insights</span>
+</a>
+<a class="flex items-center h-12 px-3 rounded-lg text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all overflow-hidden group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="account_tree">account_tree</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity group-hover/item:translate-x-1 duration-300 whitespace-nowrap">Brackets</span>
+</a>
+<a class="flex items-center h-12 px-3 rounded-lg text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all overflow-hidden group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="leaderboard">leaderboard</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity group-hover/item:translate-x-1 duration-300 whitespace-nowrap">Leaderboard</span>
+</a>
+<a class="flex items-center h-12 px-3 rounded-lg text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all overflow-hidden group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="tune">tune</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity group-hover/item:translate-x-1 duration-300 whitespace-nowrap">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-3 space-y-2 border-t border-outline-variant/15 pt-6">
+<a class="flex items-center h-10 px-3 rounded-lg text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all group/item overflow-hidden" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="help">help</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Help</span>
+</a>
+<a class="flex items-center h-10 px-3 rounded-lg text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all group/item overflow-hidden" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="logout">logout</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar (Shared Component - Web Only Context) -->
+<header class="fixed top-0 w-full h-16 flex justify-between items-center px-6 z-50 bg-[#141a20]/60 backdrop-blur-xl bg-gradient-to-b from-[#141a20] to-transparent shadow-2xl shadow-black/50 ml-20 md:ml-0 md:pl-24">
+<div class="flex items-center gap-8">
+<span class="font-headline font-black text-[#e7ebf3] text-xl tracking-tighter uppercase">DoorDash AP 2026 Bracket Lab</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-headline font-bold text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors text-sm" href="#">Dashboard</a>
+<a class="font-headline font-bold text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors text-sm" href="#">Analytics</a>
+<a class="font-headline font-bold text-[#ff9159] border-b-2 border-[#ff9159] pb-1 text-sm" href="#">Brackets</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#252d35] text-on-surface-variant transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#252d35] text-on-surface-variant transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-primary/30">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="Stylized user profile avatar illustration" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBki9Yh6rJuqoHLpC2L3Apv4rBGK9BlotMnTK8ItfK0_UyYdTo9agCMGbBxVIwvOTsyR6Lfd8OK7xKVLRyWjcVaK0JG57Gm53PiKKDZg28Vrxt0WojlpxrK4CtGr-FSUxlivs6PA-SWZ4cAJHTVJLXA382ecNr1rsPTbxqqU5-DoMQ6P5AiF7BjOb6Dx15y4Mf_Xm8kKRFELVQOfYYRfkf8on_XsGD5ojSJu2JsdKxirRBYHn7K0gVJE4iU2LBt4gOkjpdJ8VpAy1h"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-24 pl-24 pr-8 pb-12 min-h-screen">
+<!-- Hero Header -->
+<section class="mb-12">
+<div class="flex items-baseline gap-4 mb-2">
+<h1 class="font-headline font-extrabold text-4xl lg:text-5xl tracking-tight text-on-surface">Tournament Lens</h1>
+<span class="font-label text-primary text-sm tracking-[0.2em] font-bold">LIVE_INTEL_STREAM</span>
+</div>
+<p class="text-on-surface-variant text-lg font-body max-w-2xl">Discover our group's collective tendencies and beliefs. Analyzing 4,281 bracket variations across the DoorDash AP network.</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Conference Analysis Module -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container rounded-xl p-8 shadow-2xl relative overflow-hidden group border border-outline-variant/10">
+<div class="absolute top-0 right-0 p-6">
+<span class="material-symbols-outlined text-primary/20 scale-150" data-icon="monitoring">monitoring</span>
+</div>
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline font-bold text-xl mb-1 text-on-surface">How we pick by conference</h2>
+<p class="font-label text-xs tracking-widest text-on-surface-variant uppercase">Win Probability Distribution</p>
+</div>
+<div class="bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+<span class="font-label text-[10px] text-primary font-bold uppercase">SEC: 84% Over-indexed</span>
+</div>
+</div>
+<!-- Custom Bar Chart Visualization -->
+<div class="flex items-end justify-between h-48 gap-4 mb-6">
+<div class="flex-1 flex flex-col items-center group/bar">
+<div class="w-full bg-surface-bright rounded-t-md relative h-[65%] transition-all duration-500 group-hover/bar:bg-primary/40">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-bright p-2 rounded text-[10px] font-label opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg border border-outline-variant/30 pointer-events-none whitespace-nowrap">Pick Rate: 24.2%</div>
+</div>
+<span class="mt-3 font-label text-[10px] text-on-surface-variant uppercase tracking-tighter">SEC</span>
+</div>
+<div class="flex-1 flex flex-col items-center group/bar">
+<div class="w-full bg-surface-bright rounded-t-md h-[45%] group-hover/bar:bg-secondary/40 relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-bright p-2 rounded text-[10px] font-label opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg border border-outline-variant/30 pointer-events-none">Pick Rate: 18.1%</div>
+</div>
+<span class="mt-3 font-label text-[10px] text-on-surface-variant uppercase tracking-tighter">Big 12</span>
+</div>
+<div class="flex-1 flex flex-col items-center group/bar">
+<div class="w-full bg-surface-bright rounded-t-md h-[55%] group-hover/bar:bg-tertiary/40 relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-bright p-2 rounded text-[10px] font-label opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg border border-outline-variant/30 pointer-events-none">Pick Rate: 21.5%</div>
+</div>
+<span class="mt-3 font-label text-[10px] text-on-surface-variant uppercase tracking-tighter">Big Ten</span>
+</div>
+<div class="flex-1 flex flex-col items-center group/bar">
+<div class="w-full bg-surface-bright rounded-t-md h-[30%] group-hover/bar:bg-primary/40 relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-bright p-2 rounded text-[10px] font-label opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg border border-outline-variant/30 pointer-events-none">Pick Rate: 12.0%</div>
+</div>
+<span class="mt-3 font-label text-[10px] text-on-surface-variant uppercase tracking-tighter">ACC</span>
+</div>
+<div class="flex-1 flex flex-col items-center group/bar">
+<div class="w-full bg-surface-bright rounded-t-md h-[20%] group-hover/bar:bg-secondary/40 relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-bright p-2 rounded text-[10px] font-label opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg border border-outline-variant/30 pointer-events-none">Pick Rate: 8.4%</div>
+</div>
+<span class="mt-3 font-label text-[10px] text-on-surface-variant uppercase tracking-tighter">Pac-12</span>
+</div>
+<div class="flex-1 flex flex-col items-center group/bar">
+<div class="w-full bg-surface-bright rounded-t-md h-[12%] group-hover/bar:bg-tertiary/40 relative">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface-bright p-2 rounded text-[10px] font-label opacity-0 group-hover/bar:opacity-100 transition-opacity shadow-lg border border-outline-variant/30 pointer-events-none">Pick Rate: 5.2%</div>
+</div>
+<span class="mt-3 font-label text-[10px] text-on-surface-variant uppercase tracking-tighter">Other</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="info">info</span>
+<p class="text-sm font-body text-on-surface-variant">
+<strong class="text-on-surface">Insight:</strong> Group is high on the <span class="text-primary font-bold">SEC</span> this year, picking them to advance 1.4x more often than the national average.
+                    </p>
+</div>
+</div>
+<!-- Seed Analysis Module -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container rounded-xl p-8 shadow-2xl flex flex-col border border-outline-variant/10">
+<div class="mb-8">
+<h2 class="font-headline font-bold text-xl mb-1 text-on-surface">How we pick by seed</h2>
+<p class="font-label text-xs tracking-widest text-on-surface-variant uppercase">Group vs 20-Year History</p>
+</div>
+<div class="flex-1 relative mb-6">
+<!-- Faux Line Chart Visualization -->
+<svg class="w-full h-full overflow-visible" viewbox="0 0 100 60">
+<!-- Grid Lines -->
+<line stroke="#43484e" stroke-dasharray="2" stroke-opacity="0.2" x1="0" x2="100" y1="10" y2="10"></line>
+<line stroke="#43484e" stroke-dasharray="2" stroke-opacity="0.2" x1="0" x2="100" y1="30" y2="30"></line>
+<line stroke="#43484e" stroke-dasharray="2" stroke-opacity="0.2" x1="0" x2="100" y1="50" y2="50"></line>
+<!-- History Line (Dimmed) -->
+<path d="M0,5 L20,8 L40,25 L60,45 L80,55 L100,58" fill="none" stroke="#e7ebf3" stroke-opacity="0.2" stroke-width="1.5"></path>
+<!-- Group Line (Highlighted) -->
+<path d="M0,5 L20,10 L40,15 L60,35 L80,52 L100,58" fill="none" stroke="#ff9159" stroke-width="2"></path>
+<!-- Glow Effect -->
+<circle class="animate-pulse" cx="60" cy="35" fill="#ff9159" r="3"></circle>
+</svg>
+<div class="absolute top-1/2 right-0 translate-y-1/2">
+<div class="bg-surface-bright/80 backdrop-blur-md p-3 rounded-lg border border-primary/20 shadow-xl">
+<p class="font-label text-[10px] text-primary uppercase font-bold mb-1">Divergence Alert</p>
+<p class="text-[11px] font-body text-on-surface leading-tight">Our group believes in <span class="font-bold">5-seeds</span> more than history does.</p>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center text-[10px] font-label text-on-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-3 h-0.5 bg-primary"></div>
+<span>2026 LAB</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-0.5 bg-on-surface opacity-20"></div>
+<span>HISTORICAL</span>
+</div>
+</div>
+</div>
+<!-- Regional Breakdown Header -->
+<div class="col-span-12 mt-4">
+<div class="flex items-center gap-4">
+<h2 class="font-headline font-extrabold text-2xl text-on-surface tracking-tight">Regional Breakdown</h2>
+<div class="h-[1px] flex-1 bg-gradient-to-r from-outline-variant/30 to-transparent"></div>
+</div>
+</div>
+<!-- Regional Panels -->
+<!-- East -->
+<div class="col-span-12 md:col-span-6 lg:col-span-3 bg-surface-container rounded-xl p-6 border border-outline-variant/10 group hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface">East Region</h3>
+<p class="font-label text-[10px] text-on-surface-variant tracking-widest uppercase">Madison Square Garden</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="travel_explore">travel_explore</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body flex items-center gap-1">
+                            Upset Index
+                            <span class="material-symbols-outlined text-[14px]" data-icon="help" title="Calculated based on picks for double-digit seeds winning">help</span>
+</span>
+<span class="font-label text-sm text-secondary font-bold">LOW</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body">Avg Winner Seed</span>
+<span class="font-label text-sm text-on-surface font-bold">1.4</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<p class="text-[10px] font-label text-on-surface-variant uppercase mb-2">Most Popular Pick</p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center border border-outline-variant/30">
+<span class="font-bold text-xs">UConn</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">UConn (1)</p>
+<div class="w-24 h-1 bg-surface-container-low rounded-full mt-1 overflow-hidden">
+<div class="w-[72%] h-full bg-primary shadow-[0_0_8px_rgba(255,145,89,0.4)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- West -->
+<div class="col-span-12 md:col-span-6 lg:col-span-3 bg-surface-container rounded-xl p-6 border border-outline-variant/10 group hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface">West Region</h3>
+<p class="font-label text-[10px] text-on-surface-variant tracking-widest uppercase">Crypto.com Arena</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="mountain_flag">mountain_flag</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body flex items-center gap-1">
+                            Upset Index
+                            <span class="material-symbols-outlined text-[14px]" data-icon="help">help</span>
+</span>
+<span class="font-label text-sm text-tertiary font-bold">HIGH</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body">Avg Winner Seed</span>
+<span class="font-label text-sm text-on-surface font-bold">4.2</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<p class="text-[10px] font-label text-on-surface-variant uppercase mb-2">Most Popular Pick</p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center border border-outline-variant/30">
+<span class="font-bold text-xs">Gonz</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Gonzaga (4)</p>
+<div class="w-24 h-1 bg-surface-container-low rounded-full mt-1 overflow-hidden">
+<div class="w-[34%] h-full bg-tertiary shadow-[0_0_8px_rgba(201,124,255,0.4)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- South -->
+<div class="col-span-12 md:col-span-6 lg:col-span-3 bg-surface-container rounded-xl p-6 border border-outline-variant/10 group hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface">South Region</h3>
+<p class="font-label text-[10px] text-on-surface-variant tracking-widest uppercase">Toyota Center</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="wb_sunny">wb_sunny</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body flex items-center gap-1">
+                            Upset Index
+                            <span class="material-symbols-outlined text-[14px]" data-icon="help">help</span>
+</span>
+<span class="font-label text-sm text-primary font-bold">EXTREME</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body">Avg Winner Seed</span>
+<span class="font-label text-sm text-on-surface font-bold">6.8</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<p class="text-[10px] font-label text-on-surface-variant uppercase mb-2">Most Popular Pick</p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center border border-outline-variant/30">
+<span class="font-bold text-xs">Bama</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Alabama (2)</p>
+<div class="w-24 h-1 bg-surface-container-low rounded-full mt-1 overflow-hidden">
+<div class="w-[48%] h-full bg-primary shadow-[0_0_8px_rgba(255,145,89,0.4)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Midwest -->
+<div class="col-span-12 md:col-span-6 lg:col-span-3 bg-surface-container rounded-xl p-6 border border-outline-variant/10 group hover:bg-surface-bright transition-colors">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface">Midwest Region</h3>
+<p class="font-label text-[10px] text-on-surface-variant tracking-widest uppercase">United Center</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="ac_unit">ac_unit</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body flex items-center gap-1">
+                            Upset Index
+                            <span class="material-symbols-outlined text-[14px]" data-icon="help">help</span>
+</span>
+<span class="font-label text-sm text-secondary font-bold">LOW</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant font-body">Avg Winner Seed</span>
+<span class="font-label text-sm text-on-surface font-bold">1.2</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<p class="text-[10px] font-label text-on-surface-variant uppercase mb-2">Most Popular Pick</p>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center border border-outline-variant/30">
+<span class="font-bold text-xs">Pur</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Purdue (1)</p>
+<div class="w-24 h-1 bg-surface-container-low rounded-full mt-1 overflow-hidden">
+<div class="w-[88%] h-full bg-secondary shadow-[0_0_8px_rgba(0,244,254,0.4)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Insight Section -->
+<section class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-surface-container-high rounded-xl p-8 border-l-4 border-secondary">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary" data-icon="psychology">psychology</span>
+<h4 class="font-headline font-bold text-xl text-on-surface">Collective Strategy</h4>
+</div>
+<p class="text-on-surface-variant font-body leading-relaxed">
+                    The AP 2026 Lab is exhibiting a <span class="text-on-surface font-bold">Heuristic Anchoring</span> effect on top-seeded Big Ten teams. While national data suggests a 12% upset probability for the #1 seed in the Midwest, our group has calculated a mere 4% risk, significantly higher confidence than professional oddsmakers.
+                </p>
+</div>
+<div class="bg-surface-container-high rounded-xl p-8 border-l-4 border-tertiary">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-tertiary" data-icon="rocket_launch">rocket_launch</span>
+<h4 class="font-headline font-bold text-xl text-on-surface">Cinderella Candidates</h4>
+</div>
+<div class="flex gap-4 items-center">
+<div class="flex-1">
+<p class="text-xs font-label text-on-surface-variant uppercase mb-2">Highest Consensus Upset</p>
+<div class="flex items-center justify-between bg-surface-dim p-3 rounded-lg border border-outline-variant/20">
+<span class="text-on-surface font-bold">12 James Madison</span>
+<span class="text-secondary font-label text-xs">68% Picked</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (Shared Component Logic - Contextual) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-xl shadow-[0_8px_32px_rgba(255,145,89,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined" data-icon="add_chart" style="font-variation-settings: 'FILL' 1;">add_chart</span>
+<div class="absolute right-full mr-4 bg-surface-bright px-3 py-1 rounded-lg text-xs font-label text-on-surface opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-outline-variant/20">
+            Export Analysis
+        </div>
+</button>
+</body></html>

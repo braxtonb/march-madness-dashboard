@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space_Grotesk:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-dim": "#0a0f14",
+              "on-secondary-fixed-variant": "#006266",
+              "background": "#0a0f14",
+              "surface-container-high": "#1a2027",
+              "on-primary-fixed": "#000000",
+              "secondary-fixed-dim": "#00e5ee",
+              "tertiary": "#c97cff",
+              "on-primary": "#531e00",
+              "outline": "#71767c",
+              "secondary-fixed": "#00f4fe",
+              "secondary-dim": "#00e5ee",
+              "on-surface": "#e7ebf3",
+              "on-primary-container": "#401500",
+              "on-tertiary-container": "#000000",
+              "surface-variant": "#1f262e",
+              "on-secondary-container": "#dffdff",
+              "inverse-on-surface": "#51555c",
+              "on-secondary-fixed": "#004346",
+              "on-tertiary-fixed": "#290044",
+              "surface": "#0a0f14",
+              "outline-variant": "#43484e",
+              "inverse-primary": "#a14100",
+              "secondary": "#00f4fe",
+              "error-container": "#b92902",
+              "tertiary-dim": "#aa30fa",
+              "error-dim": "#d53d18",
+              "on-error": "#450900",
+              "primary-fixed-dim": "#f66700",
+              "secondary-container": "#00696e",
+              "on-error-container": "#ffd2c8",
+              "surface-container-lowest": "#000000",
+              "on-tertiary": "#350056",
+              "on-tertiary-fixed-variant": "#5a008d",
+              "inverse-surface": "#f7f9ff",
+              "surface-bright": "#252d35",
+              "primary-dim": "#ff7524",
+              "primary": "#ff9159",
+              "tertiary-fixed-dim": "#cc84ff",
+              "primary-fixed": "#ff7a2f",
+              "surface-tint": "#ff9159",
+              "on-secondary": "#00575b",
+              "on-surface-variant": "#a7abb2",
+              "surface-container": "#141a20",
+              "primary-container": "#ff7a2f",
+              "error": "#ff7351",
+              "tertiary-fixed": "#d597ff",
+              "on-background": "#e7ebf3",
+              "surface-container-highest": "#1f262e",
+              "on-primary-fixed-variant": "#4f1c00",
+              "tertiary-container": "#ad34fd",
+              "surface-container-low": "#0e1419"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Space_Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0f14; }
+        ::-webkit-scrollbar-thumb { background: #1f262e; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full h-16 flex justify-between items-center px-6 z-50 bg-[#141a20]/60 backdrop-blur-xl shadow-2xl shadow-black/50">
+<div class="flex items-center gap-4">
+<span class="text-xl font-black text-[#e7ebf3] tracking-tighter font-headline">DoorDash AP 2026 Bracket Lab</span>
+<div class="hidden md:flex items-center gap-6 ml-8">
+<a class="font-headline font-bold tracking-tight text-[#ff9159] border-b-2 border-[#ff9159] pb-1" href="#">Dashboard</a>
+<a class="font-headline font-bold tracking-tight text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors" href="#">Analytics</a>
+<a class="font-headline font-bold tracking-tight text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors" href="#">Brackets</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-surface-container-high border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Find a person..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-xl hover:bg-[#252d35] transition-all duration-300 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-xl hover:bg-[#252d35] transition-all duration-300 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-outline-variant/30 ml-2" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Desktop) -->
+<nav class="fixed left-0 top-0 h-full flex flex-col py-8 z-40 bg-[#141a20]/80 backdrop-blur-2xl border-r border-[#43484e]/15 shadow-[48px_0_48px_0_rgba(0,0,0,0.3)] w-20 hover:w-64 transition-all duration-500 ease-in-out group hidden md:flex">
+<div class="flex flex-col gap-8 flex-1 mt-16">
+<div class="flex items-center px-6 gap-4 group/item cursor-pointer bg-gradient-to-r from-[#ff9159]/20 to-transparent text-[#ff9159] border-l-4 border-[#ff9159] py-3">
+<span class="material-symbols-outlined shrink-0" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Leaderboard</span>
+</div>
+<div class="flex items-center px-6 gap-4 group/item cursor-pointer text-[#e7ebf3]/40 hover:text-[#e7ebf3] py-3 hover:bg-[#252d35] transition-all">
+<span class="material-symbols-outlined shrink-0" data-icon="grid_view">grid_view</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Home</span>
+</div>
+<div class="flex items-center px-6 gap-4 group/item cursor-pointer text-[#e7ebf3]/40 hover:text-[#e7ebf3] py-3 hover:bg-[#252d35] transition-all">
+<span class="material-symbols-outlined shrink-0" data-icon="account_tree">account_tree</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Brackets</span>
+</div>
+<div class="flex items-center px-6 gap-4 group/item cursor-pointer text-[#e7ebf3]/40 hover:text-[#e7ebf3] py-3 hover:bg-[#252d35] transition-all">
+<span class="material-symbols-outlined shrink-0" data-icon="analytics">analytics</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Insights</span>
+</div>
+<div class="flex items-center px-6 gap-4 group/item cursor-pointer text-[#e7ebf3]/40 hover:text-[#e7ebf3] py-3 hover:bg-[#252d35] transition-all">
+<span class="material-symbols-outlined shrink-0" data-icon="tune">tune</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Settings</span>
+</div>
+</div>
+<div class="flex flex-col gap-4 mt-auto">
+<div class="flex items-center px-6 gap-4 cursor-pointer text-[#e7ebf3]/40 hover:text-[#e7ebf3] py-2">
+<span class="material-symbols-outlined shrink-0" data-icon="help">help</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Help</span>
+</div>
+<div class="flex items-center px-6 gap-4 cursor-pointer text-[#e7ebf3]/40 hover:text-[#e7ebf3] py-2">
+<span class="material-symbols-outlined shrink-0" data-icon="logout">logout</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Logout</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 md:pl-28 pr-6 min-h-screen">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Header Identity -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-3xl font-extrabold font-headline tracking-tight text-on-surface">Leaderboard</h1>
+<p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mt-1">Live Kinetic Terminal Update • <span class="text-secondary">Last updated: 2 mins ago</span></p>
+</div>
+<div class="bg-surface-container-high px-4 py-2 rounded-xl flex items-center gap-3">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span class="text-sm font-label font-bold text-on-surface">68 brackets can still mathematically win</span>
+</div>
+</div>
+<!-- Hero Stats Bar -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-container p-6 rounded-xl relative overflow-hidden group hover:bg-surface-bright transition-all duration-300">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl" data-icon="inventory_2">inventory_2</span>
+</div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Total Brackets</p>
+<h3 class="text-3xl font-black font-headline mt-2">75</h3>
+</div>
+<div class="bg-surface-container p-6 rounded-xl relative overflow-hidden group hover:bg-surface-bright transition-all duration-300">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl" data-icon="sports_basketball">sports_basketball</span>
+</div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Games Completed</p>
+<h3 class="text-3xl font-black font-headline mt-2">32<span class="text-on-surface-variant text-lg font-medium">/63</span></h3>
+</div>
+<div class="bg-surface-container p-6 rounded-xl relative overflow-hidden group hover:bg-surface-bright transition-all duration-300 border-l-4 border-primary">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl" data-icon="data_exploration">data_exploration</span>
+</div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Current Round</p>
+<h3 class="text-3xl font-black font-headline mt-2 text-primary">Round of 32</h3>
+</div>
+<div class="bg-surface-container p-6 rounded-xl relative overflow-hidden group hover:bg-surface-bright transition-all duration-300">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl" data-icon="emoji_events">emoji_events</span>
+</div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Champ Still Standing</p>
+<div class="flex items-center gap-3 mt-2">
+<div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center p-1">
+<img alt="Houston" class="w-full object-contain filter grayscale invert brightness-200" data-alt="University logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQOkZvR3xWSsRi9NFLz9WjKPEo0l8IY0LSDU4O6SVpptmwo3ixN9ZBieTrSZ7h-YLEQJGR9KyWFmwuBjqmaDGeRxugZ8EnfcgxtJhJcFKxGY6Lt-iD4bErBkKhPmIywtHOcWQpjDATHNPH2lNVnNDNWyVjE9XLNyoYOH7mJs3gfpy8rTAO3KT-fO9dPkYZY9oMqxjFEPAk_AzCqMJyPjnM5mBIBkjJ_W8uuyM6TmG_96WC8JywV4OdeqJDoaT4ShPNLowMrHiktHnG"/>
+</div>
+<h3 class="text-xl font-black font-headline">Houston</h3>
+</div>
+</div>
+</div>
+<!-- Rising Stars (Bento Style) -->
+<section>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" data-icon="trending_up">trending_up</span>
+<h2 class="text-xl font-bold font-headline">Rising Stars</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Star 1 -->
+<div class="bg-surface-container p-6 rounded-xl border border-secondary/10 relative overflow-hidden">
+<div class="absolute top-0 right-0 bg-secondary/20 text-secondary-fixed px-3 py-1 text-[10px] font-bold font-label tracking-tighter rounded-bl-xl">+12 Ranks</div>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-xl" data-alt="Avatar of Jordan Reed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+<div>
+<h4 class="font-bold text-on-surface">Jordan Reed</h4>
+<p class="text-xs text-on-surface-variant font-label">"Reed's Revenge"</p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/10 flex justify-between items-center">
+<span class="text-[10px] uppercase font-label tracking-widest text-on-surface-variant">Round Gain</span>
+<span class="text-secondary font-bold font-headline">+140 pts</span>
+</div>
+</div>
+<!-- Star 2 -->
+<div class="bg-surface-container p-6 rounded-xl border border-secondary/10 relative overflow-hidden">
+<div class="absolute top-0 right-0 bg-secondary/20 text-secondary-fixed px-3 py-1 text-[10px] font-bold font-label tracking-tighter rounded-bl-xl">+8 Ranks</div>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-xl" data-alt="Avatar of Elena Vance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+<div>
+<h4 class="font-bold text-on-surface">Elena Vance</h4>
+<p class="text-xs text-on-surface-variant font-label">"Vance Vantage"</p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/10 flex justify-between items-center">
+<span class="text-[10px] uppercase font-label tracking-widest text-on-surface-variant">Round Gain</span>
+<span class="text-secondary font-bold font-headline">+115 pts</span>
+</div>
+</div>
+<!-- Star 3 -->
+<div class="bg-surface-container p-6 rounded-xl border border-secondary/10 relative overflow-hidden">
+<div class="absolute top-0 right-0 bg-secondary/20 text-secondary-fixed px-3 py-1 text-[10px] font-bold font-label tracking-tighter rounded-bl-xl">+7 Ranks</div>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-xl" data-alt="Avatar of Marcus Chen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvH277pIaBUeH-Nuc46eY2cCpyS9LcCYWRaRoM_QP9wtEvYWgK_OSMYV09PN2a-jM7wafyaGTrKejHK11YwKmYkwkY7HdQkfaZDE4odYUJbfpb6ma8X9PqAmFQ0HNYyGFTjC8cnwUyKupoIA4FuIpn_h0XfIrxnENtenm5nB-40TwpxOvtVn-_Vm8gCaU1EcPgyr2RNJqY67Qtuv9g18H3oj67ye52WN_Opdk_ogJrvcJYM28_kGA6WbUXuUvbIuWqPMi3MckU5xOC"/>
+<div>
+<h4 class="font-bold text-on-surface">Marcus Chen</h4>
+<p class="text-xs text-on-surface-variant font-label">"The Algorithm"</p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/10 flex justify-between items-center">
+<span class="text-[10px] uppercase font-label tracking-widest text-on-surface-variant">Round Gain</span>
+<span class="text-secondary font-bold font-headline">+105 pts</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Leaderboard Table -->
+<section class="bg-surface-container rounded-xl overflow-hidden shadow-2xl">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h2 class="text-xl font-bold font-headline">Championship Standings</h2>
+<button class="text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors">Export CSV</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/10">
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Rank</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Competitor</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Archetype</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Champ Pick</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant text-right">Points</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant text-right">Max Rem</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant text-right">Win Prob</th>
+<th class="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-lg font-black font-headline">1</span>
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-lg" data-alt="Competitor profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2RkdwM9kjcqIXo5cWKF7Zl3DFOc7aUewnTy7nJ13zu_SY-3dbgsRrOtBUqEUL-5GWDud3YkZOgItBkTOp6ec9k_dPBkN3rYTrmiAQpSY6enX6xGQHwPcpeUaAIpwFbNXqQQ8hOBO20gjwSHMZheBdvrDvNJ6HYp1zz9RnWN4tzGYPVqU6Z5oPs7HuR56Q5fKxMURZyaLAINYf8iW6G8o4qBjjGgLocJNbvWO6xVaelOUMPzOoPU68zfkaRFB4J2ZtpSqm7wC5Pseo"/>
+<div>
+<p class="font-bold text-sm">Alex Thorne</p>
+<p class="text-[10px] text-on-surface-variant font-label">Thorne's Throne</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/30 text-secondary-fixed text-[10px] font-bold font-label uppercase">Analyst</span>
+</td>
+<td class="px-6 py-4 font-medium text-sm">UConn</td>
+<td class="px-6 py-4 text-right font-black font-headline text-primary">840</td>
+<td class="px-6 py-4 text-right font-label text-sm text-on-surface-variant">1620</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold">18.4%</span>
+<div class="w-16 h-1 bg-surface-variant rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 75%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="h-2 w-2 rounded-full bg-secondary inline-block shadow-[0_0_8px_rgba(0,244,254,0.6)]"></span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-lg font-black font-headline">2</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="horizontal_rule">horizontal_rule</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-lg" data-alt="Competitor profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+<div>
+<p class="font-bold text-sm">Sarah Miller</p>
+<p class="text-[10px] text-on-surface-variant font-label">Miller Time 2026</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary-fixed text-[10px] font-bold font-label uppercase">Visionary</span>
+</td>
+<td class="px-6 py-4 font-medium text-sm">Houston</td>
+<td class="px-6 py-4 text-right font-black font-headline text-primary">825</td>
+<td class="px-6 py-4 text-right font-label text-sm text-on-surface-variant">1580</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold">14.2%</span>
+<div class="w-16 h-1 bg-surface-variant rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 60%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="h-2 w-2 rounded-full bg-secondary inline-block shadow-[0_0_8px_rgba(0,244,254,0.6)]"></span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-lg font-black font-headline">3</span>
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-lg" data-alt="Competitor profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-PyjPTRAFv87-fMqrHgd9MnKJdlbVzhosDTQAzXhhek5-MzY6W_ZQf2beYTH0W9JjWyVWuU15zFYQ1JCtuS3ex7ZHGt53RD0yptjBL4aNzMxDbsNFIuvRQl-WcFTbLIh_q2bIocD6KPnLGuwkTbgezAwfx-btOVN2YruxwmIiY8sNYENzrHQSob1GHvRakzHsAHWN5vXNjtRo2e6C_hV0ZdWWHNFoWMvFchEAZruRPjzybiK4mjPu0oJkh_tW_r5Zu6H3CUrRZQMv"/>
+<div>
+<p class="font-bold text-sm">Kevin Zhang</p>
+<p class="text-[10px] text-on-surface-variant font-label">Zhang Bang</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-primary-container/30 text-primary-fixed text-[10px] font-bold font-label uppercase">Original</span>
+</td>
+<td class="px-6 py-4 font-medium text-sm">Purdue</td>
+<td class="px-6 py-4 text-right font-black font-headline text-primary">810</td>
+<td class="px-6 py-4 text-right font-label text-sm text-on-surface-variant">1540</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold">12.1%</span>
+<div class="w-16 h-1 bg-surface-variant rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 55%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="h-2 w-2 rounded-full bg-secondary inline-block shadow-[0_0_8px_rgba(0,244,254,0.6)]"></span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-lg font-black font-headline">4</span>
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-lg" data-alt="Competitor profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJ0kmRe87jFLZUGu_0KBk3M_vP2olHj6PrUZCJoL1xwp_6pYnIuAHKl3C6iKeosxwZfj-0bN_DOK8KQeswyA7LFgib-Wr6csbm8S6wUvy4LuSNOMimenv_FbQqNaLVxoSMX3Jg4ib1jlDfzsFKJYfk6DIvtx2oy10FxKqjHszshk27xRMPMQT9DPwv5tC-wO1fS0oQvVFcEHx9Sw5Axo06u4AvB6ADkKzkLtyklbRBNK8ixlJfQDzilWcPKa_H5LFnfzpcTFv2wmEf"/>
+<div>
+<p class="font-bold text-sm">Maria Garcia</p>
+<p class="text-[10px] text-on-surface-variant font-label">G-Force Picks</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold font-label uppercase">Strategist</span>
+</td>
+<td class="px-6 py-4 font-medium text-sm">Arizona</td>
+<td class="px-6 py-4 text-right font-black font-headline text-primary">795</td>
+<td class="px-6 py-4 text-right font-label text-sm text-on-surface-variant">1490</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold">9.8%</span>
+<div class="w-16 h-1 bg-surface-variant rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 45%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="h-2 w-2 rounded-full bg-secondary inline-block shadow-[0_0_8px_rgba(0,244,254,0.6)]"></span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-bright transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="text-lg font-black font-headline">5</span>
+<span class="material-symbols-outlined text-on-surface-variant/40 text-sm rotate-180" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-lg" data-alt="Competitor profile image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpj7y5xN54GYuQInWKG4UdRk04wewg9x5BJtkPl9JF-ZXckYnaktL_IINZTvCWMA9XxG0RVV2pmlaMwKQA-sQjgvRua8HGzgzd2pxHMWQRZg5KJ_xK__YvD2I9vRoNofNXne3Dhtfjg0LoNRRe2Tk32HXCCT9n0l-9cLEUGcCxsvHG6AUDlm6uItoXBr0tv1-J6dPRGi67P1edbYXXlg4l5ocHP70-UFBvYoaYSZuJMuAyY57TaEvUCTGElQPaJerwkd7YHXECRwBi"/>
+<div>
+<p class="font-bold text-sm">Derek Foster</p>
+<p class="text-[10px] text-on-surface-variant font-label">Foster's Final 4</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold font-label uppercase">Scout</span>
+</td>
+<td class="px-6 py-4 font-medium text-sm">North Carolina</td>
+<td class="px-6 py-4 text-right font-black font-headline text-primary">780</td>
+<td class="px-6 py-4 text-right font-label text-sm text-on-surface-variant">1420</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold">7.5%</span>
+<div class="w-16 h-1 bg-surface-variant rounded-full mt-1 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 35%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="h-2 w-2 rounded-full bg-secondary inline-block shadow-[0_0_8px_rgba(0,244,254,0.6)]"></span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 w-full bg-[#141a20]/80 backdrop-blur-2xl flex md:hidden justify-around items-center py-4 z-50">
+<div class="flex flex-col items-center text-[#ff9159]">
+<span class="material-symbols-outlined" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="text-[10px] font-label font-bold uppercase mt-1">Standings</span>
+</div>
+<div class="flex flex-col items-center text-[#e7ebf3]/60">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="text-[10px] font-label font-bold uppercase mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center text-[#e7ebf3]/60">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="text-[10px] font-label font-bold uppercase mt-1">Brackets</span>
+</div>
+<div class="flex flex-col items-center text-[#e7ebf3]/60">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-[10px] font-label font-bold uppercase mt-1">Stats</span>
+</div>
+</nav>
+</body></html>

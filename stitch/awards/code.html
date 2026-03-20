@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tournament Awards - DoorDash AP 2026 Bracket Lab</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-dim": "#0a0f14",
+              "on-secondary-fixed-variant": "#006266",
+              "background": "#0a0f14",
+              "surface-container-high": "#1a2027",
+              "on-primary-fixed": "#000000",
+              "secondary-fixed-dim": "#00e5ee",
+              "tertiary": "#c97cff",
+              "on-primary": "#531e00",
+              "outline": "#71767c",
+              "secondary-fixed": "#00f4fe",
+              "secondary-dim": "#00e5ee",
+              "on-surface": "#e7ebf3",
+              "on-primary-container": "#401500",
+              "on-tertiary-container": "#000000",
+              "surface-variant": "#1f262e",
+              "on-secondary-container": "#dffdff",
+              "inverse-on-surface": "#51555c",
+              "on-secondary-fixed": "#004346",
+              "on-tertiary-fixed": "#290044",
+              "surface": "#0a0f14",
+              "outline-variant": "#43484e",
+              "inverse-primary": "#a14100",
+              "secondary": "#00f4fe",
+              "error-container": "#b92902",
+              "tertiary-dim": "#aa30fa",
+              "error-dim": "#d53d18",
+              "on-error": "#450900",
+              "primary-fixed-dim": "#f66700",
+              "secondary-container": "#00696e",
+              "on-error-container": "#ffd2c8",
+              "surface-container-lowest": "#000000",
+              "on-tertiary": "#350056",
+              "on-tertiary-fixed-variant": "#5a008d",
+              "inverse-surface": "#f7f9ff",
+              "surface-bright": "#252d35",
+              "primary-dim": "#ff7524",
+              "primary": "#ff9159",
+              "tertiary-fixed-dim": "#cc84ff",
+              "primary-fixed": "#ff7a2f",
+              "surface-tint": "#ff9159",
+              "on-secondary": "#00575b",
+              "on-surface-variant": "#a7abb2",
+              "surface-container": "#141a20",
+              "primary-container": "#ff7a2f",
+              "error": "#ff7351",
+              "tertiary-fixed": "#d597ff",
+              "on-background": "#e7ebf3",
+              "surface-container-highest": "#1f262e",
+              "on-primary-fixed-variant": "#4f1c00",
+              "tertiary-container": "#ad34fd",
+              "surface-container-low": "#0e1419"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      .glass-card {
+        background: rgba(31, 38, 46, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      .award-glow-primary {
+        box-shadow: 0 0 20px -5px rgba(255, 145, 89, 0.3);
+      }
+      .award-glow-secondary {
+        box-shadow: 0 0 20px -5px rgba(0, 244, 254, 0.3);
+      }
+      .award-glow-tertiary {
+        box-shadow: 0 0 20px -5px rgba(201, 124, 255, 0.3);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full h-16 flex justify-between items-center px-6 z-50 bg-[#141a20]/60 backdrop-blur-xl shadow-2xl shadow-black/50">
+<div class="flex items-center gap-4">
+<span class="text-xl font-black text-[#e7ebf3] tracking-tighter font-headline">DoorDash AP 2026 Bracket Lab</span>
+</div>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-headline font-bold tracking-tight text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors" href="#">Dashboard</a>
+<a class="font-headline font-bold tracking-tight text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors" href="#">Analytics</a>
+<a class="font-headline font-bold tracking-tight text-[#ff9159] border-b-2 border-[#ff9159] pb-1" href="#">Brackets</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-[#252d35] rounded-full transition-all duration-300">
+<span class="material-symbols-outlined text-[#e7ebf3]/60">notifications</span>
+</button>
+<button class="p-2 hover:bg-[#252d35] rounded-full transition-all duration-300">
+<span class="material-symbols-outlined text-[#e7ebf3]/60">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="User Avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0Oebgy-bxrmQ3p3Qm4l2K_bwAFaVrev152-D4LPR0HHBqizYFDlir000dEIqiGu7QWlz2VZenYY2IRPPp4whUjSjsAhAqInrJU7uVVym4E4bR1B1W7R_Tk8oq_6HWt0Tq47u7mNo6ia8C29HeW4MKkXTIaLgZWQyUef1K9OBlhj3chN4QPUmvKI4npq6g7Tu_vjiRYLvJQ1rjcomLSdazr7G9pfVS147XVoacJaprPZMYhcZjahtC-W-wHWLFtbAqKNIbgvk2R6Hd"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-8 z-40 bg-[#141a20]/80 backdrop-blur-2xl border-r border-[#43484e]/15 shadow-[48px_0_48px_0_rgba(0,0,0,0.3)] w-20 hover:w-64 group transition-all duration-500 ease-in-out">
+<div class="flex flex-col items-center group-hover:items-start px-4 mb-12">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-on-primary">account_tree</span>
+</div>
+<div class="hidden group-hover:block transition-opacity duration-300">
+<h2 class="font-headline font-extrabold text-[#e7ebf3] text-sm">2026 Lab</h2>
+<p class="font-label uppercase tracking-widest text-[10px] text-[#ff9159]">Kinetic Terminal</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs group-hover/item:translate-x-1 transition-transform">Home</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 bg-gradient-to-r from-[#ff9159]/20 to-transparent text-[#ff9159] border-l-4 border-[#ff9159] group/item" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs group-hover/item:translate-x-1 transition-transform">Brackets</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs group-hover/item:translate-x-1 transition-transform">Leaderboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs group-hover/item:translate-x-1 transition-transform">Insights</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined">tune</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs group-hover/item:translate-x-1 transition-transform">Settings</span>
+</a>
+</nav>
+<div class="px-4 mb-4 hidden group-hover:block">
+<button class="w-full py-3 bg-primary text-on-primary font-label font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-primary-fixed transition-colors">
+                Analyze Live
+            </button>
+</div>
+<div class="mt-auto flex flex-col gap-2">
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs">Help</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="hidden group-hover:block font-label uppercase tracking-widest text-xs">Logout</span>
+</a>
+</div>
+</aside>
+<main class="ml-20 pt-24 pb-12 px-8 min-h-screen">
+<!-- Hero Section -->
+<header class="mb-12 relative overflow-hidden rounded-xl p-8 bg-surface-container">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-[120px]"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 bg-secondary rounded-full blur-[100px]"></div>
+</div>
+<div class="relative z-10 max-w-4xl">
+<span class="font-label text-primary uppercase tracking-[0.3em] text-xs font-bold mb-4 block">Seasonal Achievement Hall</span>
+<h1 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight mb-4">
+                    Tournament Awards <span class="text-primary">—</span> Celebrating the best bracket moves each round
+                </h1>
+<p class="text-on-surface-variant font-body text-lg max-w-2xl leading-relaxed">
+                    Analyzing the 2026 Bracket Lab data to find the strategic masterminds and the lucky long-shots that defined the tournament's kinetic energy.
+                </p>
+</div>
+</header>
+<!-- Round Selector -->
+<div class="flex flex-wrap gap-2 mb-12">
+<button class="px-6 py-2 rounded-full font-label text-sm font-bold bg-primary text-on-primary tracking-widest uppercase transition-all shadow-lg shadow-primary/20">Round 1</button>
+<button class="px-6 py-2 rounded-full font-label text-sm font-bold bg-surface-container text-on-surface-variant hover:text-on-surface tracking-widest uppercase transition-all">Round 2</button>
+<button class="px-6 py-2 rounded-full font-label text-sm font-bold bg-surface-container text-on-surface-variant hover:text-on-surface tracking-widest uppercase transition-all">Sweet 16</button>
+<button class="px-6 py-2 rounded-full font-label text-sm font-bold bg-surface-container text-on-surface-variant hover:text-on-surface tracking-widest uppercase transition-all">Elite 8</button>
+<button class="px-6 py-2 rounded-full font-label text-sm font-bold bg-surface-container text-on-surface-variant hover:text-on-surface tracking-widest uppercase transition-all">Final Four</button>
+<button class="px-6 py-2 rounded-full font-label text-sm font-bold bg-surface-container text-on-surface-variant hover:text-on-surface tracking-widest uppercase transition-all">Championship</button>
+</div>
+<!-- Awards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Award: The Oracle -->
+<div class="glass-card award-glow-primary p-8 rounded-xl border border-primary/10 group hover:border-primary/30 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-on-primary-fixed shadow-lg shadow-primary/40">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-primary font-bold">Gold Medal</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">The Oracle</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Most correct picks in the opening round, maintaining a near-perfect prediction curve.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">Jordan "Data" Smith</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Accuracy</span>
+<span class="font-label font-bold text-secondary">31/32</span>
+</div>
+</div>
+</div>
+<!-- Award: The Trendsetter -->
+<div class="glass-card award-glow-secondary p-8 rounded-xl border border-secondary/10 group hover:border-secondary/30 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary-container to-secondary flex items-center justify-center text-on-secondary shadow-lg shadow-secondary/40">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-secondary font-bold">Silver Medal</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">The Trendsetter</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Pioneered a unique set of winning picks that deviated significantly from the consensus data.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">Elena Rodriguez</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Uniqueness</span>
+<span class="font-label font-bold text-secondary">Top 0.5%</span>
+</div>
+</div>
+</div>
+<!-- Award: The Strategist -->
+<div class="glass-card award-glow-tertiary p-8 rounded-xl border border-tertiary/10 group hover:border-tertiary/30 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-gradient-to-br from-tertiary-container to-tertiary flex items-center justify-center text-on-tertiary shadow-lg shadow-tertiary/40">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-tertiary font-bold">Bronze Medal</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">The Strategist</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Highest points-per-pick ratio by successfully landing multiple bold high-value upsets.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">TechWizard_26</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Upset Value</span>
+<span class="font-label font-bold text-secondary">+420 Pts</span>
+</div>
+</div>
+</div>
+<!-- Award: The Faithful -->
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 group hover:border-primary/20 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-surface-bright flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">verified</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold group-hover:text-on-surface">Loyalty Award</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">The Faithful</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Has successfully kept their predicted national champion alive through all potential pitfalls.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">Bracket_King</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Champ Odds</span>
+<span class="font-label font-bold text-primary">12.5%</span>
+</div>
+</div>
+</div>
+<!-- Award: Hot Streak -->
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 group hover:border-primary/20 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-surface-bright flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">local_fire_department</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold group-hover:text-on-surface">Streak Master</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">Hot Streak</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Achieved the longest sequence of consecutive correct picks during the Round of 64 frenzy.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">DataDiver_88</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Run Count</span>
+<span class="font-label font-bold text-primary">14 Wins</span>
+</div>
+</div>
+</div>
+<!-- Award: Diamond in the Rough -->
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 group hover:border-secondary/20 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-surface-bright flex items-center justify-center text-on-surface-variant group-hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-3xl">diamond</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold group-hover:text-on-surface">Upset King</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">Diamond in the Rough</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Picked the single lowest-seeded team to advance, correctly identifying a historic sleeper.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">Sleeper_Cell</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Seed Found</span>
+<span class="font-label font-bold text-secondary">#15 Seed</span>
+</div>
+</div>
+</div>
+<!-- Award: The People's Champion -->
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 group hover:border-tertiary/20 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-surface-bright flex items-center justify-center text-on-surface-variant group-hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined text-3xl">groups</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold group-hover:text-on-surface">Community Award</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">The People's Champion</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Bracket is perfectly aligned with the global Lab consensus, reflecting the collective wisdom.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">CrowdWise_Picks</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Consensus</span>
+<span class="font-label font-bold text-tertiary">98.2%</span>
+</div>
+</div>
+</div>
+<!-- Award: Momentum Builder -->
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 group hover:border-primary/20 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-surface-bright flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">trending_up</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold group-hover:text-on-surface">Rising Star</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">Momentum Builder</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Biggest rank jump within a single round, climbing thousands of spots through analytical precision.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">Apex_Analyst</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Rank Gain</span>
+<span class="font-label font-bold text-primary">+4.2k</span>
+</div>
+</div>
+</div>
+<!-- Award: One of a Kind -->
+<div class="glass-card p-8 rounded-xl border border-outline-variant/10 group hover:border-secondary/20 transition-all duration-500">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-xl bg-surface-bright flex items-center justify-center text-on-surface-variant group-hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-3xl">fingerprint</span>
+</div>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold group-hover:text-on-surface">Creative Mind</span>
+</div>
+<h3 class="font-headline text-2xl font-bold mb-2">One of a Kind</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">The single most statistically unique successful bracket currently active in the 2026 Lab.</p>
+<div class="mt-auto pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+<div>
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipient</span>
+<span class="font-headline font-bold text-on-surface">Maverick_Bracket</span>
+</div>
+<div class="text-right">
+<span class="block text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Originality</span>
+<span class="font-label font-bold text-secondary">Unique</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Hall of Fame Bottom CTA -->
+<section class="mt-20 glass-card rounded-xl p-10 flex flex-col md:flex-row items-center justify-between border border-primary/5">
+<div class="mb-6 md:mb-0">
+<h2 class="font-headline text-3xl font-extrabold text-on-surface mb-2">Ready to claim your spot?</h2>
+<p class="text-on-surface-variant font-body">Refine your picks for the next round and boost your strategist score.</p>
+</div>
+<button class="px-10 py-4 bg-primary text-on-primary font-label font-bold uppercase tracking-widest rounded-lg shadow-xl shadow-primary/25 hover:bg-primary-fixed hover:-translate-y-1 transition-all duration-300">
+                Recalculate Bracket
+            </button>
+</section>
+</main>
+<!-- Background Decorative Elements -->
+<div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+<div class="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[200px]"></div>
+<div class="absolute -bottom-1/4 -left-1/4 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[200px]"></div>
+</div>
+</body></html>

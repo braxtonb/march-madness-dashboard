@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Group Picks — DoorDash AP 2026 Bracket Lab</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-dim": "#0a0f14",
+            "on-secondary-fixed-variant": "#006266",
+            "background": "#0a0f14",
+            "surface-container-high": "#1a2027",
+            "on-primary-fixed": "#000000",
+            "secondary-fixed-dim": "#00e5ee",
+            "tertiary": "#c97cff",
+            "on-primary": "#531e00",
+            "outline": "#71767c",
+            "secondary-fixed": "#00f4fe",
+            "secondary-dim": "#00e5ee",
+            "on-surface": "#e7ebf3",
+            "on-primary-container": "#401500",
+            "on-tertiary-container": "#000000",
+            "surface-variant": "#1f262e",
+            "on-secondary-container": "#dffdff",
+            "inverse-on-surface": "#51555c",
+            "on-secondary-fixed": "#004346",
+            "on-tertiary-fixed": "#290044",
+            "surface": "#0a0f14",
+            "outline-variant": "#43484e",
+            "inverse-primary": "#a14100",
+            "secondary": "#00f4fe",
+            "error-container": "#b92902",
+            "tertiary-dim": "#aa30fa",
+            "error-dim": "#d53d18",
+            "on-error": "#450900",
+            "primary-fixed-dim": "#f66700",
+            "secondary-container": "#00696e",
+            "on-error-container": "#ffd2c8",
+            "surface-container-lowest": "#000000",
+            "on-tertiary": "#350056",
+            "on-tertiary-fixed-variant": "#5a008d",
+            "inverse-surface": "#f7f9ff",
+            "surface-bright": "#252d35",
+            "primary-dim": "#ff7524",
+            "primary": "#ff9159",
+            "tertiary-fixed-dim": "#cc84ff",
+            "primary-fixed": "#ff7a2f",
+            "surface-tint": "#ff9159",
+            "on-secondary": "#00575b",
+            "on-surface-variant": "#a7abb2",
+            "surface-container": "#141a20",
+            "primary-container": "#ff7a2f",
+            "error": "#ff7351",
+            "tertiary-fixed": "#d597ff",
+            "on-background": "#e7ebf3",
+            "surface-container-highest": "#1f262e",
+            "on-primary-fixed-variant": "#4f1c00",
+            "tertiary-container": "#ad34fd",
+            "surface-container-low": "#0e1419"
+          },
+          fontFamily: {
+            "headline": ["Plus Jakarta Sans"],
+            "body": ["Inter"],
+            "label": ["Space Grotesk"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      background-color: #0a0f14;
+      color: #e7ebf3;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-effect {
+      backdrop-filter: blur(20px);
+    }
+  </style>
+</head>
+<body class="overflow-x-hidden">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-8 z-40 bg-[#141a20]/80 backdrop-blur-2xl border-r border-[#43484e]/15 shadow-[48px_0_48px_0_rgba(0,0,0,0.3)] w-20 hover:w-64 transition-all duration-500 ease-in-out group">
+<div class="flex flex-col items-center group-hover:items-start px-4 mb-10">
+<div class="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-on-primary-fixed" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+</div>
+<div class="hidden group-hover:block ml-2">
+<div class="font-headline font-black text-on-surface tracking-tighter text-lg uppercase">2026 Lab</div>
+<div class="font-label text-[10px] tracking-widest text-primary uppercase">Kinetic Terminal</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2 px-2">
+<!-- Home -->
+<a class="flex items-center p-3 rounded-xl text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="grid_view">grid_view</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Home</span>
+</a>
+<!-- Brackets (Active) -->
+<a class="flex items-center p-3 rounded-xl bg-gradient-to-r from-[#ff9159]/20 to-transparent text-[#ff9159] border-l-4 border-[#ff9159] group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="account_tree">account_tree</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Brackets</span>
+</a>
+<!-- Leaderboard -->
+<a class="flex items-center p-3 rounded-xl text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="leaderboard">leaderboard</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Leaderboard</span>
+</a>
+<!-- Insights -->
+<a class="flex items-center p-3 rounded-xl text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="analytics">analytics</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Insights</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center p-3 rounded-xl text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="tune">tune</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block whitespace-nowrap group-hover/item:translate-x-1 transition-transform">Settings</span>
+</a>
+</nav>
+<div class="px-2 mt-auto flex flex-col gap-2">
+<a class="flex items-center p-3 rounded-xl text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="help">help</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block group-hover/item:translate-x-1 transition-transform">Help</span>
+</a>
+<a class="flex items-center p-3 rounded-xl text-[#e7ebf3]/40 hover:text-[#e7ebf3] hover:bg-[#252d35] transition-all group/item" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="logout">logout</span>
+<span class="ml-4 font-label uppercase tracking-widest text-xs hidden group-hover:block group-hover/item:translate-x-1 transition-transform">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-20 min-h-screen pb-20">
+<!-- Top Nav Bar -->
+<header class="fixed top-0 left-20 right-0 h-16 flex justify-between items-center px-8 z-50 bg-[#141a20]/60 backdrop-blur-xl bg-gradient-to-b from-[#141a20] to-transparent shadow-2xl shadow-black/50">
+<div class="flex items-center gap-8">
+<h1 class="text-xl font-headline font-black text-[#e7ebf3] tracking-tighter uppercase">DoorDash AP 2026 Bracket Lab</h1>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-sm font-headline font-bold tracking-tight text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-headline font-bold tracking-tight text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors" href="#">Analytics</a>
+<a class="text-sm font-headline font-bold tracking-tight text-[#ff9159] border-b-2 border-[#ff9159] pb-1" href="#">Brackets</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-[#e7ebf3]/60 hover:bg-[#252d35] transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center text-[#e7ebf3]/60 hover:bg-[#252d35] transition-all">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-bright border border-outline-variant/30 overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="Portrait of a modern user avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpuhWH4Z0yLB9OEivEOtYGhSl8dskayORUALgQfj1JPfOaIsGe97jc38zYle9CUonf9mwu2BM4J2tGwFNtsGvZ8SUZXmgoX5BQu_F9Kv3_5k1gphmUdXuf2LNVPBLNrIjRgy6IKWyPwsPdc147p_a5cxCAn31M5NP2in_EkKkKWWuTP4xpHZaH0KTR04Ka8fX_0YbA1FnZt0E-bMBEqBjJ7q4VuoukOmGorqVDOzAA2gUqwUHEwhG-juEXRdEfmLoe6Jt5nKrnh9_h"/>
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<div class="mt-24 px-8 max-w-7xl mx-auto">
+<!-- Hero Header Section -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">Group Picks</h2>
+<p class="text-on-surface-variant text-lg max-w-2xl font-body">See how our 75 brackets collectively predicted each game. The terminal processes real-time group consensus data.</p>
+</div>
+<!-- Hero Stat Card -->
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant/10 shadow-xl min-w-[320px]">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Round Accuracy</span>
+</div>
+<div class="text-3xl font-headline font-black text-on-surface">25/32 <span class="text-secondary text-sm font-bold uppercase ml-2">+9.3%</span></div>
+<p class="text-sm text-on-surface-variant font-body mt-1">First round games correct (National avg: 22/32)</p>
+<div class="mt-4 h-1.5 w-full bg-surface rounded-full overflow-hidden relative">
+<div class="h-full bg-secondary w-[78%] rounded-full shadow-[0_0_10px_rgba(0,244,254,0.5)]"></div>
+<div class="absolute right-[22%] top-0 h-full w-0.5 bg-secondary-fixed"></div> <!-- Glow Head -->
+</div>
+</div>
+</div>
+</section>
+<!-- Round Selector Tabs -->
+<section class="mb-10 flex flex-wrap gap-2 p-1 bg-surface-container rounded-xl w-fit border border-outline-variant/10">
+<button class="px-6 py-2 rounded-lg font-label text-xs tracking-widest uppercase bg-primary text-on-primary font-bold shadow-lg transition-all">R64</button>
+<button class="px-6 py-2 rounded-lg font-label text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-bright transition-all">R32</button>
+<button class="px-6 py-2 rounded-lg font-label text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-bright transition-all">S16</button>
+<button class="px-6 py-2 rounded-lg font-label text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-bright transition-all">E8</button>
+<button class="px-6 py-2 rounded-lg font-label text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-bright transition-all">FF</button>
+<button class="px-6 py-2 rounded-lg font-label text-xs tracking-widest uppercase text-on-surface-variant hover:bg-surface-bright transition-all">Champ</button>
+</section>
+<!-- Game Cards Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+<!-- Game Card 1 (Consensus Match) -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all duration-300 group">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label text-[10px] tracking-widest uppercase text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Match 14 • South</span>
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label text-[10px] tracking-widest uppercase font-bold">We called it!</span>
+</div>
+</div>
+<div class="flex flex-col gap-4 mb-6">
+<div class="flex items-center justify-between opacity-40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-surface-variant">14</div>
+<span class="font-headline font-bold text-on-surface">Colgate</span>
+</div>
+<span class="text-lg font-headline font-black">64</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-xs font-bold text-on-primary-fixed">3</div>
+<span class="font-headline font-bold text-on-surface">Duke</span>
+</div>
+<span class="text-lg font-headline font-black text-secondary">82</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<div class="flex justify-between text-[10px] font-label uppercase tracking-widest text-on-surface-variant mb-2">
+<span>Colgate (38%)</span>
+<span class="text-secondary">Duke (62%)</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full flex overflow-hidden">
+<div class="h-full bg-outline-variant/30 w-[38%]"></div>
+<div class="h-full bg-secondary w-[62%] shadow-[0_0_8px_rgba(0,244,254,0.3)]"></div>
+</div>
+</div>
+</div>
+<!-- Game Card 2 (Upset Alert) -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all duration-300 group relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-tertiary/5 blur-3xl -z-10"></div>
+<div class="flex justify-between items-start mb-6">
+<span class="font-label text-[10px] tracking-widest uppercase text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Match 21 • East</span>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label text-[10px] tracking-widest uppercase font-bold">Surprise!</span>
+</div>
+</div>
+<div class="flex flex-col gap-4 mb-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-tertiary flex items-center justify-center text-xs font-bold text-on-tertiary">15</div>
+<span class="font-headline font-bold text-on-surface">St. Peters</span>
+</div>
+<span class="text-lg font-headline font-black text-tertiary">67</span>
+</div>
+<div class="flex items-center justify-between opacity-40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-surface-variant">2</div>
+<span class="font-headline font-bold text-on-surface">Kentucky</span>
+</div>
+<span class="text-lg font-headline font-black">63</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<div class="flex justify-between text-[10px] font-label uppercase tracking-widest text-on-surface-variant mb-2">
+<span class="text-tertiary">St. Peters (11%)</span>
+<span>Kentucky (89%)</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full flex overflow-hidden">
+<div class="h-full bg-tertiary w-[11%] shadow-[0_0_8px_rgba(201,124,255,0.4)]"></div>
+<div class="h-full bg-outline-variant/30 w-[89%]"></div>
+</div>
+<p class="text-[9px] font-label text-tertiary/70 mt-3 text-center tracking-wider">Only 8 saw this coming — Legends.</p>
+</div>
+</div>
+<!-- Game Card 3 (Split Decision) -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all duration-300 group">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label text-[10px] tracking-widest uppercase text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Match 08 • West</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">balance</span>
+<span class="font-label text-[10px] tracking-widest uppercase font-bold">Split Split</span>
+</div>
+</div>
+<div class="flex flex-col gap-4 mb-6">
+<div class="flex items-center justify-between opacity-40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-surface-variant">8</div>
+<span class="font-headline font-bold text-on-surface">San Diego St</span>
+</div>
+<span class="text-lg font-headline font-black">71</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-xs font-bold text-on-primary-fixed">9</div>
+<span class="font-headline font-bold text-on-surface">Creighton</span>
+</div>
+<span class="text-lg font-headline font-black text-secondary">72</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10">
+<div class="flex justify-between text-[10px] font-label uppercase tracking-widest text-on-surface-variant mb-2">
+<span>San Diego St (49%)</span>
+<span class="text-on-surface">Creighton (51%)</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full flex overflow-hidden">
+<div class="h-full bg-outline-variant/30 w-[49%]"></div>
+<div class="h-full bg-on-surface/40 w-[51%]"></div>
+</div>
+</div>
+</div>
+<!-- Add more cards as needed -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label text-[10px] tracking-widest uppercase text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Match 04 • Midwest</span>
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="h-12 bg-surface-container-low rounded mb-4 animate-pulse"></div>
+<div class="h-4 bg-surface-container-low rounded w-1/2"></div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label text-[10px] tracking-widest uppercase text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Match 05 • Midwest</span>
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="h-12 bg-surface-container-low rounded mb-4 animate-pulse"></div>
+<div class="h-4 bg-surface-container-low rounded w-1/2"></div>
+</div>
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<span class="font-label text-[10px] tracking-widest uppercase text-on-surface-variant bg-surface-container-low px-2 py-1 rounded">Match 12 • South</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">balance</span>
+</div>
+</div>
+<div class="h-12 bg-surface-container-low rounded mb-4 animate-pulse"></div>
+<div class="h-4 bg-surface-container-low rounded w-1/2"></div>
+</div>
+</section>
+<!-- Bracket Heatmap Section -->
+<section class="mb-20">
+<div class="mb-8 flex items-center justify-between">
+<div>
+<h3 class="text-2xl font-headline font-bold text-on-surface">Confidence Heatmap</h3>
+<p class="text-on-surface-variant font-body">Global intensity visualization for 2026 predictions</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Correct Consensus</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-on-surface/20"></div>
+<span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Split Potential</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-surface-variant"></div>
+<span class="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">Upset Miss</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/10 p-8 min-h-[500px] flex items-center justify-center relative overflow-hidden">
+<!-- Abstract Bracket Visualization using Grids/Paths -->
+<div class="absolute inset-0 opacity-10">
+<img alt="Heatmap Pattern" class="w-full h-full object-cover" data-alt="Abstract glowing network nodes and lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+</div>
+<div class="relative grid grid-cols-5 gap-x-12 gap-y-8 w-full">
+<!-- Round 1 (Simplified Visualization) -->
+<div class="flex flex-col justify-around gap-4">
+<div class="h-12 w-full rounded bg-secondary/20 border border-secondary/40 shadow-[0_0_15px_rgba(0,244,254,0.1)]"></div>
+<div class="h-12 w-full rounded bg-secondary/30 border border-secondary/50 shadow-[0_0_15px_rgba(0,244,254,0.1)]"></div>
+<div class="h-12 w-full rounded bg-on-surface/5 border border-outline-variant/20"></div>
+<div class="h-12 w-full rounded bg-secondary/40 border border-secondary/60 shadow-[0_0_15px_rgba(0,244,254,0.1)]"></div>
+<div class="h-12 w-full rounded bg-secondary/20 border border-secondary/40 shadow-[0_0_15px_rgba(0,244,254,0.1)]"></div>
+<div class="h-12 w-full rounded bg-secondary/10 border border-secondary/30 shadow-[0_0_15px_rgba(0,244,254,0.1)]"></div>
+</div>
+<!-- Connector paths simulated with border lines -->
+<div class="flex flex-col justify-around">
+<div class="h-24 w-full rounded-r-xl border-y border-r border-outline-variant/30 mb-8 mt-4"></div>
+<div class="h-24 w-full rounded-r-xl border-y border-r border-outline-variant/30 mt-8"></div>
+</div>
+<!-- Round 2 -->
+<div class="flex flex-col justify-center gap-32">
+<div class="h-16 w-full rounded bg-secondary/50 border border-secondary/70 shadow-[0_0_20px_rgba(0,244,254,0.2)]"></div>
+<div class="h-16 w-full rounded bg-on-surface/10 border border-outline-variant/30"></div>
+</div>
+<div class="flex flex-col justify-center">
+<div class="h-48 w-full rounded-r-xl border-y border-r border-outline-variant/30"></div>
+</div>
+<!-- Sweet 16 -->
+<div class="flex flex-col justify-center">
+<div class="h-24 w-full rounded bg-secondary border border-secondary shadow-[0_0_30px_rgba(0,244,254,0.4)] flex items-center justify-center">
+<span class="font-headline font-black text-on-secondary uppercase text-center text-xs tracking-tighter">Peak<br/>Confidence</span>
+</div>
+</div>
+</div>
+<!-- Interaction Overlay -->
+<div class="absolute bottom-6 left-6 right-6 p-4 glass-effect bg-surface-container/40 rounded-lg border border-outline-variant/10 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" data-icon="mouse">mouse</span>
+</div>
+<div>
+<p class="text-xs font-headline font-bold text-on-surface">Interactive Terminal Active</p>
+<p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Hover nodes to reveal pick distributions per seed</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary-fixed rounded-xl shadow-2xl flex items-center justify-center hover:scale-105 transition-transform active:scale-95 group z-50">
+<span class="material-symbols-outlined" data-icon="edit_calendar" style="font-variation-settings: 'FILL' 1;">edit_calendar</span>
+<span class="absolute right-16 bg-surface-bright text-on-surface text-[10px] font-label uppercase tracking-widest px-3 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Analyze Live</span>
+</button>
+</main>
+</body></html>

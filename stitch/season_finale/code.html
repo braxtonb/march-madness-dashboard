@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space_Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-dim": "#0a0f14",
+              "on-secondary-fixed-variant": "#006266",
+              "background": "#0a0f14",
+              "surface-container-high": "#1a2027",
+              "on-primary-fixed": "#000000",
+              "secondary-fixed-dim": "#00e5ee",
+              "tertiary": "#c97cff",
+              "on-primary": "#531e00",
+              "outline": "#71767c",
+              "secondary-fixed": "#00f4fe",
+              "secondary-dim": "#00e5ee",
+              "on-surface": "#e7ebf3",
+              "on-primary-container": "#401500",
+              "on-tertiary-container": "#000000",
+              "surface-variant": "#1f262e",
+              "on-secondary-container": "#dffdff",
+              "inverse-on-surface": "#51555c",
+              "on-secondary-fixed": "#004346",
+              "on-tertiary-fixed": "#290044",
+              "surface": "#0a0f14",
+              "outline-variant": "#43484e",
+              "inverse-primary": "#a14100",
+              "secondary": "#00f4fe",
+              "error-container": "#b92902",
+              "tertiary-dim": "#aa30fa",
+              "error-dim": "#d53d18",
+              "on-error": "#450900",
+              "primary-fixed-dim": "#f66700",
+              "secondary-container": "#00696e",
+              "on-error-container": "#ffd2c8",
+              "surface-container-lowest": "#000000",
+              "on-tertiary": "#350056",
+              "on-tertiary-fixed-variant": "#5a008d",
+              "inverse-surface": "#f7f9ff",
+              "surface-bright": "#252d35",
+              "primary-dim": "#ff7524",
+              "primary": "#ff9159",
+              "tertiary-fixed-dim": "#cc84ff",
+              "primary-fixed": "#ff7a2f",
+              "surface-tint": "#ff9159",
+              "on-secondary": "#00575b",
+              "on-surface-variant": "#a7abb2",
+              "surface-container": "#141a20",
+              "primary-container": "#ff7a2f",
+              "error": "#ff7351",
+              "tertiary-fixed": "#d597ff",
+              "on-background": "#e7ebf3",
+              "surface-container-highest": "#1f262e",
+              "on-primary-fixed-variant": "#4f1c00",
+              "tertiary-container": "#ad34fd",
+              "surface-container-low": "#0e1419"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-8 z-40 bg-[#141a20]/80 backdrop-blur-2xl border-r border-[#43484e]/15 shadow-[48px_0_48px_0_rgba(0,0,0,0.3)] docked left-0 h-screen w-20 hover:w-64 transition-all duration-500 ease-in-out group">
+<div class="px-6 mb-12 flex items-center gap-4 overflow-hidden">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">analytics</span>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<h2 class="font-headline font-black text-[#e7ebf3] tracking-tighter leading-none">2026 Lab</h2>
+<p class="font-label uppercase tracking-widest text-[10px] text-primary">Kinetic Terminal</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-6 px-6 py-4 text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all hover:bg-[#252d35]" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="grid_view">grid_view</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Home</span>
+</a>
+<!-- Active Nav: Brackets maps to Finale -->
+<a class="flex items-center gap-6 px-6 py-4 bg-gradient-to-r from-[#ff9159]/20 to-transparent text-[#ff9159] border-l-4 border-[#ff9159]" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="account_tree" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Brackets</span>
+</a>
+<a class="flex items-center gap-6 px-6 py-4 text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all hover:bg-[#252d35]" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="leaderboard">leaderboard</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Leaderboard</span>
+</a>
+<a class="flex items-center gap-6 px-6 py-4 text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all hover:bg-[#252d35]" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="analytics">analytics</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Insights</span>
+</a>
+<a class="flex items-center gap-6 px-6 py-4 text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all hover:bg-[#252d35]" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="tune">tune</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Settings</span>
+</a>
+</nav>
+<div class="px-6 py-4 mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-full py-3 bg-primary text-on-primary font-headline font-bold text-sm rounded-xl">Analyze Live</button>
+</div>
+<div class="mt-auto border-t border-outline-variant/10">
+<a class="flex items-center gap-6 px-6 py-4 text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="help">help</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Help</span>
+</a>
+<a class="flex items-center gap-6 px-6 py-4 text-[#e7ebf3]/40 hover:text-[#e7ebf3] transition-all" href="#">
+<span class="material-symbols-outlined shrink-0" data-icon="logout">logout</span>
+<span class="font-label uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full h-16 flex justify-between items-center px-6 z-50 bg-[#141a20]/60 backdrop-blur-xl shadow-2xl shadow-black/50 pl-24">
+<div class="flex items-center gap-8">
+<h1 class="text-xl font-black text-[#e7ebf3] tracking-tighter font-headline">DoorDash AP 2026 Bracket Lab</h1>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors font-headline font-bold tracking-tight" href="#">Dashboard</a>
+<a class="text-[#e7ebf3]/60 hover:text-[#e7ebf3] transition-colors font-headline font-bold tracking-tight" href="#">Analytics</a>
+<a class="text-[#ff9159] border-b-2 border-[#ff9159] pb-1 font-headline font-bold tracking-tight" href="#">Brackets</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center text-[#e7ebf3]/60 hover:bg-[#252d35] rounded-lg transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-[#e7ebf3]/60 hover:bg-[#252d35] rounded-lg transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="User Avatar Profile Portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+</div>
+</div>
+</header>
+<main class="ml-20 pt-24 pb-12 px-8 min-h-screen relative overflow-hidden">
+<!-- Background Accents -->
+<div class="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 -z-10"></div>
+<div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 -z-10"></div>
+<!-- Header -->
+<div class="max-w-7xl mx-auto mb-12">
+<div class="flex items-end justify-between gap-4">
+<div>
+<span class="font-label text-primary uppercase tracking-[0.3em] text-xs font-bold mb-2 block">Season Finale</span>
+<h2 class="text-5xl font-headline font-extrabold tracking-tighter text-on-surface">The complete story of<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-fixed">DoorDash AP 2026</span></h2>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex -space-x-3 mb-2">
+<img class="w-10 h-10 rounded-full border-2 border-surface shrink-0" data-alt="User Avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHF3V0-bmC3nIaaXvf_KJd0qSQpScG_GJ2-CfbIcrXniMpjzy1wyxksqX6zsUESzZqQ0S-Ytb_UDwRx9w9Eps0IBUBsvnJgIsXjejJxc9LzqS08C6N0tjHhFvwcCnt04jZWGY_9DCS9I_xIoCuKba2vW0o2ezM1DqJRwcDtwuwiU-ZeycqELMHAPnimkzrPwNqIM0OfOoue76tWqfSUSo_pj6YXv0QGi0igJW0xw9LI_VdRNsuJHhlxLcPoT3tx6NVw_B4lW1-gTQT"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface shrink-0" data-alt="User Avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface shrink-0" data-alt="User Avatar 3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3EUi84CABBN24CIz7notPD-mccHcULqP43woLz_-xytnKEimv0ojGTHiK_uH933d0FduEOqIS9pUa73NMp3fumkXGpugd0uMc5mPkbcvJmDs6SncsAKqkcLddMEC3T5FnxMzi4wpuVd7KLG1NtYIvhS1JQ6WqiFPQmb-unaWHHsOsOxDkeoGPvAfk639PiiukTQGhhxDKdgzGOwFG6Sx-0Zm8JRJ2YWQTWiHjbZA0cub7hMMUVcCL_nkE8HIeRRuS3X4w6yEnXl74"/>
+<div class="w-10 h-10 rounded-full bg-surface-bright border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant">+42</div>
+</div>
+<p class="font-label text-on-surface-variant text-xs uppercase tracking-widest">Finalists Archive</p>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto space-y-12">
+<!-- Final Standings: Podium -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+<div class="lg:col-span-8 order-2 lg:order-1">
+<div class="bg-surface-container rounded-xl overflow-hidden shadow-2xl">
+<div class="px-6 py-4 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-high">
+<h3 class="font-headline font-bold uppercase tracking-tight text-on-surface">Final Leaderboard</h3>
+<span class="font-label text-xs text-on-surface-variant">Top 5 of 45 Participants</span>
+</div>
+<div class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<div class="grid grid-cols-12 items-center px-6 py-4 hover:bg-surface-bright transition-colors group">
+<div class="col-span-1 font-label text-primary font-bold">01</div>
+<div class="col-span-5 flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container font-black">JS</div>
+<div>
+<p class="font-headline font-bold text-on-surface">Jordan Silver</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-label">The Architect</p>
+</div>
+</div>
+<div class="col-span-2 font-label text-center text-on-surface-variant text-xs">98th Pctl</div>
+<div class="col-span-2 font-label text-center text-secondary font-bold">1,840 pts</div>
+<div class="col-span-2 flex justify-end">
+<span class="px-2 py-1 rounded bg-secondary/10 text-secondary text-[10px] font-bold font-label uppercase">Winner</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 items-center px-6 py-4 hover:bg-surface-bright transition-colors group">
+<div class="col-span-1 font-label text-on-surface-variant">02</div>
+<div class="col-span-5 flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-variant flex items-center justify-center text-on-surface font-black">AM</div>
+<div>
+<p class="font-headline font-bold text-on-surface">Alex Mercer</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-label">Underdog Specialist</p>
+</div>
+</div>
+<div class="col-span-2 font-label text-center text-on-surface-variant text-xs">94th Pctl</div>
+<div class="col-span-2 font-label text-center text-on-surface font-bold">1,795 pts</div>
+<div class="col-span-2 flex justify-end">
+<span class="px-2 py-1 rounded bg-outline-variant/10 text-on-surface-variant text-[10px] font-bold font-label uppercase">-45 diff</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 items-center px-6 py-4 hover:bg-surface-bright transition-colors group">
+<div class="col-span-1 font-label text-on-surface-variant">03</div>
+<div class="col-span-5 flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-surface-variant flex items-center justify-center text-on-surface font-black">SK</div>
+<div>
+<p class="font-headline font-bold text-on-surface">Sarah King</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-label">Analytics lead</p>
+</div>
+</div>
+<div class="col-span-2 font-label text-center text-on-surface-variant text-xs">91st Pctl</div>
+<div class="col-span-2 font-label text-center text-on-surface font-bold">1,780 pts</div>
+<div class="col-span-2 flex justify-end">
+<span class="px-2 py-1 rounded bg-outline-variant/10 text-on-surface-variant text-[10px] font-bold font-label uppercase">-60 diff</span>
+</div>
+</div>
+</div>
+<button class="w-full py-4 text-center font-label text-[10px] text-on-surface-variant hover:text-primary tracking-[0.2em] transition-colors bg-surface-container-low uppercase font-bold">View Full Historical Table</button>
+</div>
+</div>
+<div class="lg:col-span-4 order-1 lg:order-2 space-y-4">
+<!-- Champion Card -->
+<div class="bg-gradient-to-br from-primary-container to-primary rounded-xl p-px shadow-2xl shadow-primary/20">
+<div class="bg-surface-container rounded-[11px] p-6 text-center relative overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/20 blur-[40px] rounded-full"></div>
+<span class="material-symbols-outlined text-primary text-5xl mb-4" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<h4 class="font-headline font-black text-2xl text-on-surface tracking-tighter">JORDAN SILVER</h4>
+<p class="font-label text-primary uppercase tracking-widest text-xs mb-6 font-bold">2026 Season Champion</p>
+<div class="grid grid-cols-2 gap-4 border-t border-outline-variant/10 pt-6">
+<div>
+<p class="font-label text-[10px] text-on-surface-variant uppercase mb-1">Total Score</p>
+<p class="font-headline font-bold text-xl text-on-surface">1,840</p>
+</div>
+<div>
+<p class="font-label text-[10px] text-on-surface-variant uppercase mb-1">Win Rate</p>
+<p class="font-headline font-bold text-xl text-secondary">78.4%</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container rounded-xl p-4 text-center border-b-2 border-[#C0C0C0]/30">
+<p class="font-label text-[9px] text-[#C0C0C0] uppercase tracking-widest mb-2 font-bold">Silver Medal</p>
+<p class="font-headline font-bold text-on-surface">Alex Mercer</p>
+</div>
+<div class="bg-surface-container rounded-xl p-4 text-center border-b-2 border-[#CD7F32]/30">
+<p class="font-label text-[9px] text-[#CD7F32] uppercase tracking-widest mb-2 font-bold">Bronze Medal</p>
+<p class="font-headline font-bold text-on-surface">Sarah King</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Awards Ceremony & Report Card -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Awards Bento -->
+<div class="lg:col-span-8">
+<div class="mb-6 flex justify-between items-center">
+<h3 class="font-headline font-bold text-xl text-on-surface">Ceremonial Awards</h3>
+<span class="font-label text-xs text-on-surface-variant uppercase tracking-widest">Tournament Recognition</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<!-- Award 1 -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all">
+<div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<h4 class="font-headline font-bold text-sm text-on-surface mb-1">MVP Analyst</h4>
+<p class="text-xs text-on-surface-variant font-body mb-4">Highest efficiency across all bracket regions.</p>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant"></div>
+<span class="font-label text-[10px] text-on-surface uppercase font-bold">D. Vance</span>
+</div>
+</div>
+<!-- Award 2 -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<h4 class="font-headline font-bold text-sm text-on-surface mb-1">Cinderella Spotter</h4>
+<p class="text-xs text-on-surface-variant font-body mb-4">Correctly predicted a 12+ seed Elite 8 run.</p>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant"></div>
+<span class="font-label text-[10px] text-on-surface uppercase font-bold">L. Park</span>
+</div>
+</div>
+<!-- Award 3 -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<h4 class="font-headline font-bold text-sm text-on-surface mb-1">Most Consistent</h4>
+<p class="text-xs text-on-surface-variant font-body mb-4">Lowest deviation between round performances.</p>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant"></div>
+<span class="font-label text-[10px] text-on-surface uppercase font-bold">R. Singh</span>
+</div>
+</div>
+<!-- Award 4 -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all">
+<div class="w-10 h-10 rounded-full bg-on-surface-variant/10 flex items-center justify-center text-on-surface-variant mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<h4 class="font-headline font-bold text-sm text-on-surface mb-1">Best Round</h4>
+<p class="text-xs text-on-surface-variant font-body mb-4">Perfect Sweet Sixteen (16/16 picks correct).</p>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant"></div>
+<span class="font-label text-[10px] text-on-surface uppercase font-bold">T. Hayes</span>
+</div>
+</div>
+<!-- Award 5 -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all">
+<div class="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center text-error mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">heart_broken</span>
+</div>
+<h4 class="font-headline font-bold text-sm text-on-surface mb-1">Heartbreak King</h4>
+<p class="text-xs text-on-surface-variant font-body mb-4">Most picks lost by 1 point in overtime.</p>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant"></div>
+<span class="font-label text-[10px] text-on-surface uppercase font-bold">B. Cho</span>
+</div>
+</div>
+<!-- Award 6 -->
+<div class="bg-surface-container p-5 rounded-xl border border-outline-variant/5 hover:bg-surface-bright transition-all">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed/10 flex items-center justify-center text-secondary-fixed mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<h4 class="font-headline font-bold text-sm text-on-surface mb-1">Bracket Buster</h4>
+<p class="text-xs text-on-surface-variant font-body mb-4">Picked the champion from the first day.</p>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant"></div>
+<span class="font-label text-[10px] text-on-surface uppercase font-bold">K. Wright</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Report Card -->
+<div class="lg:col-span-4">
+<div class="bg-surface-container-high rounded-xl p-8 h-full flex flex-col shadow-xl border border-outline-variant/10 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
+<h3 class="font-headline font-bold text-xl text-on-surface mb-8">Group Report Card</h3>
+<div class="flex-1 flex flex-col justify-center items-center text-center">
+<div class="relative mb-8">
+<svg class="w-48 h-48 -rotate-90">
+<circle class="text-surface-variant" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-dasharray="553" stroke-dashoffset="138" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-5xl font-headline font-black text-on-surface tracking-tighter">75</span>
+<span class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Percentile</span>
+</div>
+</div>
+<p class="font-headline font-bold text-lg text-on-surface mb-2">Vs. National Average</p>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">The DoorDash AP group outperformed the general public by 15.4% in early round accuracy, but fell behind in Final Four predictions.</p>
+<div class="w-full space-y-4">
+<div class="flex justify-between items-center px-4 py-3 bg-surface rounded-lg">
+<span class="font-label text-[10px] uppercase tracking-widest font-bold">Consensus Accuracy</span>
+<span class="text-secondary font-bold">68.2%</span>
+</div>
+<div class="flex justify-between items-center px-4 py-3 bg-surface rounded-lg">
+<span class="font-label text-[10px] uppercase tracking-widest font-bold">Upset Potential</span>
+<span class="text-tertiary font-bold">+12.4%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Insight vs Fortune Scatter Plot -->
+<section>
+<div class="mb-6 flex justify-between items-center">
+<div>
+<h3 class="font-headline font-bold text-xl text-on-surface">Insight vs. Fortune</h3>
+<p class="text-on-surface-variant text-sm">Mapping analytical rigor against pure tournament luck.</p>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-[10px] font-label uppercase text-on-surface-variant">Participants</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-8 aspect-video lg:aspect-auto lg:h-[500px] relative border border-outline-variant/10 shadow-2xl">
+<!-- Quadrant Labels -->
+<div class="absolute top-8 right-8 text-right">
+<p class="font-headline font-bold text-on-surface">SHARP &amp; LUCKY</p>
+<p class="font-label text-[10px] text-secondary tracking-widest uppercase">The Elites</p>
+</div>
+<div class="absolute top-8 left-8 text-left">
+<p class="font-headline font-bold text-on-surface">BOLD &amp; LUCKY</p>
+<p class="font-label text-[10px] text-tertiary tracking-widest uppercase">The High-Rollers</p>
+</div>
+<div class="absolute bottom-8 right-8 text-right">
+<p class="font-headline font-bold text-on-surface">SHARP &amp; STEADY</p>
+<p class="font-label text-[10px] text-on-primary-container tracking-widest uppercase">The Grinders</p>
+</div>
+<div class="absolute bottom-8 left-8 text-left">
+<p class="font-headline font-bold text-on-surface">GOING WITH FLOW</p>
+<p class="font-label text-[10px] text-on-surface-variant tracking-widest uppercase">The Casuals</p>
+</div>
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-px h-full bg-outline-variant/10"></div>
+<div class="h-px w-full bg-outline-variant/10"></div>
+</div>
+<!-- Axis Labels -->
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 font-label text-[10px] text-on-surface-variant uppercase tracking-[0.3em]">Analytical Insight →</div>
+<div class="absolute left-4 top-1/2 -translate-y-1/2 -rotate-90 font-label text-[10px] text-on-surface-variant uppercase tracking-[0.3em]">Fortune &amp; Luck →</div>
+<!-- Dots (Simulated Data) -->
+<div class="absolute top-[20%] right-[15%] w-3 h-3 bg-primary rounded-full shadow-[0_0_10px_rgba(255,145,89,0.5)] cursor-pointer hover:scale-125 transition-transform"></div>
+<div class="absolute top-[35%] right-[25%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute top-[45%] right-[30%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute top-[10%] right-[40%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute bottom-[30%] right-[10%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute top-[15%] left-[20%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute bottom-[20%] left-[25%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute top-[60%] left-[10%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute bottom-[40%] right-[45%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute top-[30%] right-[55%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute bottom-[15%] left-[45%] w-2 h-2 bg-primary/60 rounded-full"></div>
+<div class="absolute top-[5%] right-[20%] w-4 h-4 bg-secondary rounded-full flex items-center justify-center animate-pulse"><span class="w-1.5 h-1.5 bg-background rounded-full"></span></div>
+</div>
+</section>
+<!-- Greatest Calls -->
+<section>
+<div class="mb-6">
+<h3 class="font-headline font-bold text-xl text-on-surface">The Hall of Fame: Greatest Calls</h3>
+<p class="text-on-surface-variant text-sm">Top 10 individual picks of the tournament based on lowest consensus correct.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+<!-- Call 1 -->
+<div class="bg-surface-container rounded-xl p-4 border-l-4 border-secondary shadow-lg">
+<p class="font-label text-[9px] text-secondary uppercase font-bold mb-2">3% Consensus</p>
+<h5 class="font-headline font-bold text-on-surface leading-tight mb-1">Oakland over Kentucky</h5>
+<p class="text-[10px] text-on-surface-variant mb-3">Round of 64 • Upset of Year</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-label uppercase text-on-surface font-bold">M. Thompson</span>
+<span class="material-symbols-outlined text-secondary text-sm">verified</span>
+</div>
+</div>
+<!-- Call 2 -->
+<div class="bg-surface-container rounded-xl p-4 border-l-4 border-primary shadow-lg">
+<p class="font-label text-[9px] text-primary uppercase font-bold mb-2">5% Consensus</p>
+<h5 class="font-headline font-bold text-on-surface leading-tight mb-1">NC State Final 4</h5>
+<p class="text-[10px] text-on-surface-variant mb-3">Regional Final • Dark Horse</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-label uppercase text-on-surface font-bold">Sarah King</span>
+<span class="material-symbols-outlined text-primary text-sm">verified</span>
+</div>
+</div>
+<!-- Call 3 -->
+<div class="bg-surface-container rounded-xl p-4 border-l-4 border-tertiary shadow-lg opacity-80 hover:opacity-100 transition-opacity">
+<p class="font-label text-[9px] text-tertiary uppercase font-bold mb-2">8% Consensus</p>
+<h5 class="font-headline font-bold text-on-surface leading-tight mb-1">James Madison R32</h5>
+<p class="text-[10px] text-on-surface-variant mb-3">Round of 64 • Efficiency Play</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-label uppercase text-on-surface font-bold">D. Vance</span>
+<span class="material-symbols-outlined text-tertiary text-sm">verified</span>
+</div>
+</div>
+<!-- Call 4 -->
+<div class="bg-surface-container rounded-xl p-4 border-l-4 border-outline-variant shadow-lg opacity-80 hover:opacity-100 transition-opacity">
+<p class="font-label text-[9px] text-on-surface-variant uppercase font-bold mb-2">12% Consensus</p>
+<h5 class="font-headline font-bold text-on-surface leading-tight mb-1">Clemson over Arizona</h5>
+<p class="text-[10px] text-on-surface-variant mb-3">Sweet 16 • Defense Focus</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-label uppercase text-on-surface font-bold">Alex Mercer</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">verified</span>
+</div>
+</div>
+<!-- Call 5 -->
+<div class="bg-surface-container rounded-xl p-4 border-l-4 border-outline-variant shadow-lg opacity-80 hover:opacity-100 transition-opacity">
+<p class="font-label text-[9px] text-on-surface-variant uppercase font-bold mb-2">15% Consensus</p>
+<h5 class="font-headline font-bold text-on-surface leading-tight mb-1">Yale over Auburn</h5>
+<p class="text-[10px] text-on-surface-variant mb-3">Round of 64 • Chaos pick</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-label uppercase text-on-surface font-bold">R. Singh</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">verified</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Note -->
+<footer class="max-w-7xl mx-auto mt-20 pt-8 border-t border-outline-variant/10 text-center">
+<p class="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.5em] mb-4">Laboratory Terminal Session Concluded • April 2026</p>
+<div class="flex justify-center gap-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest font-label" href="#">Export Data (JSON)</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest font-label" href="#">Share Recap</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest font-label" href="#">2027 Pre-Registration</a>
+</div>
+</footer>
+</main>
+</body></html>
