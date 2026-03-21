@@ -79,9 +79,41 @@ def run():
     store.write_tab('picks', all_picks, PICKS_HEADERS)
     logger.info(f"Wrote {len(all_picks)} picks")
 
-    # Step 7: Write games and teams
+    # Step 7: Merge games (keep existing, update from API, add new)
     if games:
-        store.write_tab('games', games, GAMES_HEADERS)
+        existing_games = store.read_tab('games')
+        existing_map = {g.get('game_id', ''): g for g in existing_games}
+        for g in games:
+            existing_map[g['game_id']] = g  # update or add
+        merged_games = list(existing_map.values())
+        store.write_tab('games', merged_games, GAMES_HEADERS)
+    else:
+        existing_games = store.read_tab('games')
+        merged_games = existing_games
+
+    # Compute elimination: a team is eliminated if it lost a completed game
+    losers = set()
+    for g in merged_games:
+        completed_val = g.get('completed')
+        is_completed = completed_val is True or str(completed_val) == 'True'
+        if is_completed and g.get('winner'):
+            if g.get('team1') and g.get('team1') != g.get('winner'):
+                losers.add(g['team1'])
+            if g.get('team2') and g.get('team2') != g.get('winner'):
+                losers.add(g['team2'])
+
+    for t in teams:
+        if t['name'] in losers:
+            t['eliminated'] = True
+            # Find the round they were eliminated in
+            for g in merged_games:
+                completed_val = g.get('completed')
+                is_completed = completed_val is True or str(completed_val) == 'True'
+                if is_completed and g.get('winner') and g.get('winner') != t['name']:
+                    if t['name'] in (g.get('team1'), g.get('team2')):
+                        t['eliminated_round'] = g.get('round', '')
+                        break
+
     if teams:
         store.write_tab('teams', teams, TEAMS_HEADERS)
 
@@ -89,7 +121,10 @@ def run():
     store.write_tab('brackets', brackets, BRACKETS_HEADERS)
 
     # Step 9: Detect round change -> write snapshots
-    games_completed = sum(1 for g in games if g['completed'])
+    games_completed = sum(
+        1 for g in merged_games
+        if g.get('completed') is True or str(g.get('completed')) == 'True'
+    )
     current_round = _determine_current_round(games_completed)
 
     if current_round != prev_round and prev_round != 'PRE':

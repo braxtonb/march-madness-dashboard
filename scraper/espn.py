@@ -19,6 +19,8 @@ TEAM_CONFERENCES: dict[str, str] = {
     'Omaha': 'Summit', 'Robert Morris': 'Horizon', 'Wofford': 'SoCon',
     'Bryant': 'America East', 'SIU Edwardsville': 'OVC',
     'Col of Chas': 'CAA', 'UNC Wilmington': 'CAA',
+    'St Peter\'s': 'MAAC', 'Belmont': 'MVC', 'Montana St': 'Big Sky',
+    'Merrimack': 'NEC', 'Howard': 'MEAC', 'Wagner': 'NEC',
 }
 
 # scoringPeriodId -> round label
