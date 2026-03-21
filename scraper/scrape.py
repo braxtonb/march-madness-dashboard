@@ -1,4 +1,4 @@
-"""Main scraper orchestrator. Fetch ESPN data -> parse -> write to Sheets."""
+"""Main scraper orchestrator. Fetch ESPN JSON API data -> parse -> write to Sheets."""
 import logging
 import os
 from datetime import datetime, timezone
@@ -6,10 +6,10 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 load_dotenv()
 
-from scraper.fetch import fetch_group_page, fetch_bracket_page
+from scraper.fetch import fetch_challenge_data, fetch_group_entries
 from scraper.espn import (
-    parse_group_standings, parse_bracket_picks,
-    parse_tournament_games, parse_teams,
+    build_outcome_map, build_proposition_map,
+    parse_entries, parse_games, parse_teams,
 )
 from scraper.sheets import GoogleSheetsStore
 
@@ -42,7 +42,7 @@ def run():
     # Step 1: Read existing state for prev_rank + round detection
     logger.info("Reading existing state...")
     existing_brackets = store.read_tab('brackets')
-    existing_ranks = {}
+    existing_ranks: dict[str, int] = {}
     sorted_existing = sorted(existing_brackets, key=lambda b: -int(b.get('points', 0)))
     for rank, b in enumerate(sorted_existing, 1):
         existing_ranks[b.get('id', '')] = rank
@@ -50,74 +50,45 @@ def run():
     existing_meta = store.read_tab('meta')
     prev_round = existing_meta[0].get('current_round', 'PRE') if existing_meta else 'PRE'
 
-    # Step 2: Fetch + parse group standings
-    logger.info("Fetching group standings...")
-    group_html = fetch_group_page(group_id)
-    brackets = parse_group_standings(group_html)
-    logger.info(f"Parsed {len(brackets)} brackets")
+    # Step 2: Fetch challenge data (propositions + outcomes — the game/team structure)
+    logger.info("Fetching ESPN challenge data...")
+    challenge_data = fetch_challenge_data()
+    outcome_map = build_outcome_map(challenge_data)
+    proposition_map = build_proposition_map(challenge_data)
+    logger.info(f"Built maps: {len(outcome_map)} outcomes, {len(proposition_map)} propositions")
 
+    # Step 3: Fetch all group entries (paginated)
+    logger.info(f"Fetching group entries for group {group_id}...")
+    group_data = fetch_group_entries(group_id)
+    logger.info(f"Fetched {len(group_data.get('entries', []))} entries")
+
+    # Step 4: Parse entries into brackets + picks
+    brackets, all_picks = parse_entries(group_data, outcome_map, proposition_map)
+    logger.info(f"Parsed {len(brackets)} brackets, {len(all_picks)} picks")
+
+    # Apply prev_rank from stored state
     for b in brackets:
         b['prev_rank'] = existing_ranks.get(b['id'], 0)
 
-    # Step 3: First run -> scrape all individual brackets
-    existing_picks = store.read_tab('picks')
-    need_full_scrape = len(existing_picks) == 0
+    # Step 5: Parse games + teams from proposition/outcome maps
+    games = parse_games(proposition_map)
+    teams = parse_teams(outcome_map)
+    logger.info(f"Parsed {len(games)} games, {len(teams)} teams")
 
-    if need_full_scrape:
-        logger.info("First run — scraping all individual brackets...")
-        all_picks = []
-        for i, bracket in enumerate(brackets):
-            logger.info(f"  Bracket {i + 1}/{len(brackets)}: {bracket['name']}")
-            try:
-                bracket_html = fetch_bracket_page(bracket['id'])
-                picks = parse_bracket_picks(bracket_html, bracket['id'])
-                all_picks.extend(picks)
-            except Exception as e:
-                logger.error(f"  Failed: {bracket['id']}: {e}")
-                continue
-        store.write_tab('picks', all_picks, PICKS_HEADERS)
-        logger.info(f"Wrote {len(all_picks)} picks")
+    # Step 6: Write picks (always — API gives us all picks at once, no "first run" concept)
+    store.write_tab('picks', all_picks, PICKS_HEADERS)
+    logger.info(f"Wrote {len(all_picks)} picks")
 
-    # Step 4: Parse tournament results
-    games: list[dict] = []
-    teams: list[dict] = []
+    # Step 7: Write games and teams
+    if games:
+        store.write_tab('games', games, GAMES_HEADERS)
+    if teams:
+        store.write_tab('teams', teams, TEAMS_HEADERS)
 
-    if brackets:
-        logger.info("Parsing tournament results...")
-        try:
-            sample_html = fetch_bracket_page(brackets[0]['id'])
-            games = parse_tournament_games(sample_html)
-            teams = parse_teams(sample_html)
-        except Exception as e:
-            logger.error(f"Failed to fetch sample bracket for results: {e}")
-
-        # Update pick correctness with proper vacated logic
-        if games and not need_full_scrape:
-            winners = {g['game_id']: g['winner'] for g in games if g['completed']}
-            game_participants = {
-                g['game_id']: {g['team1'], g['team2']}
-                for g in games if g['completed']
-            }
-
-            picks_data = store.read_tab('picks')
-            for pick in picks_data:
-                gid = pick['game_id']
-                if gid in winners:
-                    team = pick['team_picked']
-                    participants = game_participants.get(gid, set())
-                    pick['vacated'] = team not in participants
-                    pick['correct'] = (not pick['vacated']) and (team == winners[gid])
-            store.write_tab('picks', picks_data, PICKS_HEADERS)
-
-        if games:
-            store.write_tab('games', games, GAMES_HEADERS)
-        if teams:
-            store.write_tab('teams', teams, TEAMS_HEADERS)
-
-    # Step 5: Write brackets
+    # Step 8: Write brackets
     store.write_tab('brackets', brackets, BRACKETS_HEADERS)
 
-    # Step 6: Detect round change -> write snapshots
+    # Step 9: Detect round change -> write snapshots
     games_completed = sum(1 for g in games if g['completed'])
     current_round = _determine_current_round(games_completed)
 
@@ -136,7 +107,7 @@ def run():
         store.append_rows('snapshots', snapshot_rows, SNAPSHOTS_HEADERS)
         logger.info(f"Wrote {len(snapshot_rows)} snapshot rows for {prev_round}")
 
-    # Step 7: Update meta
+    # Step 10: Update meta
     store.update_meta({
         'last_updated': datetime.now(timezone.utc).isoformat(),
         'current_round': current_round,

@@ -1,8 +1,5 @@
-"""ESPN page parsing. All functions take HTML strings and return plain dicts.
-No network calls, no storage — pure parsing."""
-import re
-from bs4 import BeautifulSoup
-
+"""ESPN JSON API parsing. All functions take parsed dicts and return plain dicts.
+No network calls, no storage, no BeautifulSoup — pure data transformation."""
 
 # Conference lookup — hardcoded for 2026 tournament field
 TEAM_CONFERENCES: dict[str, str] = {
@@ -24,200 +21,291 @@ TEAM_CONFERENCES: dict[str, str] = {
     'Col of Chas': 'CAA', 'UNC Wilmington': 'CAA',
 }
 
+# scoringPeriodId -> round label
+ROUND_MAP: dict[int, str] = {
+    1: 'R64',
+    2: 'R32',
+    3: 'S16',
+    4: 'E8',
+    5: 'FF',
+    6: 'CHAMP',
+}
 
-def parse_group_standings(html: str) -> list[dict]:
-    """Parse the group standings page into bracket summary dicts."""
-    soup = BeautifulSoup(html, 'html.parser')
-    brackets = []
+# regionId -> region label (ESPN uses 1-4)
+REGION_MAP: dict[int, str] = {
+    1: 'R1',
+    2: 'R2',
+    3: 'R3',
+    4: 'R4',
+}
 
-    rows = soup.select('tr.Table__TR')
-    for row in rows:
-        cells = row.select('td')
-        if len(cells) < 5:
-            continue
 
-        try:
-            link = row.select_one('a[href*="/bracket?id="]')
-            bracket_id = ''
-            name = ''
-            if link:
-                href = link.get('href', '')
-                id_match = re.search(r'id=([a-f0-9-]+)', href)
-                bracket_id = id_match.group(1) if id_match else ''
-                name = link.get_text(strip=True)
+def build_outcome_map(challenge_data: dict) -> dict[str, dict]:
+    """Build outcomeId -> team metadata map from challenge API data.
 
-            owner_el = row.select_one('span.owner')
-            owner = owner_el.get_text(strip=True) if owner_el else ''
+    Returns a dict keyed by str(outcomeId) with keys:
+        name, abbrev, seed, region, regionId, conference, logo,
+        color_primary, color_secondary
+    """
+    outcome_map: dict[str, dict] = {}
 
-            champ_img = row.select_one('img[alt]')
-            champion_pick = champ_img.get('alt', '') if champ_img else ''
+    for prop in challenge_data.get('propositions', []):
+        for outcome in prop.get('possibleOutcomes', []):
+            oid = str(outcome.get('id', ''))
+            if not oid or oid in outcome_map:
+                continue
 
-            bracket = {
-                'id': bracket_id,
-                'name': name,
-                'owner': owner,
-                'champion_pick': champion_pick,
-                'champion_seed': 0,
-                'ff1': '', 'ff2': '', 'ff3': '', 'ff4': '',
-                'points': _parse_int(cells, 3),
-                'prev_rank': 0,
-                'max_remaining': _parse_int(cells, 5),
-                'pct': _parse_float(cells, 4),
-                'r64_pts': _parse_int(cells, 6) if len(cells) > 6 else 0,
-                'r32_pts': 0, 's16_pts': 0,
-                'e8_pts': 0, 'ff_pts': 0, 'champ_pts': 0,
+            # Extract mappings array into a lookup dict
+            mappings: dict[str, str] = {}
+            for m in outcome.get('mappings', []):
+                mappings[m.get('mappingType', '')] = m.get('value', '')
+
+            region_id = outcome.get('regionId', 0)
+
+            outcome_map[oid] = {
+                'name': outcome.get('name', ''),
+                'abbrev': outcome.get('abbrev', ''),
+                'seed': outcome.get('regionSeed', 0),
+                'region': REGION_MAP.get(region_id, f'R{region_id}'),
+                'regionId': region_id,
+                'conference': TEAM_CONFERENCES.get(outcome.get('name', ''), ''),
+                'logo': mappings.get('IMAGE_PRIMARY', ''),
+                'color_primary': mappings.get('COLOR_PRIMARY', ''),
+                'color_secondary': mappings.get('COLOR_SECONDARY', ''),
             }
-            if bracket['id']:
-                brackets.append(bracket)
-        except (ValueError, IndexError, AttributeError):
+
+    return outcome_map
+
+
+def build_proposition_map(challenge_data: dict) -> dict[str, dict]:
+    """Build propositionId -> game metadata map from challenge API data.
+
+    Returns a dict keyed by str(propositionId) with keys:
+        name, round, region, team1, seed1, team2, seed2,
+        winner, completed, national_pct_team1
+    """
+    prop_map: dict[str, dict] = {}
+
+    for prop in challenge_data.get('propositions', []):
+        pid = str(prop.get('id', ''))
+        if not pid:
             continue
 
-    return brackets
+        period_id = prop.get('scoringPeriodId', 1)
+        round_label = ROUND_MAP.get(period_id, 'R64')
 
+        outcomes = prop.get('possibleOutcomes', [])
+        correct_ids = set(str(c) for c in prop.get('correctOutcomes', []))
 
-def parse_bracket_picks(html: str, bracket_id: str) -> list[dict]:
-    """Parse an individual bracket page into 63 pick dicts."""
-    soup = BeautifulSoup(html, 'html.parser')
-    picks = []
+        team1_name = ''
+        seed1 = 0
+        team2_name = ''
+        seed2 = 0
+        region = ''
+        national_pct_team1 = 0.0
 
-    sections = soup.select('section.BracketProposition-matchupSection')
-    for i, section in enumerate(sections):
-        outcomes = section.select('[class*="BracketOutcomeList-outcome"]')
-        radios = section.select('input[type="radio"]')
+        if len(outcomes) >= 1:
+            o1 = outcomes[0]
+            team1_name = o1.get('name', '')
+            seed1 = o1.get('regionSeed', 0)
+            region_id = o1.get('regionId', 0)
+            region = REGION_MAP.get(region_id, f'R{region_id}')
+            counters = o1.get('choiceCounters', {})
+            if isinstance(counters, dict):
+                national_pct_team1 = float(counters.get('percentage', 0.0))
+            elif isinstance(counters, list) and counters:
+                national_pct_team1 = float(counters[0].get('percentage', 0.0))
 
-        if len(outcomes) < 2 or len(radios) < 2:
-            continue
+        if len(outcomes) >= 2:
+            o2 = outcomes[1]
+            team2_name = o2.get('name', '')
+            seed2 = o2.get('regionSeed', 0)
 
-        name1 = outcomes[0].get_text(strip=True)
-        name2 = outcomes[1].get_text(strip=True)
-
-        picked_name = name1 if radios[0].get('checked') is not None else name2
-
-        seed_match = re.match(r'^(\d+)', picked_name)
-        seed = int(seed_match.group(1)) if seed_match else 0
-        team = re.sub(r'^\d+', '', picked_name).strip()
-
-        picks.append({
-            'bracket_id': bracket_id,
-            'game_id': f'game_{i}',
-            'round': _game_index_to_round(i),
-            'region': _game_index_to_region(i),
-            'team_picked': team,
-            'seed_picked': seed,
-            'correct': False,
-            'vacated': False,
-        })
-
-    return picks
-
-
-def parse_tournament_games(html: str) -> list[dict]:
-    """Parse bracket page to extract game results (all 63 game slots)."""
-    soup = BeautifulSoup(html, 'html.parser')
-    games = []
-
-    sections = soup.select('section.BracketProposition-matchupSection')
-    for i, section in enumerate(sections):
-        outcomes = section.select('[class*="BracketOutcomeList-outcome"]')
-        if len(outcomes) < 2:
-            continue
-
-        name1 = outcomes[0].get_text(strip=True)
-        name2 = outcomes[1].get_text(strip=True)
-
-        s1 = int(m.group(1)) if (m := re.match(r'^(\d+)', name1)) else 0
-        s2 = int(m.group(1)) if (m := re.match(r'^(\d+)', name2)) else 0
-        t1 = re.sub(r'^\d+', '', name1).strip()
-        t2 = re.sub(r'^\d+', '', name2).strip()
-
-        completed = False
+        # Determine winner from correctOutcomes
         winner = ''
+        completed = bool(correct_ids)
+        if completed:
+            for o in outcomes:
+                if str(o.get('id', '')) in correct_ids:
+                    winner = o.get('name', '')
+                    break
 
-        games.append({
-            'game_id': f'game_{i}',
-            'round': _game_index_to_round(i),
-            'region': _game_index_to_region(i),
-            'team1': t1, 'seed1': s1,
-            'team2': t2, 'seed2': s2,
+        # FF/CHAMP games span regions — use 'FF' as region label
+        if round_label in ('FF', 'CHAMP'):
+            region = round_label
+
+        prop_map[pid] = {
+            'name': prop.get('name', ''),
+            'round': round_label,
+            'region': region,
+            'team1': team1_name,
+            'seed1': seed1,
+            'team2': team2_name,
+            'seed2': seed2,
             'winner': winner,
             'completed': completed,
-            'national_pct_team1': 0.0,
-        })
+            'national_pct_team1': national_pct_team1,
+        }
 
+    return prop_map
+
+
+def parse_entries(
+    group_data: dict,
+    outcome_map: dict[str, dict],
+    proposition_map: dict[str, dict],
+) -> tuple[list[dict], list[dict]]:
+    """Parse group entries into (brackets, picks) lists matching the Sheet schema."""
+    brackets: list[dict] = []
+    all_picks: list[dict] = []
+
+    for entry in group_data.get('entries', []):
+        entry_id = str(entry.get('id', ''))
+        name = entry.get('name', '')
+        member = entry.get('member', {})
+        owner = member.get('displayName', '') if isinstance(member, dict) else ''
+
+        # Champion pick
+        final_pick = entry.get('finalPick', {})
+        champion_outcome_id = ''
+        if final_pick and isinstance(final_pick, dict):
+            fp_outcomes = final_pick.get('outcomesPicked', [])
+            if fp_outcomes:
+                champion_outcome_id = str(fp_outcomes[0].get('outcomeId', ''))
+        champion_team = outcome_map.get(champion_outcome_id, {})
+        champion_name = champion_team.get('name', '')
+        champion_seed = champion_team.get('seed', 0)
+
+        # Score info
+        score = entry.get('score', {}) or {}
+        overall_score = int(score.get('overallScore', 0))
+        rank = int(score.get('rank', 0))
+        percentile = float(score.get('percentile', 0.0))
+        possible_max = int(score.get('possiblePointsMax', 0))
+        possible_remaining = int(score.get('possiblePointsRemaining', 0))
+
+        score_by_period = score.get('scoreByPeriod', {}) or {}
+
+        def _period_score(period_key: str) -> int:
+            p = score_by_period.get(period_key, {})
+            return int(p.get('score', 0)) if isinstance(p, dict) else 0
+
+        r64_pts = _period_score('1')
+        r32_pts = _period_score('2')
+        s16_pts = _period_score('3')
+        e8_pts = _period_score('4')
+        ff_pts = _period_score('5')
+        champ_pts = _period_score('6')
+
+        # Final Four picks — find picks for FF propositions, exclude champion
+        ff_picks: list[str] = []
+        for pick in entry.get('picks', []):
+            pid = str(pick.get('propositionId', ''))
+            prop_meta = proposition_map.get(pid, {})
+            if prop_meta.get('round') == 'FF':
+                for op in pick.get('outcomesPicked', []):
+                    oid = str(op.get('outcomeId', ''))
+                    team = outcome_map.get(oid, {})
+                    tname = team.get('name', '')
+                    if tname and tname not in ff_picks:
+                        ff_picks.append(tname)
+
+        while len(ff_picks) < 4:
+            ff_picks.append('')
+
+        bracket = {
+            'id': entry_id,
+            'name': name,
+            'owner': owner,
+            'champion_pick': champion_name,
+            'champion_seed': champion_seed,
+            'ff1': ff_picks[0],
+            'ff2': ff_picks[1],
+            'ff3': ff_picks[2],
+            'ff4': ff_picks[3],
+            'points': overall_score,
+            'prev_rank': 0,  # filled in by orchestrator from previous state
+            'max_remaining': possible_remaining,
+            'pct': percentile,
+            'r64_pts': r64_pts,
+            'r32_pts': r32_pts,
+            's16_pts': s16_pts,
+            'e8_pts': e8_pts,
+            'ff_pts': ff_pts,
+            'champ_pts': champ_pts,
+        }
+        brackets.append(bracket)
+
+        # Parse individual picks
+        for pick in entry.get('picks', []):
+            pid = str(pick.get('propositionId', ''))
+            prop_meta = proposition_map.get(pid, {})
+
+            for op in pick.get('outcomesPicked', []):
+                oid = str(op.get('outcomeId', ''))
+                result = op.get('result', 'UNDECIDED')
+                team = outcome_map.get(oid, {})
+
+                correct = result == 'CORRECT'
+                vacated = result == 'VACATED'
+
+                all_picks.append({
+                    'bracket_id': entry_id,
+                    'game_id': pid,
+                    'round': prop_meta.get('round', ''),
+                    'region': prop_meta.get('region', ''),
+                    'team_picked': team.get('name', ''),
+                    'seed_picked': team.get('seed', 0),
+                    'correct': correct,
+                    'vacated': vacated,
+                })
+
+    return brackets, all_picks
+
+
+def parse_games(proposition_map: dict[str, dict]) -> list[dict]:
+    """Convert proposition map to games list matching the Sheet schema."""
+    games: list[dict] = []
+    for pid, prop in proposition_map.items():
+        games.append({
+            'game_id': pid,
+            'round': prop['round'],
+            'region': prop['region'],
+            'team1': prop['team1'],
+            'seed1': prop['seed1'],
+            'team2': prop['team2'],
+            'seed2': prop['seed2'],
+            'winner': prop['winner'],
+            'completed': prop['completed'],
+            'national_pct_team1': prop['national_pct_team1'],
+        })
     return games
 
 
-def parse_teams(html: str) -> list[dict]:
-    """Extract unique team list with metadata from R64 matchups only."""
-    soup = BeautifulSoup(html, 'html.parser')
+def parse_teams(outcome_map: dict[str, dict]) -> list[dict]:
+    """Convert outcome map to teams list matching the Sheet schema.
+
+    Deduplicates by team name, keeps only R64 participants (seed > 0),
+    and marks eliminated status based on whether the team won games
+    beyond R64 — but since that requires game data, we just record
+    the team list; eliminated status is set to False by default.
+    """
     seen: set[str] = set()
-    teams = []
+    teams: list[dict] = []
 
-    sections = soup.select('section.BracketProposition-matchupSection')[:32]
-    for idx, section in enumerate(sections):
-        outcomes = section.select('[class*="BracketOutcomeList-outcome"]')
-        for outcome in outcomes:
-            text = outcome.get_text(strip=True)
-            seed_match = re.match(r'^(\d+)', text)
-            if not seed_match:
-                continue
-            seed = int(seed_match.group(1))
-            name = re.sub(r'^\d+', '', text).strip()
-
-            if name in seen:
-                continue
-            seen.add(name)
-
-            teams.append({
-                'name': name,
-                'seed': seed,
-                'region': _game_index_to_region(idx),
-                'conference': TEAM_CONFERENCES.get(name, ''),
-                'eliminated': False,
-                'eliminated_round': '',
-            })
+    for oid, team in outcome_map.items():
+        name = team.get('name', '')
+        seed = team.get('seed', 0)
+        if not name or name in seen or seed == 0:
+            continue
+        seen.add(name)
+        teams.append({
+            'name': name,
+            'seed': seed,
+            'region': team.get('region', ''),
+            'conference': team.get('conference', ''),
+            'eliminated': False,
+            'eliminated_round': '',
+        })
 
     return teams
-
-
-def _parse_int(cells: list, index: int) -> int:
-    try:
-        return int(cells[index].get_text(strip=True).replace(',', ''))
-    except (ValueError, IndexError):
-        return 0
-
-
-def _parse_float(cells: list, index: int) -> float:
-    try:
-        return float(cells[index].get_text(strip=True).replace('%', ''))
-    except (ValueError, IndexError):
-        return 0.0
-
-
-def _game_index_to_round(index: int) -> str:
-    if index < 32: return 'R64'
-    if index < 48: return 'R32'
-    if index < 56: return 'S16'
-    if index < 60: return 'E8'
-    if index < 62: return 'FF'
-    return 'CHAMP'
-
-
-def _game_index_to_region(index: int) -> str:
-    if index < 8: return 'R1'
-    if index < 16: return 'R2'
-    if index < 24: return 'R3'
-    if index < 32: return 'R4'
-    if index < 36: return 'R1'
-    if index < 40: return 'R2'
-    if index < 44: return 'R3'
-    if index < 48: return 'R4'
-    if index < 50: return 'R1'
-    if index < 52: return 'R2'
-    if index < 54: return 'R3'
-    if index < 56: return 'R4'
-    if index < 57: return 'R1'
-    if index < 58: return 'R2'
-    if index < 59: return 'R3'
-    if index < 60: return 'R4'
-    return 'FF'
