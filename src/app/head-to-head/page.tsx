@@ -21,7 +21,7 @@ export default async function HeadToHeadPage() {
         <h2 className="font-display text-2xl font-bold">Head-to-Head</h2>
         <p className="text-on-surface-variant text-sm mt-1">Compare any two brackets side by side</p>
       </div>
-      <HeadToHeadContent brackets={data.brackets} picks={data.picks} games={data.games} analyticsObj={analyticsObj} pickRatesObj={pickRatesObj} />
+      <HeadToHeadContent brackets={data.brackets} picks={data.picks} games={data.games} analyticsObj={analyticsObj} pickRatesObj={pickRatesObj} currentRound={data.meta.current_round} />
     </div>
   );
 }
