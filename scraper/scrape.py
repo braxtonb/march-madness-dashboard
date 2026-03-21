@@ -75,6 +75,8 @@ def run():
     teams = parse_teams(outcome_map)
     logger.info(f"Parsed {len(games)} games, {len(teams)} teams")
 
+    # max_remaining is computed in parse_entries from possiblePointsMax - overallScore
+
     # Step 6: Write picks (always — API gives us all picks at once, no "first run" concept)
     store.write_tab('picks', all_picks, PICKS_HEADERS)
     logger.info(f"Wrote {len(all_picks)} picks")

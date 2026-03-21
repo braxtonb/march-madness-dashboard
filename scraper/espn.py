@@ -217,8 +217,9 @@ def parse_entries(
         overall_score = int(score.get('overallScore', 0))
         rank = int(score.get('rank', 0))
         percentile = float(score.get('percentile', 0.0))
-        possible_max = int(score.get('possiblePointsMax', 0))
-        possible_remaining = int(score.get('possiblePointsRemaining', 0))
+        possible_max = int(score.get('possiblePointsMax', 0) or 0)
+        # ESPN doesn't provide possiblePointsRemaining — derive from max - current
+        possible_remaining = max(0, possible_max - overall_score)
 
         score_by_period = score.get('scoreByPeriod', {}) or {}
 
