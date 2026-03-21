@@ -72,7 +72,8 @@ def build_outcome_map(challenge_data: dict) -> dict[str, dict]:
             # Extract mappings array into a lookup dict
             mappings: dict[str, str] = {}
             for m in outcome.get('mappings', []):
-                mappings[m.get('mappingType', '')] = m.get('value', '')
+                key = m.get('type') or m.get('mappingType') or ''
+                mappings[key] = m.get('value', '')
 
             region_id = outcome.get('regionId', 0)
 
