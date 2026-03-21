@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function GroupPicksPage() {
   const data = await fetchDashboardData();
 
+  // Only count brackets that actually submitted picks (have a champion_pick)
+  const submittedBrackets = data.brackets.filter((b) => b.champion_pick);
+  const emptyBrackets = data.brackets.length - submittedBrackets.length;
+
   const pickSplits: Record<string, { team1Count: number; team2Count: number }> = {};
   const pickerDetailsMap: Record<string, PickerDetails> = {};
 
@@ -48,32 +52,19 @@ export default async function GroupPicksPage() {
     data.brackets.length
   );
 
-  // Conference pick analysis
-  const conferenceAdvances = new Map<string, number>();
-  for (const p of data.picks) {
-    if (p.round !== "R64") {
-      const team = data.teams.find((t) => t.name === p.team_picked);
-      if (team?.conference) {
-        conferenceAdvances.set(
-          team.conference,
-          (conferenceAdvances.get(team.conference) || 0) + 1
-        );
-      }
-    }
-  }
-
-  const confData: [string, number][] = [...conferenceAdvances.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
   return (
     <div className="space-y-section">
       <div>
         <h2 className="font-display text-2xl font-bold">Group Picks</h2>
         <p className="text-on-surface-variant text-sm mt-1">
-          See how our {data.brackets.length} brackets collectively predicted
+          See how our {submittedBrackets.length} brackets collectively predicted
           each game
         </p>
+        {emptyBrackets > 0 && (
+          <p className="text-on-surface-variant text-xs mt-0.5 italic">
+            Based on {submittedBrackets.length} submitted brackets ({emptyBrackets} did not submit picks)
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -84,7 +75,7 @@ export default async function GroupPicksPage() {
         />
         <StatCard
           label="Total Brackets"
-          value={data.brackets.length}
+          value={submittedBrackets.length}
         />
         <StatCard
           label="Games Completed"
@@ -96,8 +87,7 @@ export default async function GroupPicksPage() {
         games={data.games}
         pickSplits={pickSplits}
         pickerDetailsMap={pickerDetailsMap}
-        totalBrackets={data.brackets.length}
-        conferenceData={confData}
+        totalBrackets={submittedBrackets.length}
         currentRound={data.meta.current_round}
       />
     </div>

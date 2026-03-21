@@ -4,6 +4,7 @@ import { useState } from "react";
 
 interface AffectedBracket {
   name: string;
+  owner: string;
   champion: string;
 }
 
@@ -54,14 +55,23 @@ export function GamesToWatch({ games }: { games: GameToWatch[] }) {
               </p>
             </button>
             {isExpanded && (
-              <div className="mt-3 pt-3 border-t border-surface-container space-y-1">
+              <div className="mt-3 pt-3 border-t border-surface-container space-y-2">
                 {g.affectedBrackets.map((b) => (
                   <div
                     key={b.name}
-                    className="flex items-center justify-between text-xs"
+                    className="flex items-center justify-between"
                   >
-                    <span className="text-on-surface truncate">{b.name}</span>
-                    <span className="text-on-surface-variant shrink-0 ml-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-on-surface truncate">
+                        {b.name}
+                      </p>
+                      {b.owner && b.owner !== b.name && (
+                        <p className="text-xs text-on-surface-variant truncate">
+                          {b.owner}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-on-surface-variant text-xs shrink-0 ml-2">
                       {b.champion}
                     </span>
                   </div>

@@ -74,7 +74,9 @@ export default async function AliveBoardPage() {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const upcomingGames = games.filter((g) => !g.completed);
+  const upcomingGames = games.filter(
+    (g) => !g.completed && g.team1 && g.team2
+  );
   const gamesToWatch = upcomingGames
     .map((g) => {
       const affectedBrackets = brackets.filter(
@@ -83,6 +85,7 @@ export default async function AliveBoardPage() {
       );
       const affectedNames = affectedBrackets.map((b) => ({
         name: b.name,
+        owner: b.owner,
         champion: b.champion_pick,
       }));
       return {

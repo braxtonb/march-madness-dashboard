@@ -64,3 +64,16 @@ body {
   opacity: 0.4;
   filter: grayscale(0.5);
 }
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-slide-in {
+  animation: slide-in-right 0.2s ease-out;
+}
