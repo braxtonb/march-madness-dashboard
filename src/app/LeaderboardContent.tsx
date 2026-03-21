@@ -6,17 +6,16 @@ import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
-import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
-type LeaderboardTab = "standings" | "calls" | "skill" | "report";
+type LeaderboardTab = "standings" | "calls" | "style" | "report";
 
 function isValidTab(value: string | null): value is LeaderboardTab {
   return (
     value === "standings" ||
     value === "calls" ||
-    value === "skill" ||
+    value === "style" ||
     value === "report"
   );
 }
@@ -24,7 +23,7 @@ function isValidTab(value: string | null): value is LeaderboardTab {
 const TAB_OPTIONS: { label: string; value: LeaderboardTab }[] = [
   { label: "Standings", value: "standings" },
   { label: "Best Calls", value: "calls" },
-  { label: "Skill vs Luck", value: "skill" },
+  { label: "Picking Style", value: "style" },
   { label: "Group Report Card", value: "report" },
 ];
 
@@ -134,9 +133,9 @@ function LeaderboardContentInner({
           <button
             key={opt.value}
             onClick={() => changeTab(opt.value)}
-            className={`rounded-card px-4 py-2 text-sm font-label transition-colors ${
+            className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
               tab === opt.value
-                ? "bg-surface-bright text-primary"
+                ? "bg-primary/15 text-primary border border-primary/30"
                 : "text-on-surface-variant hover:text-on-surface"
             }`}
           >
@@ -148,6 +147,59 @@ function LeaderboardContentInner({
       {/* ===== Tab 1: Standings ===== */}
       {tab === "standings" && (
         <div className="space-y-section">
+          {/* Top-3 Podium */}
+          {(() => {
+            const sorted = [...brackets].sort((a, b) => {
+              const aA = analytics.get(a.id);
+              const bA = analytics.get(b.id);
+              if (!aA || !bA) return 0;
+              return aA.rank - bA.rank;
+            });
+            const top3 = sorted.slice(0, 3);
+            const medals = [
+              { emoji: "🥇", label: "1st Place", borderClass: "border-yellow-400/50", bgClass: "bg-yellow-400/10", textClass: "text-yellow-400" },
+              { emoji: "🥈", label: "2nd Place", borderClass: "border-on-surface-variant/30", bgClass: "bg-surface-container", textClass: "text-on-surface-variant" },
+              { emoji: "🥉", label: "3rd Place", borderClass: "border-orange-400/50", bgClass: "bg-orange-400/10", textClass: "text-orange-400" },
+            ];
+            if (top3.length === 0) return null;
+            // Reorder for podium display: 2nd, 1st, 3rd
+            const podiumOrder = [1, 0, 2];
+            return (
+              <div className="grid grid-cols-3 gap-3 items-end">
+                {podiumOrder.map((idx) => {
+                  const b = top3[idx];
+                  if (!b) return <div key={idx} />;
+                  const m = medals[idx];
+                  const a = analytics.get(b.id);
+                  return (
+                    <div
+                      key={b.id}
+                      className={`rounded-card border p-4 text-center space-y-2 ${m.bgClass} ${m.borderClass} ${idx === 0 ? "pb-6 pt-6" : ""}`}
+                    >
+                      <div className="text-3xl">{m.emoji}</div>
+                      <p className={`font-label text-xs uppercase tracking-wider ${m.textClass}`}>
+                        {m.label}
+                      </p>
+                      <p className="font-display text-base font-bold text-on-surface leading-tight">
+                        {b.name}
+                      </p>
+                      <p className="text-xs text-on-surface-variant">{b.owner}</p>
+                      <p className={`font-display text-2xl font-black ${m.textClass}`}>
+                        {b.points}
+                        <span className="text-xs font-label ml-1">pts</span>
+                      </p>
+                      {b.champion_pick && (
+                        <p className="text-xs text-on-surface-variant">
+                          Champ: <span className="text-on-surface font-medium">{b.champion_pick}</span>
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           {/* Hero stats bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard label="Total Brackets" value={brackets.length} />
@@ -283,17 +335,17 @@ function LeaderboardContentInner({
         </div>
       )}
 
-      {/* ===== Tab 3: Skill vs Luck ===== */}
-      {tab === "skill" && (
+      {/* ===== Tab 3: Picking Style ===== */}
+      {tab === "style" && (
         <div className="space-y-4">
           <div className="rounded-card bg-surface-container p-5">
             <h3 className="font-display text-lg font-semibold mb-2">
-              Skill vs Luck
+              Picking Style
             </h3>
             <p className="text-xs text-on-surface-variant mb-4">
-              Skill = correct on contested games | Luck = correct on
-              against-consensus picks. Based on {submittedCount} submitted
-              brackets.
+              Chalk Score = how often they picked favorites &amp; consensus picks (higher = more chalk) |
+              Upset Score = how often their non-consensus picks were correct (higher = better at calling upsets).
+              Based on {submittedCount} submitted brackets.
             </p>
             <InsightFortuneScatter data={scatterData} />
           </div>
@@ -301,30 +353,30 @@ function LeaderboardContentInner({
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-card bg-surface-container p-4 text-center">
               <p className="font-label text-xs text-on-surface-variant uppercase">
-                High Skill + High Luck
+                High Chalk + High Upset Success
               </p>
-              <p className="text-sm text-on-surface mt-1">Skilled &amp; Lucky</p>
+              <p className="text-sm text-on-surface mt-1">Sharp Chalk Pickers</p>
             </div>
             <div className="rounded-card bg-surface-container p-4 text-center">
               <p className="font-label text-xs text-on-surface-variant uppercase">
-                High Skill + Low Luck
+                Low Chalk + High Upset Success
               </p>
               <p className="text-sm text-on-surface mt-1">
-                Skilled &amp; Steady
+                Upset Artists
               </p>
             </div>
             <div className="rounded-card bg-surface-container p-4 text-center">
               <p className="font-label text-xs text-on-surface-variant uppercase">
-                Low Skill + High Luck
+                High Chalk + Low Upset Success
               </p>
-              <p className="text-sm text-on-surface mt-1">Bold &amp; Lucky</p>
+              <p className="text-sm text-on-surface mt-1">Playing It Safe</p>
             </div>
             <div className="rounded-card bg-surface-container p-4 text-center">
               <p className="font-label text-xs text-on-surface-variant uppercase">
-                Low Skill + Low Luck
+                Low Chalk + Low Upset Success
               </p>
               <p className="text-sm text-on-surface mt-1">
-                Going with the Flow
+                Bold Believers
               </p>
             </div>
           </div>

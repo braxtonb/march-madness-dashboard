@@ -17,11 +17,11 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
       <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-        <XAxis type="number" dataKey="skill" name="Skill" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
-          <Label value="Skill Score" position="bottom" fill="#8b95a5" fontSize={12} />
+        <XAxis type="number" dataKey="skill" name="Chalk Score" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
+          <Label value="Chalk Score" position="bottom" fill="#8b95a5" fontSize={12} />
         </XAxis>
-        <YAxis type="number" dataKey="fortune" name="Luck" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
-          <Label value="Luck Score" angle={-90} position="left" fill="#8b95a5" fontSize={12} />
+        <YAxis type="number" dataKey="fortune" name="Upset Score" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
+          <Label value="Upset Score" angle={-90} position="left" fill="#8b95a5" fontSize={12} />
         </YAxis>
         <ReferenceLine x={50} stroke="#252d35" />
         <ReferenceLine y={50} stroke="#252d35" />

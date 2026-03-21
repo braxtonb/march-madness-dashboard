@@ -253,9 +253,9 @@ export function HeadToHeadContent({
                   <button
                     key={opt.value}
                     onClick={() => setDiffFilter(opt.value)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-label transition-colors ${
+                    className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
                       diffFilter === opt.value
-                        ? "bg-surface-bright text-on-surface"
+                        ? "bg-primary/15 text-primary border border-primary/30"
                         : "text-on-surface-variant hover:text-on-surface"
                     }`}
                   >

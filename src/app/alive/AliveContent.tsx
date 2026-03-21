@@ -69,9 +69,9 @@ export function AliveContent({
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`rounded-card px-4 py-2 text-sm font-label transition-colors ${
+            className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
               filter === key
-                ? "bg-surface-bright text-primary"
+                ? "bg-primary/15 text-primary border border-primary/30"
                 : "text-on-surface-variant hover:text-on-surface"
             }`}
           >

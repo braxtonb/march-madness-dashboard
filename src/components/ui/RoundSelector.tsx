@@ -17,10 +17,10 @@ export function RoundSelector({
           key={round}
           onClick={() => onSelect(round)}
           className={`
-            rounded-card px-3 py-1.5 font-label text-xs transition-colors
+            rounded-card px-3 py-1.5 font-label text-sm transition-colors
             ${
               selected === round
-                ? "bg-surface-bright text-on-surface"
+                ? "bg-primary/15 text-primary border border-primary/30"
                 : "text-on-surface-variant hover:text-on-surface"
             }
           `}
