@@ -40,8 +40,10 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
               className="w-full text-left space-y-2"
             >
               <div className="flex items-center justify-between text-sm">
-                <span className="text-on-surface">
-                  {g.seed1} {g.team1} vs {g.seed2} {g.team2}
+                <span className="text-on-surface flex items-center gap-1.5">
+                  <TeamPill name={g.team1} seed={g.seed1} logo={teamLogos[g.team1]} />
+                  <span className="text-[10px] text-on-surface-variant">vs</span>
+                  <TeamPill name={g.team2} seed={g.seed2} logo={teamLogos[g.team2]} />
                 </span>
                 <span
                   className={`text-on-surface-variant text-xs transition-transform ${

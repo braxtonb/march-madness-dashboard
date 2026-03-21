@@ -165,6 +165,7 @@ export default async function AliveBoardPage() {
         analyticsObj={analyticsObj}
         eliminatedArr={eliminatedArr}
         bracketFFTeamsMap={bracketFFTeamsMap}
+        teamLogos={teamLogos}
       />
     </div>
   );

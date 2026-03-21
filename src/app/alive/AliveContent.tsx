@@ -11,11 +11,13 @@ export function AliveContent({
   analyticsObj,
   eliminatedArr,
   bracketFFTeamsMap,
+  teamLogos = {},
 }: {
   brackets: Bracket[];
   analyticsObj: Record<string, BracketAnalytics>;
   eliminatedArr: string[];
   bracketFFTeamsMap: Record<string, string[]>;
+  teamLogos?: Record<string, string>;
 }) {
   const [filter, setFilter] = useState<Filter>("champion");
 
@@ -84,6 +86,7 @@ export function AliveContent({
         brackets={filtered}
         analytics={analytics}
         eliminatedTeams={eliminatedTeams}
+        teamLogos={teamLogos}
       />
     </div>
   );
