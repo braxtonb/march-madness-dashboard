@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard } from "@/components/ui/StatCard";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 
 interface ProbEntry {
@@ -59,25 +58,6 @@ export function ProbabilityClient({
   allSnapshotProbsZero,
 }: ProbabilityClientProps) {
   const [showExact, setShowExact] = useState(false);
-  const [showEliminated, setShowEliminated] = useState(false);
-
-  const topContender = probData[0];
-
-  // Closest Race: two brackets closest in points
-  const sortedByPoints = [...probData].sort((a, b) => b.points - a.points);
-  let closestRacePair: { a: ProbEntry; b: ProbEntry; diff: number } | null = null;
-  for (let i = 0; i < sortedByPoints.length - 1; i++) {
-    const diff = Math.abs(sortedByPoints[i].points - sortedByPoints[i + 1].points);
-    if (!closestRacePair || diff < closestRacePair.diff) {
-      closestRacePair = { a: sortedByPoints[i], b: sortedByPoints[i + 1], diff };
-    }
-  }
-
-  // Most Upside: bracket with highest max_remaining
-  const mostUpside = [...probData].sort((a, b) => b.max_remaining - a.max_remaining)[0];
-
-  // Brackets with a shot (non-zero win probability)
-  const bracketsWithShot = probData.filter((d) => d.probability > 0).length;
 
   // Group brackets by tier
   const tierGroups = new Map<TierKey, ProbEntry[]>();
@@ -96,39 +76,6 @@ export function ProbabilityClient({
         <p className="text-on-surface-variant text-sm mt-1">
           Estimates based on 1,000 simulated tournaments using historical seed performance. Not guarantees.
         </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard label="Top Contender" value={topContender?.name || "\u2014"} subtitle={topContender ? `${topContender.owner}` : undefined} />
-        <StatCard
-          label="Closest Race"
-          value={closestRacePair ? `${closestRacePair.diff} pts` : "\u2014"}
-          subtitle={closestRacePair ? `${closestRacePair.a.name} vs ${closestRacePair.b.name}` : undefined}
-        />
-        <StatCard
-          label="Most Upside"
-          value={mostUpside?.name || "\u2014"}
-          subtitle={mostUpside ? `${mostUpside.max_remaining.toLocaleString()} pts remaining` : undefined}
-        />
-      </div>
-
-      {/* Click-to-reveal for eliminated brackets */}
-      <div>
-        <button
-          onClick={() => setShowEliminated(!showEliminated)}
-          className="text-xs text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          {showEliminated ? "Hide" : "Show"} brackets with a shot ({bracketsWithShot} of {probData.length} have non-zero win probability)
-        </button>
-        {showEliminated && (
-          <div className="mt-2 rounded-card bg-surface-container p-3">
-            <p className="text-xs text-on-surface-variant">
-              {bracketsWithShot} bracket{bracketsWithShot !== 1 ? "s" : ""} still have a non-zero chance of winning.
-              {probData.length - bracketsWithShot > 0 &&
-                ` ${probData.length - bracketsWithShot} bracket${probData.length - bracketsWithShot !== 1 ? "s" : ""} are mathematically eliminated from first place but may still climb the standings.`}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Encouraging tier view */}
