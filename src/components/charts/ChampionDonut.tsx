@@ -41,11 +41,13 @@ export function ChampionDonut({ data }: { data: ChampionSlice[] }) {
         </Pie>
         <Tooltip
           contentStyle={{
-            backgroundColor: "#141a20",
-            border: "none",
+            backgroundColor: "#1e2a36",
+            border: "1px solid rgba(0, 240, 214, 0.2)",
             borderRadius: "12px",
-            color: "#e7ebf3",
+            color: "#f0f4ff",
             fontFamily: "Inter",
+            fontSize: "12px",
+            padding: "8px 12px",
           }}
           formatter={(value: number, name: string) => [
             `${value} brackets`,

@@ -6,28 +6,28 @@ const config: Config = {
     extend: {
       colors: {
         surface: {
-          DEFAULT: "#0a0f14",
-          container: "#141a20",
-          bright: "#252d35",
-          variant: "#1c2430",
+          DEFAULT: "#080c10",
+          container: "#111820",
+          bright: "#1e2a36",
+          variant: "#162030",
         },
         primary: {
-          DEFAULT: "#ff9159",
-          container: "#ff7a2f",
+          DEFAULT: "#ff8c42",
+          container: "#ff6b1a",
         },
         secondary: {
-          DEFAULT: "#2dd4bf",
-          fixed: "#5eead4",
+          DEFAULT: "#00f0d6",
+          fixed: "#33ffea",
         },
         tertiary: {
-          DEFAULT: "#a78bfa",
-          fixed: "#c4b5fd",
+          DEFAULT: "#b18cff",
+          fixed: "#d4b8ff",
         },
-        achievement: "#fbbf24",
-        action: "#fb923c",
-        "on-surface": "#e7ebf3",
-        "on-surface-variant": "#8b95a5",
-        "on-primary": "#0a0f14",
+        achievement: "#ffc833",
+        action: "#ff7a33",
+        "on-surface": "#f0f4ff",
+        "on-surface-variant": "#7d8da0",
+        "on-primary": "#080c10",
         outline: "rgba(67, 72, 78, 0.15)",
       },
       fontFamily: {
