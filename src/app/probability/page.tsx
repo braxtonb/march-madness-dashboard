@@ -14,7 +14,8 @@ export default async function ProbabilityPage() {
     .map((b) => {
       const sim = simResults.get(b.id);
       return {
-        name: b.owner,
+        name: b.name,
+        owner: b.owner,
         probability: sim ? (sim.wins / 1000) * 100 : 0,
         champion: b.champion_pick,
         median_rank: sim?.median_rank ?? data.brackets.length,
@@ -25,7 +26,7 @@ export default async function ProbabilityPage() {
 
   const top10Ids = probData.slice(0, 10).map((d) => d.name);
   const journeyRounds = [...new Set(data.snapshots.map((s) => s.round))];
-  const bracketNameMap = new Map(data.brackets.map((b) => [b.id, b.owner]));
+  const bracketNameMap = new Map(data.brackets.map((b) => [b.id, b.name]));
 
   const journeyData = journeyRounds.map((round) => {
     const point: Record<string, string | number> = { round };
@@ -50,11 +51,16 @@ export default async function ProbabilityPage() {
         </p>
       </div>
 
-      <div className="rounded-card bg-surface-container p-4">
+      <div className="rounded-card bg-surface-container p-4 space-y-2">
         <p className="text-sm text-on-surface-variant">
           Based on historical NCAA tournament seed win rates, we simulate 1,000 possible
           tournament outcomes. Each bracket&apos;s win probability is how often it finishes
           first across all simulations.
+        </p>
+        <p className="text-sm text-on-surface-variant">
+          Note: Even a 50% probability means there&apos;s a coin-flip chance someone else wins.
+          The tournament&apos;s remaining games create significant uncertainty — high probability
+          doesn&apos;t mean guaranteed victory, only that they win most often across simulations.
         </p>
       </div>
 
@@ -92,7 +98,10 @@ export default async function ProbabilityPage() {
             <tbody>
               {probData.slice(0, 25).map((d) => (
                 <tr key={d.name} className="border-b border-outline hover:bg-surface-bright transition-colors">
-                  <td className="px-3 py-2 text-on-surface">{d.name}</td>
+                  <td className="px-3 py-2">
+                    <div className="text-on-surface">{d.name}</div>
+                    <div className="text-xs text-on-surface-variant">{d.owner}</div>
+                  </td>
                   <td className="px-3 py-2 font-label text-tertiary">{d.probability.toFixed(1)}%</td>
                   <td className="px-3 py-2 font-label text-on-surface-variant">#{d.median_rank}</td>
                   <td className="px-3 py-2 font-label text-secondary">#{d.best_rank}</td>
