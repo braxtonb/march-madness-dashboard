@@ -212,15 +212,24 @@ def run():
 
     if current_round != prev_round and prev_round != 'PRE':
         logger.info(f"Round changed: {prev_round} -> {current_round}. Writing snapshots...")
+        # Compute simple win probability estimate for snapshots
+        sorted_brackets = sorted(brackets, key=lambda x: -x.get('points', 0))
+        leader_pts = sorted_brackets[0].get('points', 0) if sorted_brackets else 0
         snapshot_rows = []
-        for rank, b in enumerate(sorted(brackets, key=lambda x: -x.get('points', 0)), 1):
+        for rank, b in enumerate(sorted_brackets, 1):
+            max_rem = b.get('max_remaining', 0)
+            # Simple estimate: probability of catching the leader
+            if max_rem > 0:
+                win_prob = max(0.0, min(1.0, 1.0 - (leader_pts - b.get('points', 0)) / max_rem))
+            else:
+                win_prob = 1.0 if rank == 1 else 0.0
             snapshot_rows.append({
                 'bracket_id': b['id'],
                 'round': prev_round,
                 'rank': rank,
                 'points': b.get('points', 0),
-                'max_remaining': b.get('max_remaining', 0),
-                'win_prob': 0.0,
+                'max_remaining': max_rem,
+                'win_prob': round(win_prob, 4),
             })
         store.append_rows('snapshots', snapshot_rows, SNAPSHOTS_HEADERS)
         logger.info(f"Wrote {len(snapshot_rows)} snapshot rows for {prev_round}")

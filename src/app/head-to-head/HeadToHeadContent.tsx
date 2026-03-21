@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import type { Bracket, Pick, Game, BracketAnalytics, Round } from "@/lib/types";
+import type { Bracket, Pick, Game, BracketAnalytics, Round, Team } from "@/lib/types";
 import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import { RoundSelector } from "@/components/ui/RoundSelector";
+import { TeamPill } from "@/components/ui/TeamPill";
 
 type DiffFilter = "all" | "differences" | "agreement";
 
@@ -48,8 +49,8 @@ function BracketDropdown({
   }, []);
 
   return (
-    <div className="space-y-2" ref={containerRef}>
-      <label className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
+    <div className="space-y-1" ref={containerRef}>
+      <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
         {label}
       </label>
       <div className="relative">
@@ -63,12 +64,12 @@ function BracketDropdown({
             setQuery("");
           }}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-card bg-surface-container border border-outline-variant px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant"
+          className="w-full rounded-card bg-surface-container border border-outline-variant px-3 py-2 text-xs text-on-surface outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant"
         />
         {open && (
           <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-card bg-surface-container border border-outline-variant shadow-lg">
             {filtered.length === 0 && (
-              <div className="px-4 py-3 text-sm text-on-surface-variant">No matches</div>
+              <div className="px-3 py-2 text-xs text-on-surface-variant">No matches</div>
             )}
             {filtered.map((b) => (
               <button
@@ -80,12 +81,12 @@ function BracketDropdown({
                   setQuery("");
                   inputRef.current?.blur();
                 }}
-                className={`w-full text-left px-4 py-2.5 hover:bg-surface-bright transition-colors ${
+                className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors ${
                   b.id === value ? "bg-surface-bright" : ""
                 }`}
               >
-                <span className="text-sm font-medium text-on-surface">{b.name}</span>
-                <span className="text-xs text-on-surface-variant ml-2">{b.owner}</span>
+                <span className="text-xs font-medium text-on-surface">{b.name}</span>
+                <span className="text-[10px] text-on-surface-variant ml-2">{b.owner}</span>
               </button>
             ))}
           </div>
@@ -101,6 +102,7 @@ export function HeadToHeadContent({
   games,
   analyticsObj,
   currentRound,
+  teams,
 }: {
   brackets: Bracket[];
   picks: Pick[];
@@ -108,6 +110,7 @@ export function HeadToHeadContent({
   analyticsObj: Record<string, BracketAnalytics>;
   pickRatesObj: Record<string, Record<string, number>>;
   currentRound: Round;
+  teams?: Team[];
 }) {
   const [id1, setId1] = useState("");
   const [id2, setId2] = useState("");
@@ -131,6 +134,12 @@ export function HeadToHeadContent({
     if (pickMap2.get(gid) === team) agree++;
   }
 
+  // Build team logo lookup
+  const teamLogos: Record<string, string> = useMemo(() => {
+    if (!teams) return {};
+    return Object.fromEntries(teams.map((t) => [t.name, t.logo]));
+  }, [teams]);
+
   // Compute per-bracket win percentage
   const winPct = (bracketId: string) => {
     const bPicks = picks.filter((p) => p.bracket_id === bracketId);
@@ -143,22 +152,39 @@ export function HeadToHeadContent({
     return Math.round((correct / completedPicks.length) * 100);
   };
 
-  // Games for the selected round
-  const roundGames = useMemo(() => {
-    return games.filter((g) => g.round === selectedRound);
-  }, [games, selectedRound]);
+  // Build game lookup for quick access
+  const gameMap = useMemo(() => {
+    return new Map(games.map((g) => [g.game_id, g]));
+  }, [games]);
 
-  // Apply diff filter
-  const filteredGames = useMemo(() => {
-    return roundGames.filter((g) => {
-      const pick1 = pickMap1.get(g.game_id);
-      const pick2 = pickMap2.get(g.game_id);
+  // Get unique game_ids from picks data for the selected round (fixes S16/E8 empty issue)
+  const roundGameIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const p of picks) {
+      if (p.round === selectedRound && (p.bracket_id === id1 || p.bracket_id === id2)) {
+        ids.add(p.game_id);
+      }
+    }
+    // Also include game_ids from games data for this round
+    for (const g of games) {
+      if (g.round === selectedRound) {
+        ids.add(g.game_id);
+      }
+    }
+    return [...ids].sort();
+  }, [picks, games, selectedRound, id1, id2]);
+
+  // Apply diff filter on picks-based game list
+  const filteredGameIds = useMemo(() => {
+    return roundGameIds.filter((gid) => {
+      const pick1 = pickMap1.get(gid);
+      const pick2 = pickMap2.get(gid);
       const same = pick1 === pick2;
       if (diffFilter === "differences") return !same;
       if (diffFilter === "agreement") return same;
       return true;
     });
-  }, [roundGames, pickMap1, pickMap2, diffFilter]);
+  }, [roundGameIds, pickMap1, pickMap2, diffFilter]);
 
   const FILTER_OPTIONS: { label: string; value: DiffFilter }[] = [
     { label: "All Games", value: "all" },
@@ -167,176 +193,183 @@ export function HeadToHeadContent({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Bracket selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <BracketDropdown brackets={brackets} value={id1} onChange={setId1} label="Bracket 1" />
         <BracketDropdown brackets={brackets} value={id2} onChange={setId2} label="Bracket 2" />
       </div>
 
       {b1 && b2 && a1 && a2 ? (
         <>
-          {/* Agreement stat — prominent */}
-          <div className="rounded-card bg-surface-container p-8 text-center">
-            <p className="font-label text-xs uppercase tracking-wider text-on-surface-variant mb-2">
+          {/* Agreement stat — compact */}
+          <div className="rounded-card bg-surface-container px-4 py-3 flex items-center justify-between">
+            <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
               Agreement
             </p>
-            <span className="font-display text-6xl font-black text-secondary">
-              {total > 0 ? Math.round((agree / total) * 100) : 0}%
-            </span>
-            <p className="text-on-surface-variant text-sm mt-2">
-              {agree} of {total} picks match
-            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-3xl font-black text-secondary">
+                {total > 0 ? Math.round((agree / total) * 100) : 0}%
+              </span>
+              <p className="text-on-surface-variant text-xs">
+                {agree}/{total} match
+              </p>
+            </div>
           </div>
 
-          {/* Stat comparison cards */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Stat comparison cards — compact */}
+          <div className="grid grid-cols-2 gap-3">
             {/* Bracket 1 stats */}
-            <div className="rounded-card bg-surface-container p-5 space-y-4">
+            <div className="rounded-card bg-surface-container px-3 py-2.5 space-y-2">
               <div>
-                <p className="font-display text-lg font-bold text-on-surface">{b1.name}</p>
-                <p className="font-label text-xs text-on-surface-variant uppercase">{b1.owner}</p>
+                <p className="font-display text-sm font-bold text-on-surface">{b1.name}</p>
+                <p className="font-label text-[10px] text-on-surface-variant uppercase">{b1.owner}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">Points</p>
-                  <p className="font-display text-2xl font-bold text-on-surface">{b1.points}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Pts</p>
+                  <p className="font-display text-lg font-bold text-on-surface">{b1.points}</p>
                 </div>
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">MAX Remaining</p>
-                  <p className="font-display text-2xl font-bold text-on-surface">{b1.max_remaining}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">MAX</p>
+                  <p className="font-display text-lg font-bold text-on-surface">{b1.max_remaining}</p>
                 </div>
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">Champion</p>
-                  <p className="text-sm font-medium text-on-surface mt-1">{b1.champion_pick}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Champ</p>
+                  <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} />
                 </div>
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">Win %</p>
-                  <p className="font-display text-2xl font-bold text-on-surface">{winPct(b1.id)}%</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Win %</p>
+                  <p className="font-display text-lg font-bold text-on-surface">{winPct(b1.id)}%</p>
                 </div>
               </div>
             </div>
 
             {/* Bracket 2 stats */}
-            <div className="rounded-card bg-surface-container p-5 space-y-4">
+            <div className="rounded-card bg-surface-container px-3 py-2.5 space-y-2">
               <div>
-                <p className="font-display text-lg font-bold text-on-surface">{b2.name}</p>
-                <p className="font-label text-xs text-on-surface-variant uppercase">{b2.owner}</p>
+                <p className="font-display text-sm font-bold text-on-surface">{b2.name}</p>
+                <p className="font-label text-[10px] text-on-surface-variant uppercase">{b2.owner}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">Points</p>
-                  <p className="font-display text-2xl font-bold text-on-surface">{b2.points}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Pts</p>
+                  <p className="font-display text-lg font-bold text-on-surface">{b2.points}</p>
                 </div>
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">MAX Remaining</p>
-                  <p className="font-display text-2xl font-bold text-on-surface">{b2.max_remaining}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">MAX</p>
+                  <p className="font-display text-lg font-bold text-on-surface">{b2.max_remaining}</p>
                 </div>
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">Champion</p>
-                  <p className="text-sm font-medium text-on-surface mt-1">{b2.champion_pick}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Champ</p>
+                  <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} />
                 </div>
                 <div>
-                  <p className="font-label text-xs text-on-surface-variant uppercase">Win %</p>
-                  <p className="font-display text-2xl font-bold text-on-surface">{winPct(b2.id)}%</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Win %</p>
+                  <p className="font-display text-lg font-bold text-on-surface">{winPct(b2.id)}%</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Round selector + filter pills */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <RoundSelector selected={selectedRound} onSelect={setSelectedRound} />
-              <div className="flex gap-2">
-                {FILTER_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setDiffFilter(opt.value)}
-                    className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
-                      diffFilter === opt.value
-                        ? "bg-primary/15 text-primary border border-primary/30"
-                        : "text-on-surface-variant hover:text-on-surface"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <RoundSelector selected={selectedRound} onSelect={setSelectedRound} />
+            <div className="flex gap-2">
+              {FILTER_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setDiffFilter(opt.value)}
+                  className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${
+                    diffFilter === opt.value
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Game cards for the selected round */}
-          <div className="space-y-3">
-            {filteredGames.length === 0 && (
+          {/* Game cards for the selected round — primary content area */}
+          <div className="space-y-2">
+            {filteredGameIds.length === 0 && (
               <p className="text-on-surface-variant text-sm text-center py-8">
                 No games match the current filter for {ROUND_LABELS[selectedRound]}.
               </p>
             )}
-            {filteredGames.map((g) => {
-              const pick1 = pickMap1.get(g.game_id);
-              const pick2 = pickMap2.get(g.game_id);
+            {filteredGameIds.map((gid) => {
+              const g = gameMap.get(gid);
+              const pick1 = pickMap1.get(gid);
+              const pick2 = pickMap2.get(gid);
               const same = pick1 === pick2;
-              const isComplete = g.completed;
-              const pick1Correct = isComplete && !!pick1 && pick1 === g.winner;
-              const pick2Correct = isComplete && !!pick2 && pick2 === g.winner;
+              const isComplete = g?.completed ?? false;
+              const pick1Correct = isComplete && !!pick1 && pick1 === g?.winner;
+              const pick2Correct = isComplete && !!pick2 && pick2 === g?.winner;
+
+              // Use game teams if available, otherwise derive from picks
+              const team1 = g?.team1 || "";
+              const team2 = g?.team2 || "";
+              const hasTeams = team1 && team2;
 
               return (
                 <div
-                  key={g.game_id}
-                  className={`rounded-card border p-4 ${
+                  key={gid}
+                  className={`rounded-card p-3 border-l-4 ${
                     same
-                      ? "bg-surface border-outline-variant border-l-4 border-l-teal-500/30"
-                      : "bg-surface border-outline-variant border-l-4 border-l-orange-400/30"
+                      ? "border-l-teal-500/30 bg-surface/60"
+                      : "border-l-orange-400/30 bg-surface/60"
                   }`}
                 >
                   {/* Game header */}
-                  <div className="mb-3 flex items-center justify-between">
+                  <div className="mb-2 flex items-center justify-between">
                     <div>
-                      <p className="font-label text-sm font-semibold text-on-surface">
-                        {g.team1} vs {g.team2}
-                      </p>
-                      {isComplete && g.winner && (
-                        <p className="text-xs text-secondary mt-0.5">
+                      {hasTeams ? (
+                        <div className="flex items-center gap-1.5">
+                          <TeamPill name={team1} seed={g?.seed1} logo={teamLogos[team1]} />
+                          <span className="text-[10px] text-on-surface-variant">vs</span>
+                          <TeamPill name={team2} seed={g?.seed2} logo={teamLogos[team2]} />
+                        </div>
+                      ) : (
+                        <p className="font-label text-xs text-on-surface-variant">
+                          Game {gid}
+                        </p>
+                      )}
+                      {isComplete && g?.winner && (
+                        <p className="text-[10px] text-secondary mt-0.5">
                           Winner: {g.winner}
                         </p>
                       )}
                     </div>
                     {isComplete ? (
-                      <span className="text-xs font-label text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
+                      <span className="text-[10px] font-label text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
                         Final
                       </span>
                     ) : (
-                      <span className="text-xs font-label text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
+                      <span className="text-[10px] font-label text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
                         Pending
                       </span>
                     )}
                   </div>
 
                   {/* Pick columns */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {/* Bracket 1 pick */}
                     <div
-                      className={`rounded-md p-3 ${
+                      className={`rounded-md px-2.5 py-2 ${
                         pick1Correct
                           ? "bg-secondary/10 border border-secondary/40"
                           : "bg-surface-container"
                       }`}
                     >
-                      <p className="text-xs font-semibold text-on-surface">{b1.name}</p>
-                      <p className="text-xs text-on-surface-variant mb-2">{b1.owner}</p>
+                      <p className="text-[10px] font-semibold text-on-surface">{b1.name}</p>
                       {pick1 ? (
-                        <>
-                          <p
-                            className={`text-sm font-medium ${
-                              pick1Correct ? "text-secondary" : "text-on-surface"
-                            }`}
-                          >
-                            {pick1}
-                          </p>
+                        <div className="mt-1">
+                          <TeamPill name={pick1} logo={teamLogos[pick1]} />
                           {isComplete && (
                             <p
-                              className={`text-xs mt-0.5 ${
+                              className={`text-[10px] mt-0.5 ${
                                 pick1Correct
                                   ? "text-secondary"
                                   : "text-on-surface-variant"
@@ -345,34 +378,27 @@ export function HeadToHeadContent({
                               {pick1Correct ? "Correct" : "Incorrect"}
                             </p>
                           )}
-                        </>
+                        </div>
                       ) : (
-                        <p className="text-sm text-on-surface-variant italic">No pick</p>
+                        <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
                       )}
                     </div>
 
                     {/* Bracket 2 pick */}
                     <div
-                      className={`rounded-md p-3 ${
+                      className={`rounded-md px-2.5 py-2 ${
                         pick2Correct
                           ? "bg-secondary/10 border border-secondary/40"
                           : "bg-surface-container"
                       }`}
                     >
-                      <p className="text-xs font-semibold text-on-surface">{b2.name}</p>
-                      <p className="text-xs text-on-surface-variant mb-2">{b2.owner}</p>
+                      <p className="text-[10px] font-semibold text-on-surface">{b2.name}</p>
                       {pick2 ? (
-                        <>
-                          <p
-                            className={`text-sm font-medium ${
-                              pick2Correct ? "text-secondary" : "text-on-surface"
-                            }`}
-                          >
-                            {pick2}
-                          </p>
+                        <div className="mt-1">
+                          <TeamPill name={pick2} logo={teamLogos[pick2]} />
                           {isComplete && (
                             <p
-                              className={`text-xs mt-0.5 ${
+                              className={`text-[10px] mt-0.5 ${
                                 pick2Correct
                                   ? "text-secondary"
                                   : "text-on-surface-variant"
@@ -381,9 +407,9 @@ export function HeadToHeadContent({
                               {pick2Correct ? "Correct" : "Incorrect"}
                             </p>
                           )}
-                        </>
+                        </div>
                       ) : (
-                        <p className="text-sm text-on-surface-variant italic">No pick</p>
+                        <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
                       )}
                     </div>
                   </div>

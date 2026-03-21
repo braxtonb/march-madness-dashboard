@@ -109,6 +109,11 @@ export default async function AliveBoardPage() {
     bracketFFTeamsMap[b.id] = getFFTeams(b);
   }
 
+  // Build team logo lookup
+  const teamLogos: Record<string, string> = Object.fromEntries(
+    teams.map((t) => [t.name, t.logo])
+  );
+
   // Serialize for client component
   const analyticsObj = Object.fromEntries(analytics);
   const eliminatedArr = [...eliminatedTeams];
@@ -152,7 +157,7 @@ export default async function AliveBoardPage() {
           <ChampionDonut data={champDistribution} />
         </div>
 
-        <GamesToWatch games={gamesToWatch} />
+        <GamesToWatch games={gamesToWatch} teamLogos={teamLogos} />
       </div>
 
       <AliveContent

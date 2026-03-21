@@ -8,7 +8,12 @@ export default async function LeaderboardPage() {
   const data = await fetchDashboardData();
   const analytics = computeAllAnalytics(data);
 
-  const { brackets, picks, games, meta } = data;
+  const { brackets, picks, games, teams, meta } = data;
+
+  // Build team logo lookup
+  const teamLogos: Record<string, string> = Object.fromEntries(
+    teams.map((t) => [t.name, t.logo])
+  );
 
   // Submitted brackets = those with a champion pick
   const submittedBrackets = brackets.filter((b) => b.champion_pick);
@@ -145,6 +150,7 @@ export default async function LeaderboardPage() {
       greatestCalls={greatestCalls}
       roundAccuracy={roundAccuracy}
       submittedCount={submittedCount}
+      teamLogos={teamLogos}
     />
   );
 }

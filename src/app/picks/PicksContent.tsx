@@ -13,12 +13,14 @@ export function PicksContent({
   pickerDetailsMap,
   totalBrackets,
   currentRound,
+  teamLogos = {},
 }: {
   games: Game[];
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
   pickerDetailsMap: Record<string, PickerDetails>;
   totalBrackets: number;
   currentRound: Round;
+  teamLogos?: Record<string, string>;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -75,6 +77,7 @@ export function PicksContent({
             }
             totalBrackets={totalBrackets}
             pickerDetails={pickerDetailsMap[game.game_id]}
+            teamLogos={teamLogos}
           />
         ))}
       </div>

@@ -13,10 +13,12 @@ function PicksDrawer({
   game,
   pickerDetails,
   onClose,
+  teamLogos = {},
 }: {
   game: Game;
   pickerDetails: PickerDetails;
   onClose: () => void;
+  teamLogos?: Record<string, string>;
 }) {
   // Prevent body scroll while drawer is open
   useEffect(() => {
@@ -71,9 +73,9 @@ function PicksDrawer({
             </button>
           </div>
           <div className="flex items-center justify-between">
-            <TeamPill name={game.team1} seed={game.seed1} />
+            <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} />
             <span className="text-xs text-on-surface-variant">vs</span>
-            <TeamPill name={game.team2} seed={game.seed2} />
+            <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} />
           </div>
         </div>
 
@@ -149,11 +151,13 @@ export function GameCard({
   pickSplit,
   totalBrackets,
   pickerDetails,
+  teamLogos = {},
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
   totalBrackets: number;
   pickerDetails?: PickerDetails;
+  teamLogos?: Record<string, string>;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -194,9 +198,9 @@ export function GameCard({
     <>
       <div className="rounded-card bg-surface-container p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <TeamPill name={game.team1} seed={game.seed1} />
+          <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} />
           <span className="text-xs text-on-surface-variant">vs</span>
-          <TeamPill name={game.team2} seed={game.seed2} />
+          <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} />
         </div>
 
         <div className="flex h-3 rounded-full overflow-hidden bg-surface-bright">
@@ -254,6 +258,7 @@ export function GameCard({
           game={game}
           pickerDetails={pickerDetails}
           onClose={() => setDrawerOpen(false)}
+          teamLogos={teamLogos}
         />
       )}
     </>

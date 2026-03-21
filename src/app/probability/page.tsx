@@ -21,6 +21,11 @@ export default async function ProbabilityPage() {
         best_rank: sim?.best_rank ?? data.brackets.length,
         max_remaining: b.max_remaining,
         points: b.points,
+        pct_first: sim?.pct_first ?? 0,
+        pct_second: sim?.pct_second ?? 0,
+        pct_third: sim?.pct_third ?? 0,
+        pct_top10: sim?.pct_top10 ?? 0,
+        pct_top25: sim?.pct_top25 ?? 0,
       };
     })
     .sort((a, b) => b.probability - a.probability);

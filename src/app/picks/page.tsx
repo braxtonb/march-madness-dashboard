@@ -45,6 +45,11 @@ export default async function GroupPicksPage() {
     pickerDetailsMap[game.game_id] = { team1Pickers, team2Pickers };
   }
 
+  // Build team logo lookup
+  const teamLogos: Record<string, string> = Object.fromEntries(
+    data.teams.map((t) => [t.name, t.logo])
+  );
+
   const accuracy = computeGroupAccuracy(
     data.picks,
     data.games,
@@ -89,6 +94,7 @@ export default async function GroupPicksPage() {
         pickerDetailsMap={pickerDetailsMap}
         totalBrackets={submittedBrackets.length}
         currentRound={data.meta.current_round}
+        teamLogos={teamLogos}
       />
     </div>
   );

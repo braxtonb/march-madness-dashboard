@@ -10,10 +10,12 @@ export function LeaderboardTable({
   brackets,
   analytics,
   eliminatedTeams,
+  teamLogos = {},
 }: {
   brackets: Bracket[];
   analytics: Map<string, BracketAnalytics>;
   eliminatedTeams: Set<string>;
+  teamLogos?: Record<string, string>;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
@@ -101,6 +103,7 @@ export function LeaderboardTable({
                       name={b.champion_pick}
                       seed={b.champion_seed}
                       eliminated={champEliminated}
+                      logo={teamLogos[b.champion_pick]}
                     />
                     {!champEliminated && b.champion_pick && (
                       <span className="inline-block h-1.5 w-1.5 rounded-full bg-secondary" />

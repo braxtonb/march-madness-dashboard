@@ -67,6 +67,7 @@ interface LeaderboardContentProps {
   greatestCalls: GreatestCall[];
   roundAccuracy: RoundAccuracy[];
   submittedCount: number;
+  teamLogos?: Record<string, string>;
 }
 
 function LeaderboardContentInner({
@@ -83,6 +84,7 @@ function LeaderboardContentInner({
   greatestCalls,
   roundAccuracy,
   submittedCount,
+  teamLogos = {},
 }: LeaderboardContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -220,6 +222,7 @@ function LeaderboardContentInner({
             brackets={brackets}
             analytics={analytics}
             eliminatedTeams={eliminatedTeams}
+            teamLogos={teamLogos}
           />
 
           {/* Rising Stars + Contention */}

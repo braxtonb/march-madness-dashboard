@@ -8,10 +8,12 @@ export function DrilldownTable({
   brackets,
   analytics,
   eliminatedTeams,
+  teamLogos = {},
 }: {
   brackets: Bracket[];
   analytics: Map<string, BracketAnalytics>;
   eliminatedTeams: Set<string>;
+  teamLogos?: Record<string, string>;
 }) {
   const [search, setSearch] = useState("");
 
@@ -71,6 +73,7 @@ export function DrilldownTable({
                       name={b.champion_pick}
                       seed={b.champion_seed}
                       eliminated={eliminatedTeams.has(b.champion_pick)}
+                      logo={teamLogos[b.champion_pick]}
                     />
                   </td>
                   <td className="px-3 py-2 font-label">{b.points}</td>

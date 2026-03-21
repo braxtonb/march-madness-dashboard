@@ -1,12 +1,18 @@
 import type { Bracket, Game, Pick, Round } from "./types";
 import { SEED_WIN_RATES, ROUND_POINTS } from "./constants";
 
-interface SimResult {
+export interface SimResult {
   bracket_id: string;
   wins: number;
   avg_final_points: number;
   median_rank: number;
   best_rank: number;
+  /** How often this bracket finished in each placement tier (out of iterations) */
+  pct_first: number;
+  pct_second: number;
+  pct_third: number;
+  pct_top10: number;
+  pct_top25: number;
 }
 
 /**
@@ -109,12 +115,25 @@ export function runMonteCarlo(
         : brackets.length;
     const bestRank = sortedRanks.length > 0 ? sortedRanks[0] : brackets.length;
 
+    // Compute placement percentages from rank distribution
+    const n = iterations;
+    const firstCount = ranks.filter((r) => r === 1).length;
+    const secondCount = ranks.filter((r) => r === 2).length;
+    const thirdCount = ranks.filter((r) => r === 3).length;
+    const top10Count = ranks.filter((r) => r <= 10).length;
+    const top25Count = ranks.filter((r) => r <= 25).length;
+
     results.set(b.id, {
       bracket_id: b.id,
       wins: winCounts.get(b.id) || 0,
       avg_final_points: Math.round(avgPts),
       median_rank: medianRank,
       best_rank: bestRank,
+      pct_first: Math.round((firstCount / n) * 1000) / 10,
+      pct_second: Math.round((secondCount / n) * 1000) / 10,
+      pct_third: Math.round((thirdCount / n) * 1000) / 10,
+      pct_top10: Math.round((top10Count / n) * 1000) / 10,
+      pct_top25: Math.round((top25Count / n) * 1000) / 10,
     });
   }
 

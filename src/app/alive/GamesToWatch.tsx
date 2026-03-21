@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TeamPill } from "@/components/ui/TeamPill";
 
 interface AffectedBracket {
   name: string;
@@ -19,7 +20,7 @@ interface GameToWatch {
   affectedBrackets: AffectedBracket[];
 }
 
-export function GamesToWatch({ games }: { games: GameToWatch[] }) {
+export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; teamLogos?: Record<string, string> }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (

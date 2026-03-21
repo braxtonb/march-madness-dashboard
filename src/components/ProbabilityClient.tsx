@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 
 interface ProbEntry {
@@ -12,6 +13,11 @@ interface ProbEntry {
   best_rank: number;
   max_remaining: number;
   points: number;
+  pct_first: number;
+  pct_second: number;
+  pct_third: number;
+  pct_top10: number;
+  pct_top25: number;
 }
 
 interface JourneyPoint {
@@ -25,6 +31,8 @@ interface ProbabilityClientProps {
   journeyBracketNames: string[];
   allSnapshotProbsZero: boolean;
 }
+
+type ProbTab = "chances" | "finishes" | "journey";
 
 type TierKey = "strong" | "hunt" | "fighting" | "longshot" | "miracle";
 
@@ -51,13 +59,27 @@ function getTierKey(probability: number): TierKey {
   return "miracle";
 }
 
+const TAB_ACTIVE = "bg-primary/15 text-primary border border-primary/30 rounded-card px-3 py-1.5 text-sm font-label";
+const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface rounded-card px-3 py-1.5 text-sm font-label";
+
 export function ProbabilityClient({
   probData,
   journeyData,
   journeyBracketNames,
   allSnapshotProbsZero,
 }: ProbabilityClientProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initialTab = (searchParams.get("tab") as ProbTab) || "chances";
+  const [tab, setTab] = useState<ProbTab>(initialTab);
   const [showExact, setShowExact] = useState(false);
+
+  function changeTab(t: ProbTab) {
+    setTab(t);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", t);
+    router.replace(`/probability?${params.toString()}`, { scroll: false });
+  }
 
   // Group brackets by tier
   const tierGroups = new Map<TierKey, ProbEntry[]>();
@@ -78,120 +100,156 @@ export function ProbabilityClient({
         </p>
       </div>
 
-      {/* Encouraging tier view */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold">Championship Chances</h3>
-          <button
-            onClick={() => setShowExact(!showExact)}
-            className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors"
-          >
-            {showExact ? "Hide exact percentages" : "Reveal exact percentages"}
-          </button>
-        </div>
-
-        {TIERS.map((tier) => {
-          const entries = tierGroups.get(tier.key)!;
-          if (entries.length === 0) return null;
-          return (
-            <div key={tier.key} className="rounded-card bg-surface-container p-5 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className={`inline-block rounded-card px-2.5 py-1 font-label text-xs font-semibold ${tier.badgeClass}`}>
-                  {tier.label}
-                </span>
-                <span className="text-xs text-on-surface-variant">
-                  {entries.length} bracket{entries.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {entries.map((entry) => (
-                  <div
-                    key={entry.name}
-                    className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
-                        {entry.name}
-                      </div>
-                      <div className="text-xs text-on-surface-variant truncate">
-                        {entry.owner}
-                      </div>
-                    </div>
-                    {showExact && (
-                      <span className="font-label text-xs text-on-surface-variant ml-2 shrink-0">
-                        {entry.probability.toFixed(1)}%
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+      {/* Tab pills */}
+      <div className="flex gap-2">
+        <button onClick={() => changeTab("chances")} className={tab === "chances" ? TAB_ACTIVE : TAB_INACTIVE}>
+          Championship Chances
+        </button>
+        <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
+          Simulated Finishes
+        </button>
+        <button onClick={() => changeTab("journey")} className={tab === "journey" ? TAB_ACTIVE : TAB_INACTIVE}>
+          Probability Journey
+        </button>
       </div>
 
-      {/* Probability Journey */}
-      {allSnapshotProbsZero ? (
-        <div className="rounded-card bg-surface-container p-5">
-          <h3 className="font-display text-lg font-semibold mb-2">Probability Journey</h3>
-          <p className="text-sm text-on-surface-variant">
-            Probability journey tracking starts after the next round completes.
-          </p>
-        </div>
-      ) : (
-        journeyData.length > 0 && (
-          <div className="rounded-card bg-surface-container p-5">
-            <h3 className="font-display text-lg font-semibold mb-4">Probability Journey</h3>
-            <ProbabilityJourney data={journeyData} bracketNames={journeyBracketNames} />
+      {/* Championship Chances tab */}
+      {tab === "chances" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-display text-lg font-semibold">Championship Chances</h3>
+            <button
+              onClick={() => setShowExact(!showExact)}
+              className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors"
+            >
+              {showExact ? "Hide exact percentages" : "Reveal exact percentages"}
+            </button>
           </div>
-        )
+
+          {TIERS.map((tier) => {
+            const entries = tierGroups.get(tier.key)!;
+            if (entries.length === 0) return null;
+            return (
+              <div key={tier.key} className="rounded-card bg-surface-container p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className={`inline-block rounded-card px-2.5 py-1 font-label text-xs font-semibold ${tier.badgeClass}`}>
+                    {tier.label}
+                  </span>
+                  <span className="text-xs text-on-surface-variant">
+                    {entries.length} bracket{entries.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {entries.map((entry) => (
+                    <div
+                      key={entry.name}
+                      className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
+                          {entry.name}
+                        </div>
+                        <div className="text-xs text-on-surface-variant truncate">
+                          {entry.owner}
+                        </div>
+                      </div>
+                      {showExact && (
+                        <span className="font-label text-xs text-on-surface-variant ml-2 shrink-0">
+                          {entry.probability.toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
-      {/* Expected Finish table */}
-      <div className="rounded-card bg-surface-container p-5">
-        <h3 className="font-display text-lg font-semibold mb-4">Expected Finish</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-outline">
-                <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Bracket</th>
-                <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Tier</th>
-                <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Median Finish</th>
-                <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Best Possible</th>
-                <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Champion</th>
-                {showExact && (
-                  <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Win %</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {probData.map((d) => {
-                const tierKey = getTierKey(d.probability);
-                const tier = TIERS.find((t) => t.key === tierKey)!;
-                return (
-                  <tr key={d.name} className="border-b border-outline hover:bg-surface-bright transition-colors">
-                    <td className="px-3 py-2">
-                      <div className="text-on-surface">{d.name}</div>
-                      <div className="text-xs text-on-surface-variant">{d.owner}</div>
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className={`inline-block rounded-card px-2 py-0.5 font-label text-xs ${tier.badgeClass}`}>
-                        {tier.label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 font-label text-on-surface-variant">#{d.median_rank}</td>
-                    <td className="px-3 py-2 font-label text-secondary">#{d.best_rank}</td>
-                    <td className="px-3 py-2 text-on-surface-variant">{d.champion}</td>
-                    {showExact && (
-                      <td className="px-3 py-2 font-label text-tertiary">{d.probability.toFixed(1)}%</td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {/* Simulated Finishes tab */}
+      {tab === "finishes" && (
+        <div className="rounded-card bg-surface-container p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display text-lg font-semibold">Simulated Finishes</h3>
+            <button
+              onClick={() => setShowExact(!showExact)}
+              className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors border border-outline"
+            >
+              {showExact ? "Hide Win/2nd/3rd %" : "Show Win/2nd/3rd %"}
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-outline">
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Bracket</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Tier</th>
+                  {showExact && (
+                    <>
+                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Win %</th>
+                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">2nd %</th>
+                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">3rd %</th>
+                    </>
+                  )}
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Top 10</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Top 25</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Median</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Champion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {probData.map((d) => {
+                  const tierKey = getTierKey(d.probability);
+                  const tier = TIERS.find((t) => t.key === tierKey)!;
+                  return (
+                    <tr key={d.name} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                      <td className="px-2 py-2">
+                        <div className="text-on-surface text-xs">{d.name}</div>
+                        <div className="text-[10px] text-on-surface-variant">{d.owner}</div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <span className={`inline-block rounded-card px-2 py-0.5 font-label text-[10px] ${tier.badgeClass}`}>
+                          {tier.label}
+                        </span>
+                      </td>
+                      {showExact && (
+                        <>
+                          <td className="px-2 py-2 font-label text-xs text-tertiary">{d.pct_first.toFixed(1)}%</td>
+                          <td className="px-2 py-2 font-label text-xs text-on-surface-variant">{d.pct_second.toFixed(1)}%</td>
+                          <td className="px-2 py-2 font-label text-xs text-on-surface-variant">{d.pct_third.toFixed(1)}%</td>
+                        </>
+                      )}
+                      <td className="px-2 py-2 font-label text-xs text-secondary">{d.pct_top10.toFixed(1)}%</td>
+                      <td className="px-2 py-2 font-label text-xs text-on-surface">{d.pct_top25.toFixed(1)}%</td>
+                      <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
+                      <td className="px-2 py-2 text-xs text-on-surface-variant">{d.champion}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Probability Journey tab */}
+      {tab === "journey" && (
+        <div className="rounded-card bg-surface-container p-5">
+          <h3 className="font-display text-lg font-semibold mb-4">Probability Journey</h3>
+          {allSnapshotProbsZero ? (
+            <p className="text-sm text-on-surface-variant">
+              Probability journey tracking starts after the next round completes. The scraper captures
+              win probability snapshots at the end of each round, building a picture of how chances
+              shift throughout the tournament.
+            </p>
+          ) : journeyData.length > 0 ? (
+            <ProbabilityJourney data={journeyData} bracketNames={journeyBracketNames} />
+          ) : (
+            <p className="text-sm text-on-surface-variant">No journey data available yet.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
