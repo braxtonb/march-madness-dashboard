@@ -55,5 +55,4 @@ export const NAV_PAGES = [
   { path: "/awards", label: "Awards", icon: "award" },
   { path: "/probability", label: "Probability", icon: "bar-chart" },
   { path: "/head-to-head", label: "Head-to-Head", icon: "git-compare" },
-  { path: "/finale", label: "Season Finale", icon: "star" },
 ] as const;

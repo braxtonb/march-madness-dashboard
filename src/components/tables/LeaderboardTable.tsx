@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 
-type SortKey = "rank" | "points" | "max_remaining" | "estimated_win_prob" | "uniqueness";
+type SortKey = "rank" | "points" | "max_remaining" | "uniqueness";
 
 export function LeaderboardTable({
   brackets,
@@ -36,10 +36,6 @@ export function LeaderboardTable({
       case "max_remaining":
         aVal = a.max_remaining;
         bVal = b.max_remaining;
-        break;
-      case "estimated_win_prob":
-        aVal = aA.estimated_win_prob;
-        bVal = bA.estimated_win_prob;
         break;
       case "uniqueness":
         aVal = aA.uniqueness;
@@ -83,9 +79,6 @@ export function LeaderboardTable({
             </th>
             <th className={headerClass} onClick={() => toggleSort("max_remaining")}>
               MAX {sortKey === "max_remaining" && (sortAsc ? "↑" : "↓")}
-            </th>
-            <th className={headerClass} onClick={() => toggleSort("estimated_win_prob")}>
-              Win % {sortKey === "estimated_win_prob" && (sortAsc ? "↑" : "↓")}
             </th>
           </tr>
         </thead>
@@ -132,9 +125,6 @@ export function LeaderboardTable({
                 </td>
                 <td className="px-3 py-2.5 font-label text-on-surface-variant">
                   {b.max_remaining}
-                </td>
-                <td className="px-3 py-2.5 font-label text-tertiary">
-                  {a.estimated_win_prob}%
                 </td>
               </tr>
             );

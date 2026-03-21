@@ -4,7 +4,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 
 interface ScatterPoint {
   name: string;
-  insight: number;
+  skill: number;
   fortune: number;
 }
 
@@ -17,11 +17,11 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height={400}>
       <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-        <XAxis type="number" dataKey="insight" name="Insight" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
-          <Label value="Insight Score" position="bottom" fill="#8b95a5" fontSize={12} />
+        <XAxis type="number" dataKey="skill" name="Skill" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
+          <Label value="Skill Score" position="bottom" fill="#8b95a5" fontSize={12} />
         </XAxis>
-        <YAxis type="number" dataKey="fortune" name="Fortune" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
-          <Label value="Fortune Score" angle={-90} position="left" fill="#8b95a5" fontSize={12} />
+        <YAxis type="number" dataKey="fortune" name="Luck" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
+          <Label value="Luck Score" angle={-90} position="left" fill="#8b95a5" fontSize={12} />
         </YAxis>
         <ReferenceLine x={50} stroke="#252d35" />
         <ReferenceLine y={50} stroke="#252d35" />
@@ -37,7 +37,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
           }}
           formatter={(value: number, name: string) => [`${value.toFixed(0)}%`, name]}
           labelFormatter={(label) => {
-            const point = data.find((d) => d.insight === label);
+            const point = data.find((d) => d.skill === label);
             return point?.name || "";
           }}
         />

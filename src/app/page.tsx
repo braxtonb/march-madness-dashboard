@@ -1,8 +1,6 @@
 import { fetchDashboardData } from "@/lib/sheets";
-import { computeAllAnalytics, computeMadnessIndex } from "@/lib/analytics";
-import { StatCard } from "@/components/ui/StatCard";
-import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
-import { MadnessGauge } from "@/components/charts/MadnessGauge";
+import { computeAllAnalytics, computeMadnessIndex, computePickRates } from "@/lib/analytics";
+import { LeaderboardContent } from "./LeaderboardContent";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +8,17 @@ export default async function LeaderboardPage() {
   const data = await fetchDashboardData();
   const analytics = computeAllAnalytics(data);
 
-  const { brackets, games, teams, meta } = data;
+  const { brackets, picks, games, meta } = data;
+
+  // Submitted brackets = those with a champion pick
+  const submittedBrackets = brackets.filter((b) => b.champion_pick);
+  const submittedCount = submittedBrackets.length;
+
+  const pickRates = computePickRates(picks, submittedCount);
 
   const gamesCompleted = meta.games_completed;
-  // Derive elimination from game results: a team is eliminated if it lost a completed game
+
+  // Derive elimination from game results
   const eliminatedTeams = new Set<string>();
   for (const g of games) {
     if (g.completed && g.winner) {
@@ -22,17 +27,22 @@ export default async function LeaderboardPage() {
     }
   }
 
-  // Most popular champion still standing
+  // Most popular champion still standing (only submitted brackets)
   const champCounts = new Map<string, number>();
-  for (const b of brackets) {
-    if (b.champion_pick && !eliminatedTeams.has(b.champion_pick)) {
+  for (const b of submittedBrackets) {
+    if (!eliminatedTeams.has(b.champion_pick)) {
       champCounts.set(
         b.champion_pick,
         (champCounts.get(b.champion_pick) || 0) + 1
       );
     }
   }
-  const topChamp = [...champCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+  const topChampEntry = [...champCounts.entries()].sort(
+    (a, b) => b[1] - a[1]
+  )[0];
+  const topChamp: [string, number] | null = topChampEntry
+    ? [topChampEntry[0], topChampEntry[1]]
+    : null;
 
   // Rising Stars: top 3 rank climbers
   const risingStars = [...brackets]
@@ -49,107 +59,92 @@ export default async function LeaderboardPage() {
   // Madness Index
   const madnessIndex = computeMadnessIndex(games);
 
-  // Group resilience
-  const avgMaxRemaining =
-    brackets.reduce((sum, b) => sum + b.max_remaining, 0) / brackets.length;
-  const totalPossiblePoints = 1920;
-  const groupResilience = Math.round(
-    (avgMaxRemaining / totalPossiblePoints) * 100
-  );
+  // Skill & Fortune scores for scatter plot
+  const scatterData = submittedBrackets.map((b) => {
+    const bPicks = picks.filter((p) => p.bracket_id === b.id);
+    let skillNum = 0,
+      skillDen = 0;
+    let fortuneNum = 0,
+      fortuneDen = 0;
+
+    for (const p of bPicks) {
+      const game = games.find((g) => g.game_id === p.game_id);
+      if (!game || !game.completed) continue;
+      const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 0.5;
+      if (rate < 0.6) {
+        skillDen++;
+        if (p.correct) skillNum++;
+      }
+      if (rate < 0.3) {
+        fortuneDen++;
+        if (p.correct) fortuneNum++;
+      }
+    }
+
+    return {
+      name: b.name,
+      skill: skillDen > 0 ? Math.round((skillNum / skillDen) * 100) : 50,
+      fortune:
+        fortuneDen > 0 ? Math.round((fortuneNum / fortuneDen) * 100) : 50,
+    };
+  });
+
+  // Best calls (greatest contrarian correct picks)
+  const greatestCalls = picks
+    .filter((p) => p.correct)
+    .map((p) => {
+      const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 1;
+      const bracket = brackets.find((b) => b.id === p.bracket_id);
+      const game = games.find((g) => g.game_id === p.game_id);
+      return { pick: p, rate, bracket, game };
+    })
+    .filter((x) => x.bracket && x.game)
+    .sort((a, b) => a.rate - b.rate)
+    .slice(0, 10)
+    .map((gc) => ({
+      bracketName: gc.bracket!.name,
+      bracketOwner: gc.bracket!.owner,
+      teamPicked: gc.pick.team_picked,
+      seedPicked: gc.pick.seed_picked,
+      rate: gc.rate,
+      round: gc.game?.round ?? "",
+    }));
+
+  // Group report card: round-by-round consensus accuracy
+  const roundAccuracy = (
+    ["R64", "R32", "S16", "E8", "FF", "CHAMP"] as const
+  ).map((round) => {
+    const roundGames = games.filter(
+      (g) => g.round === round && g.completed
+    );
+    let correct = 0;
+    for (const g of roundGames) {
+      const gamePicks = picks.filter((p) => p.game_id === g.game_id);
+      const team1Count = gamePicks.filter(
+        (p) => p.team_picked === g.team1
+      ).length;
+      const consensusPick =
+        team1Count > submittedCount / 2 ? g.team1 : g.team2;
+      if (consensusPick === g.winner) correct++;
+    }
+    return { round, correct, total: roundGames.length };
+  });
 
   return (
-    <div className="space-y-section">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Leaderboard</h2>
-        <p className="text-on-surface-variant text-sm mt-1">
-          Championship standings and tournament pulse
-        </p>
-      </div>
-
-      {/* Hero stats bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Brackets" value={brackets.length} />
-        <StatCard label="Games Completed" value={`${gamesCompleted}/63`} />
-        <StatCard label="Current Round" value={meta.current_round} />
-        <StatCard
-          label="Top Champion Pick"
-          value={topChamp ? topChamp[0] : "—"}
-          subtitle={topChamp ? `${topChamp[1]} brackets` : undefined}
-        />
-      </div>
-
-      {/* Leaderboard table */}
-      <LeaderboardTable
-        brackets={brackets}
-        analytics={analytics}
-        eliminatedTeams={eliminatedTeams}
-      />
-
-      {/* Rising Stars + Contention */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-card bg-surface-container p-5 space-y-3">
-          <h3 className="font-display text-lg font-semibold">Rising Stars</h3>
-          {risingStars.length === 0 && (
-            <p className="text-on-surface-variant text-sm">
-              No rank changes yet this round.
-            </p>
-          )}
-          {risingStars.map(({ bracket, analytics: a }) => (
-            <div
-              key={bracket.id}
-              className="flex items-center justify-between rounded-card bg-surface-bright px-4 py-3"
-            >
-              <div>
-                <span className="font-body text-on-surface">
-                  {bracket.name}
-                </span>
-                <span className="text-xs text-on-surface-variant ml-2">
-                  {bracket.owner}
-                </span>
-              </div>
-              <span className="font-label text-secondary font-semibold">
-                +{a.rank_delta} ranks
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="rounded-card bg-surface-container p-5 flex flex-col items-center justify-center">
-          <span className="font-display text-4xl font-bold text-secondary">
-            {inContention}
-          </span>
-          <span className="text-on-surface-variant text-sm mt-1">
-            brackets can still mathematically win
-          </span>
-        </div>
-      </div>
-
-      {/* Tournament Pulse */}
-      <div className="rounded-card bg-surface-container p-5 space-y-4">
-        <h3 className="font-display text-lg font-semibold">Tournament Pulse</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          <MadnessGauge value={madnessIndex} />
-          <div className="space-y-3">
-            <StatCard
-              label="Group Resilience"
-              value={`${groupResilience}%`}
-              subtitle="of picks still possible on average"
-            />
-          </div>
-          <div className="space-y-2">
-            <p className="font-label text-xs text-on-surface-variant uppercase tracking-wider">
-              What the number means
-            </p>
-            <p className="text-sm text-on-surface-variant">
-              {madnessIndex < 30
-                ? "A calm tournament so far — chalk is holding."
-                : madnessIndex < 60
-                  ? "Typical March Madness — some surprises keeping it exciting."
-                  : "Wild tournament — bold bracket pickers are being rewarded."}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <LeaderboardContent
+      brackets={brackets}
+      analytics={analytics}
+      eliminatedTeams={eliminatedTeams}
+      gamesCompleted={gamesCompleted}
+      currentRound={meta.current_round}
+      topChamp={topChamp}
+      risingStars={risingStars}
+      inContention={inContention}
+      madnessIndex={madnessIndex}
+      scatterData={scatterData}
+      greatestCalls={greatestCalls}
+      roundAccuracy={roundAccuracy}
+      submittedCount={submittedCount}
+    />
   );
 }
