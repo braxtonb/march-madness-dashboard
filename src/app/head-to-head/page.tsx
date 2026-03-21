@@ -2,7 +2,7 @@ import { fetchDashboardData } from "@/lib/sheets";
 import { computeAllAnalytics, computePickRates } from "@/lib/analytics";
 import { HeadToHeadContent } from "./HeadToHeadContent";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function HeadToHeadPage() {
   const data = await fetchDashboardData();

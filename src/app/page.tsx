@@ -4,7 +4,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {
   const data = await fetchDashboardData();

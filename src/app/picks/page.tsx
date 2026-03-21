@@ -3,7 +3,7 @@ import { computeGroupAccuracy } from "@/lib/analytics";
 import { StatCard } from "@/components/ui/StatCard";
 import { PicksContent } from "./PicksContent";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function GroupPicksPage() {
   const data = await fetchDashboardData();

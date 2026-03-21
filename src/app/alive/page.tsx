@@ -4,7 +4,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ChampionDonut } from "@/components/charts/ChampionDonut";
 import { AliveContent } from "./AliveContent";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function AliveBoardPage() {
   const data = await fetchDashboardData();

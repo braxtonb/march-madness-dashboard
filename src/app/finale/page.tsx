@@ -4,7 +4,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
 import { TeamPill } from "@/components/ui/TeamPill";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function FinalePage() {
   const data = await fetchDashboardData();

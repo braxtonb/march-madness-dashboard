@@ -4,7 +4,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { WinProbBar } from "@/components/charts/WinProbBar";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function ProbabilityPage() {
   const data = await fetchDashboardData();

@@ -3,7 +3,7 @@ import { computePickRates } from "@/lib/analytics";
 import { AwardCard } from "@/components/ui/AwardCard";
 import type { Bracket, Pick, Round } from "@/lib/types";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 interface Award {
   title: string;
