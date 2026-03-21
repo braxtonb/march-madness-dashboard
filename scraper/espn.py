@@ -106,8 +106,31 @@ def build_proposition_map(challenge_data: dict) -> dict[str, dict]:
         region = ''
         national_pct_team1 = 0.0
 
-        if len(outcomes) >= 1:
+        # For multi-outcome propositions (R32 has 4, S16 has 8, etc.),
+        # the ACTIVE matchup teams are those with 'additionalInfo' present.
+        # For R64 (2 outcomes), both teams are the matchup.
+        active_outcomes = [o for o in outcomes if 'additionalInfo' in o]
+
+        if len(active_outcomes) >= 2:
+            # Use active (advancing) teams as the matchup
+            # Sort by matchupPosition to get consistent team1/team2
+            active_outcomes.sort(key=lambda o: o.get('matchupPosition', 0))
+            o1 = active_outcomes[0]
+            o2 = active_outcomes[1]
+        elif len(outcomes) == 2:
+            # R64 games: exactly 2 outcomes = the actual matchup
             o1 = outcomes[0]
+            o2 = outcomes[1]
+        else:
+            # Future round with >2 outcomes but no active teams yet: TBD
+            # Use first outcome for region info only, leave team names empty
+            o1 = {}
+            o2 = {}
+            if outcomes:
+                region_id = outcomes[0].get('regionId', 0)
+                region = REGION_MAP.get(region_id, f'R{region_id}')
+
+        if o1:
             team1_name = o1.get('name', '')
             seed1 = o1.get('regionSeed', 0)
             region_id = o1.get('regionId', 0)
@@ -118,8 +141,7 @@ def build_proposition_map(challenge_data: dict) -> dict[str, dict]:
             elif isinstance(counters, list) and counters:
                 national_pct_team1 = float(counters[0].get('percentage', 0.0))
 
-        if len(outcomes) >= 2:
-            o2 = outcomes[1]
+        if o2:
             team2_name = o2.get('name', '')
             seed2 = o2.get('regionSeed', 0)
 

@@ -8,3 +8,4 @@ venv/
 secrets/
 node_modules/
 .next/
+.vercel

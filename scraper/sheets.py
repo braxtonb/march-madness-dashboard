@@ -86,6 +86,10 @@ class GoogleSheetsStore(DataStore):
             start_row = 2
         else:
             start_row = len(existing) + 1
+        # Ensure worksheet has enough rows
+        needed = start_row + len(rows)
+        if ws.row_count < needed:
+            ws.add_rows(needed - ws.row_count + 10)
         # Batch write all rows at once to avoid rate limits
         data = [[row.get(h, '') for h in headers] for row in rows]
         ws.update(f'A{start_row}', data)

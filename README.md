@@ -97,4 +97,13 @@ The scraper uses ESPN's gambit JSON API with a 3-endpoint merge strategy to fetc
 
 ## Data Model
 
-6 Google Sheets tabs: `brackets` (75 rows), `picks` (~4,700 rows), `games` (63), `teams` (64), `snapshots` (per-round history), `meta` (timestamps).
+The Google Sheet has 6 tabs. The scraper writes to them; the frontend reads from them via the Sheets API.
+
+| Tab | Rows | Purpose | How it's used |
+|-----|------|---------|---------------|
+| `brackets` | 75 | One row per bracket entry. Contains owner name, bracket name, champion pick, Final Four picks, current points, max remaining points, and per-round point breakdowns. | Leaderboard standings, rising stars, contention counts, simulator scoring, head-to-head comparisons, awards computation, win probability. |
+| `picks` | ~4,410 | One row per bracket per game (75 brackets x 63 games). Contains the team picked, seed, round, region, and whether the pick was correct or vacated. | Group consensus percentages, individual picker drill-down on game cards, head-to-head pick diffs, uniqueness scores, award calculations. |
+| `games` | 63 | One row per tournament game across all 6 rounds. Contains both teams, seeds, region, winner (if completed), and national pick percentage. Future-round games show TBD until matchups are determined. | Round-by-round game cards, alive board (which champions still have a path), simulator (toggle outcomes), group accuracy stats. |
+| `teams` | 64 | One row per tournament team. Contains seed, region, conference, and elimination status (derived from game results). | Alive board elimination tracking, conference analysis on Tournament Lens, team pill display with eliminated styling. |
+| `snapshots` | 75/round | End-of-round snapshot of every bracket's rank, points, max remaining, and win probability. Written once when a round completes. | Probability journey line chart (tracking how win odds changed over the tournament). |
+| `meta` | 1 | Single row with last scrape timestamp, current round, and games completed count. | Navbar "last updated" display, current round indicator, determining which round to show by default. |
