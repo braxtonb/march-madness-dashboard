@@ -1,4 +1,6 @@
 """HTTP fetching for ESPN JSON API with rate limiting and error handling."""
+import json
+import os
 import time
 import logging
 
@@ -6,50 +8,107 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-ESPN_API_BASE = 'https://gambit-api.fantasy.espn.com/apis/v1/challenges/tournament-challenge-bracket-2026'
-DEFAULT_DELAY = 1.0  # seconds between requests
+ESPN_CHALLENGE_ID = '277'
+ESPN_CHALLENGE_SLUG = 'tournament-challenge-bracket-2026'
+ESPN_API_BASE = f'https://gambit-api.fantasy.espn.com/apis/v1/challenges'
+DEFAULT_DELAY = 1.0
+
+
+def _get_espn_cookies() -> dict:
+    """Auth cookies for ESPN API — needed to get all group entries."""
+    swid = os.environ.get('ESPN_SWID', '')
+    s2 = os.environ.get('ESPN_S2', '')
+    if swid and s2:
+        return {'SWID': swid, 'espn_s2': s2}
+    return {}
+
+
+def _base_headers() -> dict:
+    return {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:148.0) Gecko/20100101 Firefox/148.0',
+        'Accept': 'application/json',
+        'Origin': 'https://fantasy.espn.com',
+        'Referer': 'https://fantasy.espn.com/',
+    }
 
 
 def fetch_challenge_data() -> dict:
     """Fetch challenge structure (propositions, outcomes, current scoring period)."""
-    return _fetch_json(ESPN_API_BASE)
+    return _fetch_json(f'{ESPN_API_BASE}/{ESPN_CHALLENGE_SLUG}')
 
 
 def fetch_group_entries(group_id: str) -> dict:
-    """Fetch all group entries (deduplicated — ESPN API may repeat entries across pages)."""
-    url = f'{ESPN_API_BASE}/groups/{group_id}?offset=0&limit=50'
-    data = _fetch_json(url)
-    seen_ids = {e['id'] for e in data.get('entries', [])}
-    all_entries = list(data.get('entries', []))
+    """Fetch all group entries with picks.
 
-    # Try next page — stop if all entries are duplicates
-    offset = 50
-    while True:
-        next_url = f'{ESPN_API_BASE}/groups/{group_id}?offset={offset}&limit=50'
-        page = _fetch_json(next_url)
-        entries = page.get('entries', [])
-        new_entries = [e for e in entries if e['id'] not in seen_ids]
-        if not new_entries:
-            break
-        for e in new_entries:
-            seen_ids.add(e['id'])
-        all_entries.extend(new_entries)
-        offset += 50
+    Strategy (ESPN API quirks):
+    1. Chui view: returns ALL entries (75) but WITHOUT picks
+    2. Slug endpoint: returns entries WITH picks but caps at 50
+    3. Individual entry endpoint: returns single entry WITH picks
 
-    data['entries'] = all_entries
-    logger.info(f"Fetched {len(all_entries)} unique entries for group {group_id}")
-    return data
+    We merge: chui for full roster, slug for first 50 picks, individual fetch for the rest.
+    """
+    # Step 1: Get ALL entries (standings, scores, champion) from chui view
+    filter_param = json.dumps({'filterSortId': {'value': 0}, 'limit': 100, 'offset': 0})
+    chui_data = _fetch_json(
+        f'{ESPN_API_BASE}/{ESPN_CHALLENGE_ID}/groups/{group_id}/',
+        params={'platform': 'chui', 'view': 'chui_default_group', 'filter': filter_param},
+    )
+    all_entries = chui_data.get('entries', [])
+    logger.info(f"Chui view: {len(all_entries)} entries (no picks)")
+
+    # Step 2: Get entries WITH picks from slug endpoint (caps at 50)
+    slug_data = _fetch_json(f'{ESPN_API_BASE}/{ESPN_CHALLENGE_SLUG}/groups/{group_id}')
+    entries_with_picks = {e['id']: e for e in slug_data.get('entries', [])}
+    logger.info(f"Slug endpoint: {len(entries_with_picks)} entries with picks")
+
+    # Step 3: For entries missing picks, fetch individually
+    missing_ids = [e['id'] for e in all_entries if e['id'] not in entries_with_picks]
+    if missing_ids:
+        logger.info(f"Fetching {len(missing_ids)} individual entries for picks...")
+        for eid in missing_ids:
+            try:
+                entry = _fetch_json(f'{ESPN_API_BASE}/{ESPN_CHALLENGE_ID}/entries/{eid}')
+                entries_with_picks[eid] = entry
+            except Exception as e:
+                logger.warning(f"  Failed to fetch entry {eid}: {e}")
+
+    # Step 4: Merge — chui entries get picks from the with-picks map
+    merged_entries = []
+    for entry in all_entries:
+        eid = entry['id']
+        if eid in entries_with_picks:
+            # Use the version with picks, but overlay chui score data (may be more current)
+            full = entries_with_picks[eid]
+            if 'score' in entry:
+                full['score'] = entry['score']
+            merged_entries.append(full)
+        else:
+            # No picks available — include anyway for standings
+            merged_entries.append(entry)
+
+    chui_data['entries'] = merged_entries
+    # Preserve entryStats from slug endpoint (has pickCountsByProposition)
+    if 'entryStats' in slug_data:
+        chui_data['entryStats'] = slug_data['entryStats']
+
+    logger.info(f"Merged: {len(merged_entries)} total entries, {sum(1 for e in merged_entries if e.get('picks'))} with picks")
+    return chui_data
 
 
-def _fetch_json(url: str, retries: int = 2) -> dict:
+def _fetch_json(url: str, retries: int = 2, params: dict | None = None) -> dict:
     """Fetch URL and return parsed JSON. Raises on total failure."""
+    cookies = _get_espn_cookies()
     last_error: Exception | None = None
+
     for attempt in range(retries + 1):
         try:
-            resp = requests.get(url, timeout=30, headers={
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                'Accept': 'application/json',
-            })
+            resp = requests.get(
+                url,
+                params=params,
+                timeout=30,
+                headers=_base_headers(),
+                cookies=cookies if cookies else None,
+            )
             resp.raise_for_status()
             time.sleep(DEFAULT_DELAY)
             return resp.json()
