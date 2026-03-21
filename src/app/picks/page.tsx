@@ -1,0 +1,83 @@
+import { fetchDashboardData } from "@/lib/sheets";
+import { computeGroupAccuracy } from "@/lib/analytics";
+import { StatCard } from "@/components/ui/StatCard";
+import { PicksContent } from "./PicksContent";
+
+export const revalidate = 300;
+
+export default async function GroupPicksPage() {
+  const data = await fetchDashboardData();
+
+  const pickSplits: Record<string, { team1Count: number; team2Count: number }> = {};
+  for (const game of data.games) {
+    const gamePicks = data.picks.filter((p) => p.game_id === game.game_id);
+    const team1Count = gamePicks.filter(
+      (p) => p.team_picked === game.team1
+    ).length;
+    const team2Count = gamePicks.filter(
+      (p) => p.team_picked === game.team2
+    ).length;
+    pickSplits[game.game_id] = { team1Count, team2Count };
+  }
+
+  const accuracy = computeGroupAccuracy(
+    data.picks,
+    data.games,
+    data.meta.current_round,
+    data.brackets.length
+  );
+
+  // Conference pick analysis
+  const conferenceAdvances = new Map<string, number>();
+  for (const p of data.picks) {
+    if (p.round !== "R64") {
+      const team = data.teams.find((t) => t.name === p.team_picked);
+      if (team?.conference) {
+        conferenceAdvances.set(
+          team.conference,
+          (conferenceAdvances.get(team.conference) || 0) + 1
+        );
+      }
+    }
+  }
+
+  const confData: [string, number][] = [...conferenceAdvances.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  return (
+    <div className="space-y-section">
+      <div>
+        <h2 className="font-display text-2xl font-bold">Group Picks</h2>
+        <p className="text-on-surface-variant text-sm mt-1">
+          See how our {data.brackets.length} brackets collectively predicted
+          each game
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard
+          label="Group Accuracy (Current Round)"
+          value={`${accuracy.correct}/${accuracy.total}`}
+          subtitle={`National avg: ${accuracy.nationalCorrect}/${accuracy.total}`}
+        />
+        <StatCard
+          label="Total Brackets"
+          value={data.brackets.length}
+        />
+        <StatCard
+          label="Games Completed"
+          value={`${data.meta.games_completed}/63`}
+        />
+      </div>
+
+      <PicksContent
+        games={data.games}
+        pickSplits={pickSplits}
+        totalBrackets={data.brackets.length}
+        conferenceData={confData}
+        currentRound={data.meta.current_round}
+      />
+    </div>
+  );
+}
