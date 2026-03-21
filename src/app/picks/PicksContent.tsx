@@ -36,25 +36,57 @@ export function PicksContent({
     : "consensus";
 
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [round, setRound] = useState<Round>(currentRound);
+
+  const VALID_ROUNDS: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
+  const initialRound = (() => {
+    const param = searchParams.get("round");
+    if (param && VALID_ROUNDS.includes(param as Round)) return param as Round;
+    return currentRound;
+  })();
+  const [round, setRound] = useState<Round>(initialRound);
+
+  const updateUrl = useCallback(
+    (params: URLSearchParams) => {
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [router]
+  );
 
   const changeTab = useCallback(
     (newTab: Tab) => {
       setTab(newTab);
       const params = new URLSearchParams(searchParams.toString());
       params.set("tab", newTab);
-      router.replace(`?${params.toString()}`, { scroll: false });
+      updateUrl(params);
     },
-    [searchParams, router]
+    [searchParams, updateUrl]
   );
 
-  // Keep tab in sync if user navigates back/forward
+  const changeRound = useCallback(
+    (newRound: Round) => {
+      setRound(newRound);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("round", newRound);
+      updateUrl(params);
+    },
+    [searchParams, updateUrl]
+  );
+
+  // Keep tab and round in sync if user navigates back/forward
   useEffect(() => {
     const paramTab = searchParams.get("tab");
     if (isValidTab(paramTab) && paramTab !== tab) {
       setTab(paramTab);
     }
-  }, [searchParams, tab]);
+    const paramRound = searchParams.get("round");
+    if (
+      paramRound &&
+      VALID_ROUNDS.includes(paramRound as Round) &&
+      paramRound !== round
+    ) {
+      setRound(paramRound as Round);
+    }
+  }, [searchParams, tab, round]);
 
   const filteredGames = games.filter((g) => g.round === round);
   const maxConfCount = conferenceData[0]?.[1] || 1;
@@ -83,7 +115,7 @@ export function PicksContent({
           >
             Tournament Lens
           </button>
-          <span className="text-[10px] text-on-surface-variant ml-4 -mt-1">
+          <span className="text-[10px] text-on-surface-variant ml-4 mt-1 pb-1">
             Conference &amp; region trends
           </span>
         </div>
@@ -91,7 +123,7 @@ export function PicksContent({
 
       {tab === "consensus" && (
         <div className="space-y-section">
-          <RoundSelector selected={round} onSelect={setRound} />
+          <RoundSelector selected={round} onSelect={changeRound} />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredGames.map((game) => (
               <GameCard
@@ -120,9 +152,7 @@ export function PicksContent({
               How we pick by conference
             </h3>
             <p className="text-sm text-on-surface-variant">
-              Discover how our group&apos;s pick tendencies compare to
-              historical patterns &mdash; which conferences and seeds we believe
-              in most.
+              See which conferences and seeds our group is betting on &mdash; and how our tendencies compare across regions. Useful for understanding group bias and spotting contrarian opportunities.
             </p>
             <div className="space-y-2">
               {conferenceData.map(([conf, count]) => (
@@ -148,18 +178,52 @@ export function PicksContent({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {["R1", "R2", "R3", "R4"].map((region) => {
+              const regionNum = region.replace("R", "");
+              const regionNames: Record<string, string> = {
+                "1": "East",
+                "2": "West",
+                "3": "South",
+                "4": "Midwest",
+              };
+              const regionLabel = regionNames[regionNum] || `Region ${regionNum}`;
               const regionGames = games.filter(
                 (g) => g.region === region
               );
               const completed = regionGames.filter((g) => g.completed).length;
+
+              // Find the best surviving seed (lowest seed number = highest rank) still in the bracket
+              // A team is eliminated if they lost a completed game
+              const eliminatedTeams = new Set<string>();
+              for (const g of regionGames) {
+                if (g.completed && g.winner) {
+                  const loser = g.winner === g.team1 ? g.team2 : g.team1;
+                  eliminatedTeams.add(loser);
+                }
+              }
+              // Collect all teams in this region with their seeds
+              const teamSeeds = new Map<string, number>();
+              for (const g of regionGames) {
+                if (!teamSeeds.has(g.team1)) teamSeeds.set(g.team1, g.seed1);
+                if (!teamSeeds.has(g.team2)) teamSeeds.set(g.team2, g.seed2);
+              }
+              const aliveEntries = [...teamSeeds.entries()]
+                .filter(([name]) => !eliminatedTeams.has(name))
+                .sort((a, b) => a[1] - b[1]);
+              const topAlive = aliveEntries[0];
+
               return (
                 <div
                   key={region}
                   className="rounded-card bg-surface-container p-4 space-y-2"
                 >
                   <span className="font-label text-xs text-on-surface-variant uppercase">
-                    Region {region.replace("R", "")}
+                    {regionLabel} Region
                   </span>
+                  {topAlive && (
+                    <p className="font-label text-xs text-primary truncate">
+                      #{topAlive[1]} {topAlive[0]}&apos;s path
+                    </p>
+                  )}
                   <p className="font-display text-lg font-semibold text-on-surface">
                     {completed}/{regionGames.length} complete
                   </p>
