@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-surface: #0a0f14;
+  --color-surface-container: #141a20;
+  --color-surface-bright: #252d35;
+  --color-surface-variant: #1c2430;
+  --color-primary: #ff9159;
+  --color-primary-container: #ff7a2f;
+  --color-secondary: #2dd4bf;
+  --color-secondary-fixed: #5eead4;
+  --color-tertiary: #a78bfa;
+  --color-tertiary-fixed: #c4b5fd;
+  --color-achievement: #fbbf24;
+  --color-action: #fb923c;
+  --color-on-surface: #e7ebf3;
+  --color-on-surface-variant: #8b95a5;
+  --color-on-primary: #0a0f14;
+  --color-outline: rgba(67, 72, 78, 0.15);
+
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Space Grotesk", monospace;
+
+  --radius-card: 12px;
+  --spacing-tight: 0.5rem;
+  --spacing-section: 1.75rem;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+}
+
+.glass {
+  background: rgba(28, 36, 48, 0.6);
+  backdrop-filter: blur(20px);
+}
+
+.glow-primary {
+  box-shadow: 0 0 16px rgba(255, 145, 89, 0.3);
+}
+
+.ghost-border {
+  border: 1px solid rgba(67, 72, 78, 0.15);
+}
+
+.eliminated {
+  opacity: 0.4;
+  filter: grayscale(0.5);
+}
