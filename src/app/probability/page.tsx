@@ -9,6 +9,7 @@ export default async function ProbabilityPage() {
   const simResults = runMonteCarlo(data.brackets, data.picks, data.games, 1000);
 
   const probData = data.brackets
+    .filter((b) => b.champion_pick !== "")
     .map((b) => {
       const sim = simResults.get(b.id);
       return {
@@ -18,6 +19,8 @@ export default async function ProbabilityPage() {
         champion: b.champion_pick,
         median_rank: sim?.median_rank ?? data.brackets.length,
         best_rank: sim?.best_rank ?? data.brackets.length,
+        max_remaining: b.max_remaining,
+        points: b.points,
       };
     })
     .sort((a, b) => b.probability - a.probability);

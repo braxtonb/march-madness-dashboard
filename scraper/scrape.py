@@ -30,7 +30,7 @@ GAMES_HEADERS = [
     'game_id', 'round', 'region', 'team1', 'seed1', 'team2', 'seed2',
     'winner', 'completed', 'national_pct_team1',
 ]
-TEAMS_HEADERS = ['name', 'seed', 'region', 'conference', 'eliminated', 'eliminated_round']
+TEAMS_HEADERS = ['name', 'seed', 'region', 'conference', 'eliminated', 'eliminated_round', 'logo']
 SNAPSHOTS_HEADERS = ['bracket_id', 'round', 'rank', 'points', 'max_remaining', 'win_prob']
 
 

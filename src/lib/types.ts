@@ -55,6 +55,7 @@ export interface Team {
   conference: string;
   eliminated: boolean;
   eliminated_round: string;
+  logo: string;
 }
 
 /** Matches the `snapshots` Sheet tab */

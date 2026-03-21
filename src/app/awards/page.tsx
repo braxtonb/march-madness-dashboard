@@ -137,24 +137,25 @@ export default async function AwardsPage() {
   const data = await fetchDashboardData();
   const currentRound = data.meta.current_round;
 
-  // Determine completed rounds (all rounds before the current round, plus current if it has picks)
-  const currentRoundIndex = ROUND_ORDER.indexOf(currentRound);
-  const completedRounds: Round[] = [];
-  for (let i = 0; i <= currentRoundIndex; i++) {
-    const round = ROUND_ORDER[i];
-    const hasPicks = data.picks.some((p) => p.round === round);
-    if (hasPicks) completedRounds.push(round);
-  }
+  // Show ALL rounds in the selector, including future ones
+  const allRounds: Round[] = [...ROUND_ORDER];
 
-  // Compute awards for each completed round
+  // Compute awards for every round — future rounds with no picks get empty awards
   const awardsByRound: Record<string, Award[]> = {};
-  for (const round of completedRounds) {
-    awardsByRound[round] = computeAwards(data.brackets, data.picks, round, data.brackets.length);
+  for (const round of allRounds) {
+    const hasPicks = data.picks.some((p) => p.round === round);
+    if (hasPicks) {
+      awardsByRound[round] = computeAwards(data.brackets, data.picks, round, data.brackets.length);
+    } else {
+      // No completed games for this round — show all 6 empty award cards
+      awardsByRound[round] = AWARD_DEFINITIONS.map((def) => emptyAward(def));
+    }
   }
 
-  // Default to the latest completed round, or the current round
-  const defaultRound = completedRounds.length > 0
-    ? completedRounds[completedRounds.length - 1]
+  // Default to the latest round that has picks, or the current round
+  const roundsWithPicks = allRounds.filter((r) => data.picks.some((p) => p.round === r));
+  const defaultRound = roundsWithPicks.length > 0
+    ? roundsWithPicks[roundsWithPicks.length - 1]
     : currentRound;
 
   return (
@@ -168,7 +169,7 @@ export default async function AwardsPage() {
 
       <AwardsClient
         awardsByRound={awardsByRound}
-        completedRounds={completedRounds}
+        completedRounds={allRounds}
         currentRound={defaultRound}
       />
     </div>

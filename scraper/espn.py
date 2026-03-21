@@ -343,6 +343,7 @@ def parse_teams(outcome_map: dict[str, dict]) -> list[dict]:
             'conference': team.get('conference', ''),
             'eliminated': False,
             'eliminated_round': '',
+            'logo': team.get('logo', ''),
         })
 
     return teams

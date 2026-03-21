@@ -1,11 +1,99 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import type { Bracket, Pick, Game, BracketAnalytics, Round } from "@/lib/types";
 import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 
 type DiffFilter = "all" | "differences" | "agreement";
+
+/* ── Custom searchable dropdown ── */
+function BracketDropdown({
+  brackets,
+  value,
+  onChange,
+  label,
+}: {
+  brackets: Bracket[];
+  value: string;
+  onChange: (id: string) => void;
+  label: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const selected = brackets.find((b) => b.id === value);
+
+  const filtered = useMemo(() => {
+    if (!query) return brackets;
+    const q = query.toLowerCase();
+    return brackets.filter(
+      (b) =>
+        b.name.toLowerCase().includes(q) ||
+        b.owner.toLowerCase().includes(q)
+    );
+  }, [brackets, query]);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div className="space-y-2" ref={containerRef}>
+      <label className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={open ? query : selected ? `${selected.name} — ${selected.owner}` : ""}
+          placeholder="Search brackets..."
+          onFocus={() => {
+            setOpen(true);
+            setQuery("");
+          }}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-full rounded-card bg-surface-container border border-outline-variant px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant"
+        />
+        {open && (
+          <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-card bg-surface-container border border-outline-variant shadow-lg">
+            {filtered.length === 0 && (
+              <div className="px-4 py-3 text-sm text-on-surface-variant">No matches</div>
+            )}
+            {filtered.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => {
+                  onChange(b.id);
+                  setOpen(false);
+                  setQuery("");
+                  inputRef.current?.blur();
+                }}
+                className={`w-full text-left px-4 py-2.5 hover:bg-surface-bright transition-colors ${
+                  b.id === value ? "bg-surface-bright" : ""
+                }`}
+              >
+                <span className="text-sm font-medium text-on-surface">{b.name}</span>
+                <span className="text-xs text-on-surface-variant ml-2">{b.owner}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function HeadToHeadContent({
   brackets,
@@ -82,40 +170,8 @@ export function HeadToHeadContent({
     <div className="space-y-6">
       {/* Bracket selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
-            Bracket 1
-          </label>
-          <select
-            value={id1}
-            onChange={(e) => setId1(e.target.value)}
-            className="w-full rounded-card bg-surface-container border border-outline-variant px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
-          >
-            <option value="">Select a bracket...</option>
-            {brackets.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name} — {b.owner}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <label className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
-            Bracket 2
-          </label>
-          <select
-            value={id2}
-            onChange={(e) => setId2(e.target.value)}
-            className="w-full rounded-card bg-surface-container border border-outline-variant px-4 py-3 text-sm text-on-surface outline-none focus:border-primary transition-colors"
-          >
-            <option value="">Select a bracket...</option>
-            {brackets.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name} — {b.owner}
-              </option>
-            ))}
-          </select>
-        </div>
+        <BracketDropdown brackets={brackets} value={id1} onChange={setId1} label="Bracket 1" />
+        <BracketDropdown brackets={brackets} value={id2} onChange={setId2} label="Bracket 2" />
       </div>
 
       {b1 && b2 && a1 && a2 ? (
@@ -199,8 +255,8 @@ export function HeadToHeadContent({
                     onClick={() => setDiffFilter(opt.value)}
                     className={`rounded-full px-3 py-1.5 text-xs font-label transition-colors ${
                       diffFilter === opt.value
-                        ? "bg-secondary text-on-secondary"
-                        : "bg-surface-container text-on-surface-variant hover:text-on-surface"
+                        ? "bg-surface-bright text-on-surface"
+                        : "text-on-surface-variant hover:text-on-surface"
                     }`}
                   >
                     {opt.label}
@@ -230,8 +286,8 @@ export function HeadToHeadContent({
                   key={g.game_id}
                   className={`rounded-card border p-4 ${
                     same
-                      ? "bg-surface border-outline-variant border-l-4 border-l-secondary/60"
-                      : "bg-surface border-outline-variant border-l-4 border-l-action"
+                      ? "bg-surface border-outline-variant border-l-4 border-l-teal-500/30"
+                      : "bg-surface border-outline-variant border-l-4 border-l-orange-400/30"
                   }`}
                 >
                   {/* Game header */}
@@ -350,11 +406,11 @@ export function HeadToHeadContent({
           </p>
           <div className="flex justify-center gap-6 mt-4 text-xs text-on-surface-variant">
             <div className="flex items-center gap-2">
-              <span className="inline-block w-3 h-3 rounded-sm border-l-4 border-l-secondary/60 bg-surface" />
+              <span className="inline-block w-3 h-3 rounded-sm border-l-4 border-l-teal-500/30 bg-surface" />
               Matching picks
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-block w-3 h-3 rounded-sm border-l-4 border-l-action bg-surface" />
+              <span className="inline-block w-3 h-3 rounded-sm border-l-4 border-l-orange-400/30 bg-surface" />
               Different picks
             </div>
           </div>
