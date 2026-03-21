@@ -16,7 +16,7 @@ export function Navbar({ meta }: { meta: Meta | null }) {
   }
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-surface-container">
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-[#141a20]/60 backdrop-blur-xl shadow-2xl shadow-black/50">
       <div className="flex items-center gap-4">
         <h1 className="font-display text-lg font-bold text-on-surface">
           DoorDash AP 2026 Bracket Lab
@@ -26,7 +26,13 @@ export function Navbar({ meta }: { meta: Meta | null }) {
         </span>
       </div>
       <div className="flex items-center gap-4 text-sm text-on-surface-variant">
-        <span>{gamesCompleted}/63 games</span>
+        <span className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+          </span>
+          {gamesCompleted}/63 games
+        </span>
         <span>Updated {lastUpdated}</span>
       </div>
     </nav>

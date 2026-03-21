@@ -41,10 +41,10 @@ export function ChampionDonut({ data }: { data: ChampionSlice[] }) {
         </Pie>
         <Tooltip
           contentStyle={{
-            backgroundColor: "#1e2a36",
-            border: "1px solid rgba(0, 240, 214, 0.2)",
+            backgroundColor: "#1a2027",
+            border: "1px solid rgba(0, 244, 254, 0.15)",
             borderRadius: "12px",
-            color: "#f0f4ff",
+            color: "#e7ebf3",
             fontFamily: "Inter",
             fontSize: "12px",
             padding: "8px 12px",

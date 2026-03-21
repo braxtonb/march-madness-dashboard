@@ -19,7 +19,7 @@ export function ProbabilityJourney({ data, bracketNames }: { data: JourneyPoint[
         <XAxis dataKey="round" tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }} />
         <YAxis tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }} tickFormatter={(v) => `${v}%`} />
         <Tooltip
-          contentStyle={{ backgroundColor: "#141a20", border: "none", borderRadius: "12px", color: "#e7ebf3", fontFamily: "Inter" }}
+          contentStyle={{ backgroundColor: "#1a2027", border: "1px solid rgba(0, 244, 254, 0.15)", borderRadius: "12px", color: "#e7ebf3", fontFamily: "Inter", fontSize: "12px" }}
           formatter={(value: number) => `${value.toFixed(1)}%`}
         />
         <Legend wrapperStyle={{ fontSize: "11px", fontFamily: "Space Grotesk" }} />

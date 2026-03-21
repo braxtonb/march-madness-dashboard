@@ -8,11 +8,11 @@ export function StatCard({
   subtitle?: string;
 }) {
   return (
-    <div className="rounded-card bg-surface-container p-5 flex flex-col gap-1">
+    <div className="rounded-card bg-surface-container p-6 flex flex-col gap-1 hover:bg-surface-bright transition-all duration-300">
       <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
         {label}
       </span>
-      <span className="font-display text-2xl font-bold text-on-surface">
+      <span className="font-display text-3xl font-black text-on-surface">
         {value}
       </span>
       {subtitle && (
