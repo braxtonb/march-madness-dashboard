@@ -4,21 +4,27 @@ import { useState } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { DrilldownTable } from "@/components/tables/DrilldownTable";
 
-type Filter = "champion" | "ff3" | "all";
+type Filter = "champion" | "ff3" | "ff2" | "all";
 
 export function AliveContent({
   brackets,
   analyticsObj,
   eliminatedArr,
+  bracketFFTeamsMap,
 }: {
   brackets: Bracket[];
   analyticsObj: Record<string, BracketAnalytics>;
   eliminatedArr: string[];
+  bracketFFTeamsMap: Record<string, string[]>;
 }) {
   const [filter, setFilter] = useState<Filter>("champion");
 
   const eliminatedTeams = new Set(eliminatedArr);
   const analytics = new Map(Object.entries(analyticsObj));
+
+  function getFFTeams(b: Bracket): string[] {
+    return bracketFFTeamsMap[b.id] ?? [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+  }
 
   let filtered: Bracket[];
   switch (filter) {
@@ -32,8 +38,16 @@ export function AliveContent({
     case "ff3":
       filtered = brackets
         .filter((b) => {
-          const ffTeams = [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+          const ffTeams = getFFTeams(b);
           return ffTeams.filter((t) => !eliminatedTeams.has(t)).length >= 3;
+        })
+        .sort((a, b) => b.points - a.points);
+      break;
+    case "ff2":
+      filtered = brackets
+        .filter((b) => {
+          const ffTeams = getFFTeams(b);
+          return ffTeams.filter((t) => !eliminatedTeams.has(t)).length >= 2;
         })
         .sort((a, b) => b.points - a.points);
       break;
@@ -43,11 +57,12 @@ export function AliveContent({
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {(
           [
             ["champion", "Champion Alive"],
-            ["ff3", "3+ Final Four Teams"],
+            ["ff3", "3+ Final Four"],
+            ["ff2", "2+ Final Four"],
             ["all", "All Brackets"],
           ] as const
         ).map(([key, label]) => (

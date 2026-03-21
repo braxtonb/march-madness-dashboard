@@ -3,6 +3,7 @@ import { computeAllAnalytics } from "@/lib/analytics";
 import { StatCard } from "@/components/ui/StatCard";
 import { ChampionDonut } from "@/components/charts/ChampionDonut";
 import { AliveContent } from "./AliveContent";
+import { GamesToWatch } from "./GamesToWatch";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default async function AliveBoardPage() {
   const data = await fetchDashboardData();
   const analytics = computeAllAnalytics(data);
 
-  const { brackets, teams, games } = data;
+  const { brackets, picks, teams, games } = data;
 
   // Derive elimination from game results: a team is eliminated if it lost a completed game
   const eliminatedTeams = new Set<string>();
@@ -25,10 +26,35 @@ export default async function AliveBoardPage() {
     (b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick)
   ).length;
 
+  // Build a map of bracket_id -> set of FF-round picked teams from picks data.
+  // This is more reliable than ff1-ff4 fields which may have empty strings.
+  const bracketFFPicks = new Map<string, Set<string>>();
+  for (const p of picks) {
+    if (p.round === "FF" || p.round === "CHAMP") {
+      if (!bracketFFPicks.has(p.bracket_id))
+        bracketFFPicks.set(p.bracket_id, new Set());
+      bracketFFPicks.get(p.bracket_id)!.add(p.team_picked);
+    }
+  }
+
+  // For each bracket, gather unique FF teams from both picks data and ff1-ff4 fields
+  function getFFTeams(b: (typeof brackets)[0]): string[] {
+    const fromFields = [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+    const fromPicks = bracketFFPicks.get(b.id);
+    const combined = new Set([...fromFields, ...(fromPicks ? [...fromPicks] : [])]);
+    return [...combined];
+  }
+
   const ff3Plus = brackets.filter((b) => {
-    const ffTeams = [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+    const ffTeams = getFFTeams(b);
     const alive = ffTeams.filter((t) => !eliminatedTeams.has(t)).length;
     return alive >= 3;
+  }).length;
+
+  const ff2Plus = brackets.filter((b) => {
+    const ffTeams = getFFTeams(b);
+    const alive = ffTeams.filter((t) => !eliminatedTeams.has(t)).length;
+    return alive >= 2;
   }).length;
 
   const champCounts = new Map<string, number>();
@@ -51,15 +77,34 @@ export default async function AliveBoardPage() {
   const upcomingGames = games.filter((g) => !g.completed);
   const gamesToWatch = upcomingGames
     .map((g) => {
-      const affectedCount = brackets.filter(
+      const affectedBrackets = brackets.filter(
         (b) =>
           b.champion_pick === g.team1 || b.champion_pick === g.team2
-      ).length;
-      return { game: g, affectedCount };
+      );
+      const affectedNames = affectedBrackets.map((b) => ({
+        name: b.name,
+        champion: b.champion_pick,
+      }));
+      return {
+        gameId: g.game_id,
+        seed1: g.seed1,
+        team1: g.team1,
+        seed2: g.seed2,
+        team2: g.team2,
+        round: g.round,
+        affectedCount: affectedBrackets.length,
+        affectedBrackets: affectedNames,
+      };
     })
     .filter((x) => x.affectedCount > 0)
     .sort((a, b) => b.affectedCount - a.affectedCount)
-    .slice(0, 3);
+    .slice(0, 5);
+
+  // Serialize FF teams map for client component
+  const bracketFFTeamsMap: Record<string, string[]> = {};
+  for (const b of brackets) {
+    bracketFFTeamsMap[b.id] = getFFTeams(b);
+  }
 
   // Serialize for client component
   const analyticsObj = Object.fromEntries(analytics);
@@ -86,8 +131,9 @@ export default async function AliveBoardPage() {
           subtitle="brackets have 3+ Final Four teams left"
         />
         <StatCard
-          label="Total Brackets"
-          value={brackets.length}
+          label="2+ Final Four Teams"
+          value={ff2Plus}
+          subtitle="brackets have 2+ Final Four teams left"
         />
         <StatCard
           label="Games Remaining"
@@ -103,37 +149,14 @@ export default async function AliveBoardPage() {
           <ChampionDonut data={champDistribution} />
         </div>
 
-        <div className="rounded-card bg-surface-container p-5 space-y-3">
-          <h3 className="font-display text-lg font-semibold">
-            Games to Watch
-          </h3>
-          {gamesToWatch.length === 0 && (
-            <p className="text-on-surface-variant text-sm">
-              No upcoming games affecting champion picks.
-            </p>
-          )}
-          {gamesToWatch.map(({ game, affectedCount }) => (
-            <div
-              key={game.game_id}
-              className="rounded-card bg-surface-bright p-4 space-y-2"
-            >
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-on-surface">
-                  {game.seed1} {game.team1} vs {game.seed2} {game.team2}
-                </span>
-              </div>
-              <p className="text-xs text-on-surface-variant">
-                Affects {affectedCount} brackets&apos; champion hopes
-              </p>
-            </div>
-          ))}
-        </div>
+        <GamesToWatch games={gamesToWatch} />
       </div>
 
       <AliveContent
         brackets={brackets}
         analyticsObj={analyticsObj}
         eliminatedArr={eliminatedArr}
+        bracketFFTeamsMap={bracketFFTeamsMap}
       />
     </div>
   );

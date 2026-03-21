@@ -1,16 +1,29 @@
 import { fetchDashboardData } from "@/lib/sheets";
 import { computePickRates } from "@/lib/analytics";
-import { AwardCard } from "@/components/ui/AwardCard";
+import { ROUND_ORDER } from "@/lib/constants";
+import { AwardsClient } from "@/components/ui/AwardsClient";
+import type { Award } from "@/components/ui/AwardsClient";
 import type { Bracket, Pick, Round } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-interface Award {
-  title: string;
-  winner: string;
-  bracketName: string;
-  stat: string;
-  tier: "gold" | "silver" | "bronze";
+const AWARD_DEFINITIONS: { title: string; tier: "gold" | "silver" | "bronze" }[] = [
+  { title: "The Oracle", tier: "gold" },
+  { title: "The Trendsetter", tier: "gold" },
+  { title: "The Faithful", tier: "silver" },
+  { title: "Hot Streak", tier: "silver" },
+  { title: "Momentum Builder", tier: "bronze" },
+  { title: "The People's Champion", tier: "bronze" },
+];
+
+function emptyAward(def: { title: string; tier: "gold" | "silver" | "bronze" }): Award {
+  return {
+    title: def.title,
+    winner: "No winner yet",
+    bracketName: "",
+    stat: "Awaiting results",
+    tier: def.tier,
+  };
 }
 
 function computeAwards(
@@ -29,20 +42,22 @@ function computeAwards(
   }
 
   const bracketMap = new Map(brackets.map((b) => [b.id, b]));
+  const sorted = [...brackets].sort((a, b) => b.points - a.points);
+
   const awards: Award[] = [];
 
-  // The Oracle — most correct picks this round
+  // 1. The Oracle — most correct picks this round
   let oracleBest = { id: "", count: 0 };
   for (const [bid, bPicks] of picksByBracket) {
     const correct = bPicks.filter((p) => p.correct).length;
     if (correct > oracleBest.count) oracleBest = { id: bid, count: correct };
   }
-  if (oracleBest.id) {
+  if (oracleBest.id && oracleBest.count > 0) {
     const b = bracketMap.get(oracleBest.id)!;
     awards.push({ title: "The Oracle", winner: b.name, bracketName: b.owner, stat: `${oracleBest.count} correct picks this round`, tier: "gold" });
   }
 
-  // The Trendsetter — most unique correct picks
+  // 2. The Trendsetter — most unique correct picks
   let trendBest = { id: "", count: 0 };
   for (const [bid, bPicks] of picksByBracket) {
     const uniqueCorrect = bPicks.filter((p) => {
@@ -52,19 +67,18 @@ function computeAwards(
     }).length;
     if (uniqueCorrect > trendBest.count) trendBest = { id: bid, count: uniqueCorrect };
   }
-  if (trendBest.id) {
+  if (trendBest.id && trendBest.count > 0) {
     const b = bracketMap.get(trendBest.id)!;
     awards.push({ title: "The Trendsetter", winner: b.name, bracketName: b.owner, stat: `${trendBest.count} unique correct picks`, tier: "gold" });
   }
 
-  // The Faithful — highest scorer with champion pick
-  const sorted = [...brackets].sort((a, b) => b.points - a.points);
+  // 3. The Faithful — highest scorer whose champion is still alive
   const faithful = sorted.find((b) => b.champion_pick !== "");
   if (faithful) {
     awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts, champion: ${faithful.champion_pick}`, tier: "silver" });
   }
 
-  // Hot Streak — most consecutive correct picks
+  // 4. Hot Streak — most consecutive correct picks
   let streakBest = { id: "", count: 0 };
   for (const [bid, bPicks] of picksByBracket) {
     let streak = 0, maxStreak = 0;
@@ -74,23 +88,23 @@ function computeAwards(
     }
     if (maxStreak > streakBest.count) streakBest = { id: bid, count: maxStreak };
   }
-  if (streakBest.id) {
+  if (streakBest.id && streakBest.count > 0) {
     const b = bracketMap.get(streakBest.id)!;
     awards.push({ title: "Hot Streak", winner: b.name, bracketName: b.owner, stat: `${streakBest.count} consecutive correct picks`, tier: "silver" });
   }
 
-  // Momentum Builder — biggest rank climb
+  // 5. Momentum Builder — biggest rank climb
   let momentumBest = { id: "", delta: 0 };
   for (const b of brackets) {
     const delta = b.prev_rank > 0 ? b.prev_rank - (sorted.indexOf(b) + 1) : 0;
     if (delta > momentumBest.delta) momentumBest = { id: b.id, delta };
   }
-  if (momentumBest.id) {
+  if (momentumBest.id && momentumBest.delta > 0) {
     const b = bracketMap.get(momentumBest.id)!;
     awards.push({ title: "Momentum Builder", winner: b.name, bracketName: b.owner, stat: `Climbed ${momentumBest.delta} ranks this round`, tier: "bronze" });
   }
 
-  // The People's Champion — most aligned with consensus
+  // 6. The People's Champion — most aligned with consensus
   let peopleBest = { id: "", count: 0 };
   for (const [bid, bPicks] of picksByBracket) {
     const consensus = bPicks.filter((p) => {
@@ -99,10 +113,22 @@ function computeAwards(
     }).length;
     if (consensus > peopleBest.count) peopleBest = { id: bid, count: consensus };
   }
-  if (peopleBest.id) {
+  if (peopleBest.id && peopleBest.count > 0) {
     const b = bracketMap.get(peopleBest.id)!;
     awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count} picks aligned with group consensus`, tier: "bronze" });
   }
+
+  // Ensure all 6 awards are present. Fill in missing ones with "No winner yet".
+  const awardTitles = new Set(awards.map((a) => a.title));
+  for (const def of AWARD_DEFINITIONS) {
+    if (!awardTitles.has(def.title)) {
+      awards.push(emptyAward(def));
+    }
+  }
+
+  // Sort by the canonical order
+  const orderMap = new Map(AWARD_DEFINITIONS.map((d, i) => [d.title, i]));
+  awards.sort((a, b) => (orderMap.get(a.title) ?? 99) - (orderMap.get(b.title) ?? 99));
 
   return awards;
 }
@@ -110,7 +136,26 @@ function computeAwards(
 export default async function AwardsPage() {
   const data = await fetchDashboardData();
   const currentRound = data.meta.current_round;
-  const awards = computeAwards(data.brackets, data.picks, currentRound, data.brackets.length);
+
+  // Determine completed rounds (all rounds before the current round, plus current if it has picks)
+  const currentRoundIndex = ROUND_ORDER.indexOf(currentRound);
+  const completedRounds: Round[] = [];
+  for (let i = 0; i <= currentRoundIndex; i++) {
+    const round = ROUND_ORDER[i];
+    const hasPicks = data.picks.some((p) => p.round === round);
+    if (hasPicks) completedRounds.push(round);
+  }
+
+  // Compute awards for each completed round
+  const awardsByRound: Record<string, Award[]> = {};
+  for (const round of completedRounds) {
+    awardsByRound[round] = computeAwards(data.brackets, data.picks, round, data.brackets.length);
+  }
+
+  // Default to the latest completed round, or the current round
+  const defaultRound = completedRounds.length > 0
+    ? completedRounds[completedRounds.length - 1]
+    : currentRound;
 
   return (
     <div className="space-y-section">
@@ -121,23 +166,11 @@ export default async function AwardsPage() {
         </p>
       </div>
 
-      <div className="rounded-card bg-surface-container px-4 py-2 inline-block">
-        <span className="font-label text-xs text-on-surface-variant uppercase tracking-wider">
-          Showing awards for: {currentRound}
-        </span>
-      </div>
-
-      {awards.length === 0 && (
-        <div className="rounded-card bg-surface-container p-8 text-center">
-          <p className="text-on-surface-variant">No awards data available yet.</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {awards.map((award) => (
-          <AwardCard key={award.title} {...award} />
-        ))}
-      </div>
+      <AwardsClient
+        awardsByRound={awardsByRound}
+        completedRounds={completedRounds}
+        currentRound={defaultRound}
+      />
     </div>
   );
 }
