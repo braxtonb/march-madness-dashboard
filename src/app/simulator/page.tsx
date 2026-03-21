@@ -4,64 +4,6 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import type { DashboardData, Game, Round } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 
-/* ── helpers ─────────────────────────────────────────────────────── */
-
-/** Next round in the bracket progression */
-const NEXT_ROUND: Partial<Record<Round, Round>> = {
-  R64: "R32",
-  R32: "S16",
-  S16: "E8",
-  E8: "FF",
-  FF: "CHAMP",
-};
-
-/**
- * For regional rounds (R64→R32→S16→E8), games feed forward within the
- * same region. FF and CHAMP are cross-region.  We resolve "which game
- * does a team advance into?" by scanning later-round games for an
- * empty team slot in the same region (or any region for FF/CHAMP).
- */
-function findNextGame(
-  team: string,
-  currentRound: Round,
-  currentRegion: string,
-  allGames: Game[],
-  simulatedTeams: Map<string, { team1: string; seed1: number; team2: string; seed2: number }>,
-): string | null {
-  const nextRound = NEXT_ROUND[currentRound];
-  if (!nextRound) return null;
-
-  const isRegional = ["R64", "R32", "S16", "E8"].includes(currentRound);
-
-  // Find a game in the next round that either already has this team OR
-  // has an empty slot and is in the matching region (or any region for FF/CHAMP).
-  for (const g of allGames) {
-    if (g.round !== nextRound) continue;
-    if (isRegional && g.region !== currentRegion) continue;
-
-    const sim = simulatedTeams.get(g.game_id);
-    const t1 = sim?.team1 ?? g.team1;
-    const t2 = sim?.team2 ?? g.team2;
-
-    // If this team is already placed here, this is the right game
-    if (t1 === team || t2 === team) return g.game_id;
-
-    // If there is an empty slot, this team might fill it
-    if (!t1 || !t2) return g.game_id;
-  }
-  return null;
-}
-
-/** Build a seed lookup from the original games + teams data */
-function buildSeedMap(games: Game[]): Map<string, number> {
-  const m = new Map<string, number>();
-  for (const g of games) {
-    if (g.team1) m.set(g.team1, g.seed1);
-    if (g.team2) m.set(g.team2, g.seed2);
-  }
-  return m;
-}
-
 /* ── types ───────────────────────────────────────────────────────── */
 
 interface SimResult {
@@ -72,17 +14,6 @@ interface SimResult {
   simRank: number;
   basePoints: number;
   simPoints: number;
-}
-
-interface ResolvedGame {
-  game: Game;
-  /** The team names to display (may differ from game.team1/team2 if simulated) */
-  displayTeam1: string;
-  displaySeed1: number;
-  displayTeam2: string;
-  displaySeed2: number;
-  /** Is at least one team derived from a user selection rather than real data? */
-  isSimulated: boolean;
 }
 
 /* ── component ───────────────────────────────────────────────────── */
@@ -99,81 +30,24 @@ export default function SimulatorPage() {
       .catch(() => {});
   }, []);
 
-  /* ── cascading resolved games ─────────────────────────────────── */
+  /* ── group games by round ──────────────────────────────────────── */
 
-  const seedMap = useMemo(() => (data ? buildSeedMap(data.games) : new Map<string, number>()), [data]);
-
-  /**
-   * Walk the rounds in order.  For each game whose team slots are empty,
-   * try to fill them from completed-game winners or user selections in
-   * earlier rounds.
-   */
-  const resolvedGames: ResolvedGame[] = useMemo(() => {
-    if (!data) return [];
-
-    // Track simulated overrides: gameId → { team1, seed1, team2, seed2 }
-    const simTeams = new Map<string, { team1: string; seed1: number; team2: string; seed2: number }>();
-    // Track which game IDs have at least one simulated team
-    const simFlags = new Set<string>();
-
-    // Process round by round so earlier picks cascade into later rounds
+  const gamesByRound = useMemo(() => {
+    if (!data) return {} as Record<string, Game[]>;
+    const map: Record<string, Game[]> = {};
     for (const round of ROUND_ORDER) {
-      const roundGames = data.games.filter((g) => g.round === round);
-
-      for (const g of roundGames) {
-        // Determine effective winners for completed games or user-selected games
-        let winner: string | null = null;
-        if (g.completed && g.winner) {
-          winner = g.winner;
-        } else if (selections.has(g.game_id)) {
-          winner = selections.get(g.game_id)!;
-        }
-
-        if (!winner) continue;
-
-        // Find the next-round game this winner feeds into
-        const nextGameId = findNextGame(winner, g.round as Round, g.region, data.games, simTeams);
-        if (!nextGameId) continue;
-
-        const nextGame = data.games.find((ng) => ng.game_id === nextGameId);
-        if (!nextGame) continue;
-
-        const existing = simTeams.get(nextGameId) ?? {
-          team1: nextGame.team1,
-          seed1: nextGame.seed1,
-          team2: nextGame.team2,
-          seed2: nextGame.seed2,
-        };
-
-        const winnerSeed = seedMap.get(winner) ?? 0;
-
-        // Place into the first empty slot, or if team is already placed, leave it
-        if (existing.team1 === winner || existing.team2 === winner) {
-          // Already placed
-          simTeams.set(nextGameId, existing);
-        } else if (!existing.team1) {
-          simTeams.set(nextGameId, { ...existing, team1: winner, seed1: winnerSeed });
-          if (!g.completed) simFlags.add(nextGameId);
-        } else if (!existing.team2) {
-          simTeams.set(nextGameId, { ...existing, team2: winner, seed2: winnerSeed });
-          if (!g.completed) simFlags.add(nextGameId);
-        }
-        // else: both slots full — bracket structure mismatch; skip
-      }
+      const games = data.games.filter((g) => g.round === round);
+      if (games.length > 0) map[round] = games;
     }
+    return map;
+  }, [data]);
 
-    return data.games.map((g) => {
-      const sim = simTeams.get(g.game_id);
-      return {
-        game: g,
-        displayTeam1: sim?.team1 ?? g.team1,
-        displaySeed1: sim?.seed1 ?? g.seed1,
-        displayTeam2: sim?.team2 ?? g.team2,
-        displaySeed2: sim?.seed2 ?? g.seed2,
-        isSimulated: simFlags.has(g.game_id),
-      };
-    });
-  }, [data, selections, seedMap]);
+  /* ── pending games with both teams known ───────────────────────── */
+
+  const pickableGames = useMemo(() => {
+    if (!data) return [] as Game[];
+    return data.games.filter((g) => !g.completed && g.team1 && g.team2);
+  }, [data]);
 
   /* ── auto-simulate impact ──────────────────────────────────────── */
 
@@ -207,7 +81,7 @@ export default function SimulatorPage() {
       baseRanked.forEach((b, i) => baseRankMap.set(b.id, i + 1));
 
       setSimResults(
-        simRanked.slice(0, 15).map((s, i) => ({
+        simRanked.map((s, i) => ({
           ...s,
           baseRank: baseRankMap.get(s.id) || 0,
           simRank: i + 1,
@@ -228,71 +102,35 @@ export default function SimulatorPage() {
     setSelections((prev) => {
       const next = new Map(prev);
       if (next.get(gameId) === team) {
-        // Un-selecting — also clear any downstream selections that depended on this
         next.delete(gameId);
-        clearDownstream(next, gameId, team);
       } else {
-        // If switching from the other team, clear downstream of old pick first
-        const oldPick = next.get(gameId);
-        if (oldPick) clearDownstream(next, gameId, oldPick);
         next.set(gameId, team);
       }
       return next;
     });
   }
 
-  /**
-   * When a user un-picks or switches a winner, any downstream game that
-   * was populated with that team should be reset.
-   */
-  function clearDownstream(sel: Map<string, string>, _gameId: string, team: string) {
-    if (!data) return;
-    // Walk forward through rounds: if a later game had this team selected, remove it
-    for (const round of ROUND_ORDER) {
-      for (const g of data.games.filter((gm) => gm.round === round)) {
-        if (sel.get(g.game_id) === team) {
-          sel.delete(g.game_id);
-        }
-      }
-    }
-  }
-
   /** Pick the lower seed (favorite) for all known-team pending games */
   function setAllFavorites() {
+    if (!data) return;
     const next = new Map<string, string>();
-    for (const rg of resolvedGames) {
-      if (!rg.game.completed && rg.displayTeam1 && rg.displayTeam2) {
-        next.set(rg.game.game_id, rg.displaySeed1 <= rg.displaySeed2 ? rg.displayTeam1 : rg.displayTeam2);
-      }
+    for (const g of pickableGames) {
+      next.set(g.game_id, g.seed1 <= g.seed2 ? g.team1 : g.team2);
     }
     setSelections(next);
   }
 
   /** Pick the higher seed (underdog) for all known-team pending games */
   function setAllUnderdogs() {
+    if (!data) return;
     const next = new Map<string, string>();
-    for (const rg of resolvedGames) {
-      if (!rg.game.completed && rg.displayTeam1 && rg.displayTeam2) {
-        next.set(rg.game.game_id, rg.displaySeed1 > rg.displaySeed2 ? rg.displayTeam1 : rg.displayTeam2);
-      }
+    for (const g of pickableGames) {
+      next.set(g.game_id, g.seed1 > g.seed2 ? g.team1 : g.team2);
     }
     setSelections(next);
   }
 
-  /* ── group resolved games by round ─────────────────────────────── */
-
-  const gamesByRound = useMemo(() => {
-    const map: Record<string, ResolvedGame[]> = {};
-    for (const round of ROUND_ORDER) {
-      const games = resolvedGames.filter((rg) => rg.game.round === round);
-      if (games.length > 0) map[round] = games;
-    }
-    return map;
-  }, [resolvedGames]);
-
-  const totalPickable = resolvedGames.filter(
-    (rg) => !rg.game.completed && rg.displayTeam1 && rg.displayTeam2,
-  ).length;
+  const totalPickable = pickableGames.length;
 
   /* ── loading state ─────────────────────────────────────────────── */
 
@@ -318,8 +156,8 @@ export default function SimulatorPage() {
         </p>
       </div>
 
-      {/* Quick-fill buttons */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Quick-fill buttons — z-50 ensures they stay above sticky round headers (z-10/z-20) */}
+      <div className="relative z-50 flex gap-2 flex-wrap">
         <button
           onClick={setAllFavorites}
           className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
@@ -344,7 +182,7 @@ export default function SimulatorPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-section lg:items-start">
         {/* Left: game picker (scrolls independently) */}
         <div className="lg:col-span-2 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto lg:pr-2 space-y-4">
-          <h3 className="font-display text-lg font-semibold sticky top-0 bg-surface z-10 py-1">
+          <h3 className="font-display text-lg font-semibold sticky top-0 bg-surface z-20 py-1">
             All Games
           </h3>
 
@@ -354,9 +192,8 @@ export default function SimulatorPage() {
                 {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
               </h4>
 
-              {games.map((rg) => {
-                const { game: g, displayTeam1, displaySeed1, displayTeam2, displaySeed2, isSimulated } = rg;
-                const hasBothTeams = Boolean(displayTeam1 && displayTeam2);
+              {games.map((g) => {
+                const hasBothTeams = Boolean(g.team1 && g.team2);
                 const isCompleted = g.completed;
 
                 /* ── Completed game (locked) ── */
@@ -398,40 +235,29 @@ export default function SimulatorPage() {
                   return (
                     <div
                       key={g.game_id}
-                      className={`rounded-card p-3 ${
-                        isSimulated
-                          ? "border border-dashed border-secondary/40 bg-surface-container/80"
-                          : "bg-surface-container"
-                      }`}
+                      className="rounded-card bg-surface-container p-3"
                     >
-                      {isSimulated && (
-                        <div className="mb-1.5 flex items-center gap-1">
-                          <span className="inline-block rounded-full bg-secondary/15 px-2 py-0.5 text-[10px] font-label uppercase tracking-wider text-secondary">
-                            Simulated
-                          </span>
-                        </div>
-                      )}
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => toggleWinner(g.game_id, displayTeam1)}
+                          onClick={() => toggleWinner(g.game_id, g.team1)}
                           className={`flex-1 rounded-card px-3 py-2 text-xs font-label transition-colors ${
-                            selections.get(g.game_id) === displayTeam1
+                            selections.get(g.game_id) === g.team1
                               ? "bg-secondary/20 text-secondary glow-primary"
                               : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
                           }`}
                         >
-                          {displaySeed1} {displayTeam1}
+                          {g.seed1} {g.team1}
                         </button>
                         <span className="text-xs text-on-surface-variant">vs</span>
                         <button
-                          onClick={() => toggleWinner(g.game_id, displayTeam2)}
+                          onClick={() => toggleWinner(g.game_id, g.team2)}
                           className={`flex-1 rounded-card px-3 py-2 text-xs font-label transition-colors ${
-                            selections.get(g.game_id) === displayTeam2
+                            selections.get(g.game_id) === g.team2
                               ? "bg-secondary/20 text-secondary glow-primary"
                               : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
                           }`}
                         >
-                          {displaySeed2} {displayTeam2}
+                          {g.seed2} {g.team2}
                         </button>
                       </div>
                     </div>
@@ -446,15 +272,15 @@ export default function SimulatorPage() {
                   >
                     <div className="flex items-center gap-2">
                       <span className="flex-1 rounded-card px-3 py-2 text-xs font-label text-on-surface-variant/50 text-center">
-                        {displayTeam1 ? `${displaySeed1} ${displayTeam1}` : "TBD"}
+                        {g.team1 ? `${g.seed1} ${g.team1}` : "TBD"}
                       </span>
                       <span className="text-xs text-on-surface-variant/50">vs</span>
                       <span className="flex-1 rounded-card px-3 py-2 text-xs font-label text-on-surface-variant/50 text-center">
-                        {displayTeam2 ? `${displaySeed2} ${displayTeam2}` : "TBD"}
+                        {g.team2 ? `${g.seed2} ${g.team2}` : "TBD"}
                       </span>
                     </div>
                     <p className="text-[10px] text-on-surface-variant/40 italic text-center mt-1">
-                      Pick earlier rounds first
+                      TBD — pick earlier rounds first
                     </p>
                   </div>
                 );
@@ -480,9 +306,9 @@ export default function SimulatorPage() {
           )}
 
           {simResults.length > 0 && (
-            <div className="overflow-x-auto rounded-card bg-surface-container">
+            <div className="overflow-x-auto rounded-card bg-surface-container max-h-[calc(100vh-14rem)] overflow-y-auto">
               <table className="w-full text-sm">
-                <thead>
+                <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
                       Sim Rank
