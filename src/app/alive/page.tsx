@@ -12,9 +12,14 @@ export default async function AliveBoardPage() {
 
   const { brackets, teams, games } = data;
 
-  const eliminatedTeams = new Set(
-    teams.filter((t) => t.eliminated).map((t) => t.name)
-  );
+  // Derive elimination from game results: a team is eliminated if it lost a completed game
+  const eliminatedTeams = new Set<string>();
+  for (const g of games) {
+    if (g.completed && g.winner) {
+      if (g.team1 && g.team1 !== g.winner) eliminatedTeams.add(g.team1);
+      if (g.team2 && g.team2 !== g.winner) eliminatedTeams.add(g.team2);
+    }
+  }
 
   const champAlive = brackets.filter(
     (b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick)
@@ -76,9 +81,9 @@ export default async function AliveBoardPage() {
           subtitle="brackets still have their champion"
         />
         <StatCard
-          label="3+ Final Four"
+          label="3+ Final Four Teams"
           value={ff3Plus}
-          subtitle="brackets have 3+ FF teams left"
+          subtitle="brackets have 3+ Final Four teams left"
         />
         <StatCard
           label="Total Brackets"

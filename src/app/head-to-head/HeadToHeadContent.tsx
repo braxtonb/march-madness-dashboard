@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { Bracket, Pick, Game, BracketAnalytics } from "@/lib/types";
-import { ARCHETYPE_COLORS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
+import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import { StatCard } from "@/components/ui/StatCard";
 import { RadarComparison } from "@/components/charts/RadarComparison";
 
@@ -138,15 +138,7 @@ export function HeadToHeadContent({
               <p className="text-on-surface">
                 Rank #{a1.rank} | {b1.points} pts | MAX {b1.max_remaining}
               </p>
-              <span
-                className="rounded-full px-2 py-0.5 text-xs font-label"
-                style={{
-                  backgroundColor: `${ARCHETYPE_COLORS[a1.archetype]}20`,
-                  color: ARCHETYPE_COLORS[a1.archetype],
-                }}
-              >
-                {a1.archetype}
-              </span>
+              <p className="text-xs text-on-surface-variant">Champion: {b1.champion_pick}</p>
             </div>
             <div className="rounded-card bg-surface-container p-4 space-y-2">
               <p className="font-label text-base font-semibold text-on-surface">{b2.name}</p>
@@ -154,15 +146,7 @@ export function HeadToHeadContent({
               <p className="text-on-surface">
                 Rank #{a2.rank} | {b2.points} pts | MAX {b2.max_remaining}
               </p>
-              <span
-                className="rounded-full px-2 py-0.5 text-xs font-label"
-                style={{
-                  backgroundColor: `${ARCHETYPE_COLORS[a2.archetype]}20`,
-                  color: ARCHETYPE_COLORS[a2.archetype],
-                }}
-              >
-                {a2.archetype}
-              </span>
+              <p className="text-xs text-on-surface-variant">Champion: {b2.champion_pick}</p>
             </div>
           </div>
 

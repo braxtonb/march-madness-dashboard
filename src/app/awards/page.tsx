@@ -39,7 +39,7 @@ function computeAwards(
   }
   if (oracleBest.id) {
     const b = bracketMap.get(oracleBest.id)!;
-    awards.push({ title: "The Oracle", winner: b.owner, bracketName: b.name, stat: `${oracleBest.count} correct picks this round`, tier: "gold" });
+    awards.push({ title: "The Oracle", winner: b.name, bracketName: b.owner, stat: `${oracleBest.count} correct picks this round`, tier: "gold" });
   }
 
   // The Trendsetter — most unique correct picks
@@ -54,14 +54,14 @@ function computeAwards(
   }
   if (trendBest.id) {
     const b = bracketMap.get(trendBest.id)!;
-    awards.push({ title: "The Trendsetter", winner: b.owner, bracketName: b.name, stat: `${trendBest.count} unique correct picks`, tier: "gold" });
+    awards.push({ title: "The Trendsetter", winner: b.name, bracketName: b.owner, stat: `${trendBest.count} unique correct picks`, tier: "gold" });
   }
 
   // The Faithful — highest scorer with champion pick
   const sorted = [...brackets].sort((a, b) => b.points - a.points);
   const faithful = sorted.find((b) => b.champion_pick !== "");
   if (faithful) {
-    awards.push({ title: "The Faithful", winner: faithful.owner, bracketName: faithful.name, stat: `${faithful.points} pts, champion: ${faithful.champion_pick}`, tier: "silver" });
+    awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts, champion: ${faithful.champion_pick}`, tier: "silver" });
   }
 
   // Hot Streak — most consecutive correct picks
@@ -76,7 +76,7 @@ function computeAwards(
   }
   if (streakBest.id) {
     const b = bracketMap.get(streakBest.id)!;
-    awards.push({ title: "Hot Streak", winner: b.owner, bracketName: b.name, stat: `${streakBest.count} consecutive correct picks`, tier: "silver" });
+    awards.push({ title: "Hot Streak", winner: b.name, bracketName: b.owner, stat: `${streakBest.count} consecutive correct picks`, tier: "silver" });
   }
 
   // Momentum Builder — biggest rank climb
@@ -87,7 +87,7 @@ function computeAwards(
   }
   if (momentumBest.id) {
     const b = bracketMap.get(momentumBest.id)!;
-    awards.push({ title: "Momentum Builder", winner: b.owner, bracketName: b.name, stat: `Climbed ${momentumBest.delta} ranks this round`, tier: "bronze" });
+    awards.push({ title: "Momentum Builder", winner: b.name, bracketName: b.owner, stat: `Climbed ${momentumBest.delta} ranks this round`, tier: "bronze" });
   }
 
   // The People's Champion — most aligned with consensus
@@ -101,7 +101,7 @@ function computeAwards(
   }
   if (peopleBest.id) {
     const b = bracketMap.get(peopleBest.id)!;
-    awards.push({ title: "The People's Champion", winner: b.owner, bracketName: b.name, stat: `${peopleBest.count} picks aligned with group consensus`, tier: "bronze" });
+    awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count} picks aligned with group consensus`, tier: "bronze" });
   }
 
   return awards;

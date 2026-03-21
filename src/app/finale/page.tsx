@@ -29,7 +29,7 @@ export default async function FinalePage() {
     }
 
     return {
-      name: b.owner,
+      name: b.name,
       insight: insightDen > 0 ? Math.round((insightNum / insightDen) * 100) : 50,
       fortune: fortuneDen > 0 ? Math.round((fortuneNum / fortuneDen) * 100) : 50,
     };
@@ -78,8 +78,8 @@ export default async function FinalePage() {
           return (
             <div key={b.id} className="rounded-card bg-surface-container p-5 text-center space-y-2">
               <span className="text-4xl">{trophies[i]}</span>
-              <p className={`font-display text-xl font-bold ${colors[i]}`}>{b.owner}</p>
-              <p className="text-xs text-on-surface-variant">{b.name}</p>
+              <p className={`font-display text-xl font-bold ${colors[i]}`}>{b.name}</p>
+              <p className="text-xs text-on-surface-variant">{b.owner}</p>
               <p className="font-label text-lg text-on-surface">{b.points} pts</p>
               <TeamPill name={b.champion_pick} seed={b.champion_seed} />
             </div>
@@ -102,7 +102,7 @@ export default async function FinalePage() {
             {sorted.map((b, i) => (
               <tr key={b.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
                 <td className="px-3 py-2 font-label">{i + 1}</td>
-                <td className="px-3 py-2"><div className="text-on-surface">{b.owner}</div><div className="text-xs text-on-surface-variant">{b.name}</div></td>
+                <td className="px-3 py-2"><div className="text-on-surface">{b.name}</div><div className="text-xs text-on-surface-variant">{b.owner}</div></td>
                 <td className="px-3 py-2 font-label">{b.points}</td>
                 <td className="px-3 py-2 text-on-surface-variant">{b.champion_pick}</td>
               </tr>
@@ -125,7 +125,7 @@ export default async function FinalePage() {
           {greatestCalls.map((gc, i) => (
             <div key={i} className="flex items-center justify-between rounded-card bg-surface-bright px-4 py-3">
               <div>
-                <span className="text-on-surface font-body">{gc.bracket?.owner}</span>
+                <span className="text-on-surface font-body">{gc.bracket?.name}</span>
                 <span className="text-xs text-on-surface-variant ml-2">picked {gc.pick.team_picked} (seed {gc.pick.seed_picked})</span>
               </div>
               <span className="font-label text-xs text-secondary">Only {Math.round(gc.rate * 100)}% picked this</span>

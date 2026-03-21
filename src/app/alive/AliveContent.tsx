@@ -47,7 +47,7 @@ export function AliveContent({
         {(
           [
             ["champion", "Champion Alive"],
-            ["ff3", "3+ FF Teams"],
+            ["ff3", "3+ Final Four Teams"],
             ["all", "All Brackets"],
           ] as const
         ).map(([key, label]) => (

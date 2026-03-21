@@ -13,9 +13,14 @@ export default async function LeaderboardPage() {
   const { brackets, games, teams, meta } = data;
 
   const gamesCompleted = meta.games_completed;
-  const eliminatedTeams = new Set(
-    teams.filter((t) => t.eliminated).map((t) => t.name)
-  );
+  // Derive elimination from game results: a team is eliminated if it lost a completed game
+  const eliminatedTeams = new Set<string>();
+  for (const g of games) {
+    if (g.completed && g.winner) {
+      if (g.team1 && g.team1 !== g.winner) eliminatedTeams.add(g.team1);
+      if (g.team2 && g.team2 !== g.winner) eliminatedTeams.add(g.team2);
+    }
+  }
 
   // Most popular champion still standing
   const champCounts = new Map<string, number>();
@@ -96,10 +101,10 @@ export default async function LeaderboardPage() {
             >
               <div>
                 <span className="font-body text-on-surface">
-                  {bracket.owner}
+                  {bracket.name}
                 </span>
                 <span className="text-xs text-on-surface-variant ml-2">
-                  {bracket.name}
+                  {bracket.owner}
                 </span>
               </div>
               <span className="font-label text-secondary font-semibold">

@@ -30,6 +30,7 @@ export function AwardCard({
         <p className="font-body text-on-surface font-medium">{winner}</p>
         <p className="text-xs text-on-surface-variant">{bracketName}</p>
       </div>
+
       <p className="text-sm text-on-surface-variant">{stat}</p>
     </div>
   );
