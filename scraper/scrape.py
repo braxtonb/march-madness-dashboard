@@ -224,13 +224,66 @@ def run():
         logger.info(f"Wrote {len(snapshot_rows)} snapshot rows for {prev_round}")
 
     # Step 10: Update meta
-    store.update_meta({
+    meta = {
         'last_updated': datetime.now(timezone.utc).isoformat(),
         'current_round': current_round,
         'games_completed': games_completed,
-    })
+    }
+    store.update_meta(meta)
+
+    # Step 11: Export static JSON for the frontend (no Sheets API calls needed)
+    _export_data_json(brackets, all_picks, merged_games, teams, store, meta)
 
     logger.info(f"Done. {games_completed}/63 games. Round: {current_round}")
+
+
+def _export_data_json(brackets, picks, games, teams, store, meta):
+    """Export all dashboard data as a single JSON file for the frontend.
+
+    The frontend reads this instead of hitting the Sheets API, avoiding
+    rate limits entirely.
+    """
+    import json
+    from pathlib import Path
+
+    # Read snapshots from sheet (already written earlier)
+    try:
+        snapshots = store.read_tab('snapshots')
+    except Exception:
+        snapshots = []
+
+    # Normalize types for JSON serialization
+    def _normalize(rows, bool_fields=None):
+        bool_fields = bool_fields or []
+        result = []
+        for row in rows:
+            r = {}
+            for k, v in row.items():
+                if k in bool_fields:
+                    r[k] = str(v).lower() in ('true', '1') if isinstance(v, str) else bool(v)
+                elif isinstance(v, str) and v.replace('.', '', 1).replace('-', '', 1).isdigit():
+                    try:
+                        r[k] = int(v) if '.' not in v else float(v)
+                    except ValueError:
+                        r[k] = v
+                else:
+                    r[k] = v
+            result.append(r)
+        return result
+
+    data = {
+        'brackets': _normalize(brackets),
+        'picks': _normalize(picks, bool_fields=['correct', 'vacated']),
+        'games': _normalize(games, bool_fields=['completed']),
+        'teams': _normalize(teams, bool_fields=['eliminated']),
+        'snapshots': _normalize(snapshots),
+        'meta': meta,
+    }
+
+    out_path = Path(__file__).resolve().parent.parent / 'public' / 'data.json'
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(data, default=str), encoding='utf-8')
+    logger.info(f"Exported data.json ({out_path.stat().st_size // 1024}KB)")
 
 
 def _determine_current_round(games_completed: int) -> str:

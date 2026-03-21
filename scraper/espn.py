@@ -21,6 +21,18 @@ TEAM_CONFERENCES: dict[str, str] = {
     'Col of Chas': 'CAA', 'UNC Wilmington': 'CAA',
     'St Peter\'s': 'MAAC', 'Belmont': 'MVC', 'Montana St': 'Big Sky',
     'Merrimack': 'NEC', 'Howard': 'MEAC', 'Wagner': 'NEC',
+    # Additional 2026 tournament teams
+    'Saint Louis': 'A-10', 'Santa Clara': 'WCC', 'Iowa State': 'Big 12',
+    'Tennessee St': 'OVC', 'North Carolina': 'ACC', 'Penn': 'Ivy',
+    "Hawai'i": 'Big West', 'UCF': 'Big 12', 'Furman': 'SoCon',
+    'Siena': 'MAAC', 'Ohio State': 'Big Ten', 'TCU': 'Big 12',
+    'Miami': 'ACC', 'Queens': 'ASUN', 'Hofstra': 'CAA',
+    'Saint Mary\'s': 'WCC', 'Idaho': 'Big Sky', 'Long Island': 'NEC',
+    'Villanova': 'Big East', 'Utah State': 'MWC', 'Kennesaw St': 'ASUN',
+    'Miami OH': 'MAC', 'Virginia': 'ACC', 'Wright St': 'Horizon',
+    'Northern Iowa': 'MVC', 'CA Baptist': 'WAC', 'South Florida': 'AAC',
+    'N Dakota St': 'Summit', 'Prairie View': 'SWAC', 'Iowa': 'Big Ten',
+    'Vanderbilt': 'SEC', 'Nebraska': 'Big Ten',
 }
 
 # scoringPeriodId -> round label
