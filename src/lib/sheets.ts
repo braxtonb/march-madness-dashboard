@@ -142,38 +142,48 @@ function parseMeta(h: string[], r: string[]): Meta {
   };
 }
 
+const EMPTY_DATA: DashboardData = {
+  brackets: [],
+  picks: [],
+  games: [],
+  teams: [],
+  snapshots: [],
+  meta: { last_updated: "", current_round: "R64", games_completed: 0 },
+};
+
 export async function fetchDashboardData(): Promise<DashboardData> {
   // Return cache if fresh
   if (cache && Date.now() - cache.ts < CACHE_TTL_MS) {
     return cache.data;
   }
 
-  const auth = getAuth();
-  const sheets = google.sheets({ version: "v4", auth });
+  try {
+    const auth = getAuth();
+    const sheets = google.sheets({ version: "v4", auth });
 
-  const [bracketsRaw, picksRaw, gamesRaw, teamsRaw, snapshotsRaw, metaRaw] =
-    await Promise.all([
-      fetchTab(sheets, "brackets"),
-      fetchTab(sheets, "picks"),
-      fetchTab(sheets, "games"),
-      fetchTab(sheets, "teams"),
-      fetchTab(sheets, "snapshots"),
-      fetchTab(sheets, "meta"),
-    ]);
+    const [bracketsRaw, picksRaw, gamesRaw, teamsRaw, snapshotsRaw, metaRaw] =
+      await Promise.all([
+        fetchTab(sheets, "brackets"),
+        fetchTab(sheets, "picks"),
+        fetchTab(sheets, "games"),
+        fetchTab(sheets, "teams"),
+        fetchTab(sheets, "snapshots"),
+        fetchTab(sheets, "meta"),
+      ]);
 
-  const data: DashboardData = {
-    brackets: parseRows(bracketsRaw, parseBracket),
-    picks: parseRows(picksRaw, parsePick),
-    games: parseRows(gamesRaw, parseGame),
-    teams: parseRows(teamsRaw, parseTeam),
-    snapshots: parseRows(snapshotsRaw, parseSnapshot),
-    meta: parseRows(metaRaw, parseMeta)[0] || {
-      last_updated: "",
-      current_round: "R64",
-      games_completed: 0,
-    },
-  };
+    const data: DashboardData = {
+      brackets: parseRows(bracketsRaw, parseBracket),
+      picks: parseRows(picksRaw, parsePick),
+      games: parseRows(gamesRaw, parseGame),
+      teams: parseRows(teamsRaw, parseTeam),
+      snapshots: parseRows(snapshotsRaw, parseSnapshot),
+      meta: parseRows(metaRaw, parseMeta)[0] || EMPTY_DATA.meta,
+    };
 
-  cache = { data, ts: Date.now() };
-  return data;
+    cache = { data, ts: Date.now() };
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch dashboard data:", error);
+    return EMPTY_DATA;
+  }
 }
