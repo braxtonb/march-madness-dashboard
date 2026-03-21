@@ -1,27 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { GameCard } from "@/components/ui/GameCard";
+import type { PickerDetails } from "@/components/ui/GameCard";
 
 type Tab = "consensus" | "lens";
+
+function isValidTab(value: string | null): value is Tab {
+  return value === "consensus" || value === "lens";
+}
 
 export function PicksContent({
   games,
   pickSplits,
+  pickerDetailsMap,
   totalBrackets,
   conferenceData,
   currentRound,
 }: {
   games: Game[];
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
+  pickerDetailsMap: Record<string, PickerDetails>;
   totalBrackets: number;
   conferenceData: [string, number][];
   currentRound: Round;
 }) {
-  const [tab, setTab] = useState<Tab>("consensus");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const initialTab = isValidTab(searchParams.get("tab"))
+    ? (searchParams.get("tab") as Tab)
+    : "consensus";
+
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [round, setRound] = useState<Round>(currentRound);
+
+  const changeTab = useCallback(
+    (newTab: Tab) => {
+      setTab(newTab);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", newTab);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router]
+  );
+
+  // Keep tab in sync if user navigates back/forward
+  useEffect(() => {
+    const paramTab = searchParams.get("tab");
+    if (isValidTab(paramTab) && paramTab !== tab) {
+      setTab(paramTab);
+    }
+  }, [searchParams, tab]);
 
   const filteredGames = games.filter((g) => g.round === round);
   const maxConfCount = conferenceData[0]?.[1] || 1;
@@ -30,7 +63,7 @@ export function PicksContent({
     <div className="space-y-section">
       <div className="flex gap-2">
         <button
-          onClick={() => setTab("consensus")}
+          onClick={() => changeTab("consensus")}
           className={`rounded-card px-4 py-2 text-sm font-label transition-colors ${
             tab === "consensus"
               ? "bg-surface-bright text-primary"
@@ -39,16 +72,21 @@ export function PicksContent({
         >
           Consensus
         </button>
-        <button
-          onClick={() => setTab("lens")}
-          className={`rounded-card px-4 py-2 text-sm font-label transition-colors ${
-            tab === "lens"
-              ? "bg-surface-bright text-primary"
-              : "text-on-surface-variant hover:text-on-surface"
-          }`}
-        >
-          Tournament Lens
-        </button>
+        <div className="flex flex-col items-start">
+          <button
+            onClick={() => changeTab("lens")}
+            className={`rounded-card px-4 py-2 text-sm font-label transition-colors ${
+              tab === "lens"
+                ? "bg-surface-bright text-primary"
+                : "text-on-surface-variant hover:text-on-surface"
+            }`}
+          >
+            Tournament Lens
+          </button>
+          <span className="text-[10px] text-on-surface-variant ml-4 -mt-1">
+            Conference &amp; region trends
+          </span>
+        </div>
       </div>
 
       {tab === "consensus" && (
@@ -63,12 +101,13 @@ export function PicksContent({
                   pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
                 }
                 totalBrackets={totalBrackets}
+                pickerDetails={pickerDetailsMap[game.game_id]}
               />
             ))}
           </div>
           {filteredGames.length === 0 && (
             <p className="text-on-surface-variant text-sm text-center py-8">
-              No games in this round yet.
+              No games scheduled for this round.
             </p>
           )}
         </div>
@@ -81,7 +120,9 @@ export function PicksContent({
               How we pick by conference
             </h3>
             <p className="text-sm text-on-surface-variant">
-              Total advancing picks our brackets gave to each conference&apos;s teams.
+              Discover how our group&apos;s pick tendencies compare to
+              historical patterns &mdash; which conferences and seeds we believe
+              in most.
             </p>
             <div className="space-y-2">
               {conferenceData.map(([conf, count]) => (

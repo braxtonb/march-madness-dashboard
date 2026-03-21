@@ -2,6 +2,7 @@ import { fetchDashboardData } from "@/lib/sheets";
 import { computeGroupAccuracy } from "@/lib/analytics";
 import { StatCard } from "@/components/ui/StatCard";
 import { PicksContent } from "./PicksContent";
+import type { PickerDetails } from "@/components/ui/GameCard";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,14 @@ export default async function GroupPicksPage() {
   const data = await fetchDashboardData();
 
   const pickSplits: Record<string, { team1Count: number; team2Count: number }> = {};
+  const pickerDetailsMap: Record<string, PickerDetails> = {};
+
+  // Build a bracket_id -> owner name lookup
+  const ownerById = new Map<string, string>();
+  for (const b of data.brackets) {
+    ownerById.set(b.id, b.owner || b.name);
+  }
+
   for (const game of data.games) {
     const gamePicks = data.picks.filter((p) => p.game_id === game.game_id);
     const team1Count = gamePicks.filter(
@@ -18,6 +27,18 @@ export default async function GroupPicksPage() {
       (p) => p.team_picked === game.team2
     ).length;
     pickSplits[game.game_id] = { team1Count, team2Count };
+
+    const team1Pickers: string[] = [];
+    const team2Pickers: string[] = [];
+    for (const p of gamePicks) {
+      const ownerName = ownerById.get(p.bracket_id) || p.bracket_id;
+      if (p.team_picked === game.team1) {
+        team1Pickers.push(ownerName);
+      } else if (p.team_picked === game.team2) {
+        team2Pickers.push(ownerName);
+      }
+    }
+    pickerDetailsMap[game.game_id] = { team1Pickers, team2Pickers };
   }
 
   const accuracy = computeGroupAccuracy(
@@ -74,6 +95,7 @@ export default async function GroupPicksPage() {
       <PicksContent
         games={data.games}
         pickSplits={pickSplits}
+        pickerDetailsMap={pickerDetailsMap}
         totalBrackets={data.brackets.length}
         conferenceData={confData}
         currentRound={data.meta.current_round}
