@@ -83,8 +83,12 @@ class GoogleSheetsStore(DataStore):
         existing = ws.get_all_values()
         if not existing:
             ws.update('A1', [headers])
-        for row in rows:
-            ws.append_row([row.get(h, '') for h in headers])
+            start_row = 2
+        else:
+            start_row = len(existing) + 1
+        # Batch write all rows at once to avoid rate limits
+        data = [[row.get(h, '') for h in headers] for row in rows]
+        ws.update(f'A{start_row}', data)
 
     def update_meta(self, data: dict) -> None:
         headers = list(data.keys())

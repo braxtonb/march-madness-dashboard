@@ -33,8 +33,34 @@ def _base_headers() -> dict:
 
 
 def fetch_challenge_data() -> dict:
-    """Fetch challenge structure (propositions, outcomes, current scoring period)."""
-    return _fetch_json(f'{ESPN_API_BASE}/{ESPN_CHALLENGE_SLUG}')
+    """Fetch challenge structure with ALL propositions across all scoring periods.
+
+    ESPN only returns current-round propositions by default. We fetch each
+    scoring period separately and merge them into one response.
+    """
+    # Fetch default (current round) first
+    base_data = _fetch_json(f'{ESPN_API_BASE}/{ESPN_CHALLENGE_SLUG}')
+    all_propositions = list(base_data.get('propositions', []))
+    seen_ids = {str(p.get('id', '')) for p in all_propositions}
+
+    # Fetch each historical scoring period (1=R64, 2=R32, 3=S16, 4=E8, 5=FF, 6=CHAMP)
+    for period_id in range(1, 7):
+        try:
+            period_data = _fetch_json(
+                f'{ESPN_API_BASE}/{ESPN_CHALLENGE_SLUG}',
+                params={'scoringPeriodId': period_id},
+            )
+            for prop in period_data.get('propositions', []):
+                pid = str(prop.get('id', ''))
+                if pid and pid not in seen_ids:
+                    all_propositions.append(prop)
+                    seen_ids.add(pid)
+        except Exception as e:
+            logger.warning(f"Failed to fetch scoring period {period_id}: {e}")
+
+    base_data['propositions'] = all_propositions
+    logger.info(f"Fetched {len(all_propositions)} total propositions across all periods")
+    return base_data
 
 
 def fetch_group_entries(group_id: str) -> dict:

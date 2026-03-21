@@ -79,23 +79,104 @@ def run():
     store.write_tab('picks', all_picks, PICKS_HEADERS)
     logger.info(f"Wrote {len(all_picks)} picks")
 
-    # Step 7: Merge games (keep existing, update from API, add new)
-    if games:
-        existing_games = store.read_tab('games')
-        existing_map = {g.get('game_id', ''): g for g in existing_games}
-        for g in games:
-            existing_map[g['game_id']] = g  # update or add
-        merged_games = list(existing_map.values())
-        store.write_tab('games', merged_games, GAMES_HEADERS)
-    else:
-        existing_games = store.read_tab('games')
-        merged_games = existing_games
+    # Step 7: Reconstruct all 63 games from picks + API data + existing sheet
+    # ESPN API only returns current-round propositions, so we must rebuild
+    # historical games from picks data (which has all 63 game_ids).
+    existing_games = store.read_tab('games')
+    game_map: dict[str, dict] = {g.get('game_id', ''): g for g in existing_games}
+
+    # Overlay API games (freshest data for current round)
+    for g in games:
+        game_map[g['game_id']] = g
+
+    # Build set of teams that appear in current API propositions (= still active)
+    # Teams in R32 propositions are R64 winners, etc.
+    active_teams: set[str] = set()
+    for prop in proposition_map.values():
+        if prop.get('team1'): active_teams.add(prop['team1'])
+        if prop.get('team2'): active_teams.add(prop['team2'])
+    logger.info(f"Active teams in current API propositions: {len(active_teams)}")
+
+    # Reconstruct missing games from picks data
+    picks_by_game: dict[str, list] = {}
+    for p in all_picks:
+        gid = p['game_id']
+        if gid not in picks_by_game:
+            picks_by_game[gid] = []
+        picks_by_game[gid].append(p)
+
+    # Build round order for determining advancement
+    round_order = ['R64', 'R32', 'S16', 'E8', 'FF', 'CHAMP']
+
+    for gid, game_picks in picks_by_game.items():
+        if gid in game_map:
+            # Update existing game if it has no winner but we can determine one
+            existing = game_map[gid]
+            is_completed = existing.get('completed') is True or str(existing.get('completed')) == 'True'
+            if not is_completed and not existing.get('winner'):
+                t1, t2 = existing.get('team1', ''), existing.get('team2', '')
+                rnd = existing.get('round', '')
+                rnd_idx = round_order.index(rnd) if rnd in round_order else -1
+                if rnd_idx >= 0 and rnd_idx < len(round_order) - 1:
+                    # Check if one team advanced (appears in a later round's API data)
+                    if t1 in active_teams and t2 and t2 not in active_teams:
+                        existing['winner'] = t1
+                        existing['completed'] = True
+                    elif t2 in active_teams and t1 and t1 not in active_teams:
+                        existing['winner'] = t2
+                        existing['completed'] = True
+            continue
+
+        # Reconstruct from picks
+        sample = game_picks[0]
+        teams_in_game: dict[str, int] = {}
+        for p in game_picks:
+            if p['team_picked'] and p['team_picked'] not in teams_in_game:
+                teams_in_game[p['team_picked']] = p['seed_picked']
+        team_list = list(teams_in_game.items())
+        team1 = team_list[0][0] if len(team_list) > 0 else ''
+        seed1 = team_list[0][1] if len(team_list) > 0 else 0
+        team2 = team_list[1][0] if len(team_list) > 1 else ''
+        seed2 = team_list[1][1] if len(team_list) > 1 else 0
+
+        # Determine winner: check correct picks first
+        winner = ''
+        for p in game_picks:
+            if p['correct']:
+                winner = p['team_picked']
+                break
+
+        # If no correct picks, check if one team advanced to a later round
+        if not winner and team1 and team2:
+            rnd = sample['round']
+            rnd_idx = round_order.index(rnd) if rnd in round_order else -1
+            if rnd_idx >= 0 and rnd_idx < len(round_order) - 1:
+                if team1 in active_teams and team2 not in active_teams:
+                    winner = team1
+                elif team2 in active_teams and team1 not in active_teams:
+                    winner = team2
+
+        game_map[gid] = {
+            'game_id': gid,
+            'round': sample['round'],
+            'region': sample['region'],
+            'team1': team1,
+            'seed1': seed1,
+            'team2': team2,
+            'seed2': seed2,
+            'winner': winner,
+            'completed': bool(winner),
+            'national_pct_team1': 0.0,
+        }
+
+    merged_games = list(game_map.values())
+    logger.info(f"Merged games: {len(merged_games)} total ({sum(1 for g in merged_games if g.get('completed') or str(g.get('completed')) == 'True')} completed)")
+    store.write_tab('games', merged_games, GAMES_HEADERS)
 
     # Compute elimination: a team is eliminated if it lost a completed game
     losers = set()
     for g in merged_games:
-        completed_val = g.get('completed')
-        is_completed = completed_val is True or str(completed_val) == 'True'
+        is_completed = g.get('completed') and str(g.get('completed')).lower() not in ('false', '0', '')
         if is_completed and g.get('winner'):
             if g.get('team1') and g.get('team1') != g.get('winner'):
                 losers.add(g['team1'])
@@ -123,7 +204,7 @@ def run():
     # Step 9: Detect round change -> write snapshots
     games_completed = sum(
         1 for g in merged_games
-        if g.get('completed') is True or str(g.get('completed')) == 'True'
+        if g.get('completed') and str(g.get('completed')).lower() not in ('false', '0', '')
     )
     current_round = _determine_current_round(games_completed)
 
