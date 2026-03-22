@@ -10,14 +10,13 @@ import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
-type LeaderboardTab = "standings" | "calls" | "style" | "report";
+type LeaderboardTab = "standings" | "calls" | "style";
 
 function isValidTab(value: string | null): value is LeaderboardTab {
   return (
     value === "standings" ||
     value === "calls" ||
-    value === "style" ||
-    value === "report"
+    value === "style"
   );
 }
 
@@ -25,7 +24,6 @@ const TAB_OPTIONS: { label: string; value: LeaderboardTab }[] = [
   { label: "Standings", value: "standings" },
   { label: "Best Calls", value: "calls" },
   { label: "Picking Style", value: "style" },
-  { label: "Group Report Card", value: "report" },
 ];
 
 interface ScatterPoint {
@@ -327,87 +325,44 @@ function LeaderboardContentInner({
       {/* ===== Tab 3: Picking Style ===== */}
       {tab === "style" && (
         <div className="space-y-4">
-          <div className="rounded-card bg-surface-container p-5">
-            <h3 className="font-display text-lg font-semibold mb-2">
-              Picking Style
-            </h3>
-            <p className="text-xs text-on-surface-variant mb-4">
-              Chalk Score = how often they picked favorites &amp; consensus picks (higher = more chalk) |
-              Upset Score = how often their non-consensus picks were correct (higher = better at calling upsets).
-              Based on {submittedCount} submitted brackets.
-            </p>
-            <InsightFortuneScatter data={scatterData} />
-          </div>
-          {/* Quadrant legend — ordered to match chart layout (TL, TR, BL, BR) */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-[10px] text-on-surface-variant uppercase">
-                ↖ Low Chalk + High Upset Success
-              </p>
-              <p className="text-sm text-on-surface mt-1 font-semibold">Upset Artists</p>
-              <p className="text-[10px] text-on-surface-variant mt-1">Go against the grain and nail it</p>
+          <h3 className="font-display text-lg font-semibold">Picking Style</h3>
+          <p className="text-xs text-on-surface-variant">
+            Chalk Score = how often they picked favorites (higher = more chalk).
+            Upset Score = how often their non-consensus picks were correct (higher = better at calling upsets).
+            Based on {submittedCount} submitted brackets.
+          </p>
+          {/* Chart + legend side by side on large screens */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="rounded-card bg-surface-container p-5 flex-1 min-w-0">
+              <InsightFortuneScatter data={scatterData} />
             </div>
-            <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-[10px] text-on-surface-variant uppercase">
-                ↗ High Chalk + High Upset Success
-              </p>
-              <p className="text-sm text-on-surface mt-1 font-semibold">Sharp Chalk Pickers</p>
-              <p className="text-[10px] text-on-surface-variant mt-1">Play it smart and still find edges</p>
-            </div>
-            <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-[10px] text-on-surface-variant uppercase">
-                ↙ Low Chalk + Low Upset Success
-              </p>
-              <p className="text-sm text-on-surface mt-1 font-semibold">Bold Believers</p>
-              <p className="text-[10px] text-on-surface-variant mt-1">Swinging for the fences — upside ahead</p>
-            </div>
-            <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-[10px] text-on-surface-variant uppercase">
-                ↘ High Chalk + Low Upset Success
-              </p>
-              <p className="text-sm text-on-surface mt-1 font-semibold">Playing It Safe</p>
-              <p className="text-[10px] text-on-surface-variant mt-1">Steady and reliable — few surprises</p>
+            <div className="lg:w-64 shrink-0 space-y-2">
+              <div className="rounded-card bg-surface-container p-3">
+                <p className="font-label text-[10px] text-on-surface-variant uppercase">↖ Top Left</p>
+                <p className="text-sm text-on-surface font-semibold">Upset Artists</p>
+                <p className="text-[10px] text-on-surface-variant">Go against the grain and nail it</p>
+              </div>
+              <div className="rounded-card bg-surface-container p-3">
+                <p className="font-label text-[10px] text-on-surface-variant uppercase">↗ Top Right</p>
+                <p className="text-sm text-on-surface font-semibold">Sharp Chalk Pickers</p>
+                <p className="text-[10px] text-on-surface-variant">Play it smart and still find edges</p>
+              </div>
+              <div className="rounded-card bg-surface-container p-3">
+                <p className="font-label text-[10px] text-on-surface-variant uppercase">↙ Bottom Left</p>
+                <p className="text-sm text-on-surface font-semibold">Bold Believers</p>
+                <p className="text-[10px] text-on-surface-variant">Swinging for the fences — upside ahead</p>
+              </div>
+              <div className="rounded-card bg-surface-container p-3">
+                <p className="font-label text-[10px] text-on-surface-variant uppercase">↘ Bottom Right</p>
+                <p className="text-sm text-on-surface font-semibold">Playing It Safe</p>
+                <p className="text-[10px] text-on-surface-variant">Steady and reliable — few surprises</p>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ===== Tab 4: Group Report Card ===== */}
-      {tab === "report" && (
-        <div className="rounded-card bg-surface-container p-5">
-          <h3 className="font-display text-lg font-semibold mb-2">
-            Group Report Card
-          </h3>
-          <p className="text-xs text-on-surface-variant mb-6">
-            How accurate was the group consensus pick in each round? Based on{" "}
-            {submittedCount} submitted brackets.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {roundAccuracy.map((r) => {
-              const pct =
-                r.total > 0
-                  ? Math.round((r.correct / r.total) * 100)
-                  : 0;
-              return (
-                <div
-                  key={r.round}
-                  className="rounded-card bg-surface-bright p-4 text-center space-y-2"
-                >
-                  <p className="font-label text-xs text-on-surface-variant uppercase">
-                    {ROUND_LABELS[r.round as Round] || r.round}
-                  </p>
-                  <p className="font-display text-3xl font-bold text-on-surface">
-                    {r.total > 0 ? `${r.correct}/${r.total}` : "\u2014"}
-                  </p>
-                  {r.total > 0 && (
-                    <p className="text-xs text-on-surface-variant">{pct}%</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Group Report Card moved to /picks page */}
     </div>
   );
 }
