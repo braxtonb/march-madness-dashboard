@@ -422,45 +422,41 @@ export function BracketView({
         )}
       </div>
 
-      {/* Horizontally scrollable bracket — traditional 2x2 layout */}
+      {/* Horizontally scrollable bracket — left regions → center → right regions */}
       <div
         ref={scrollRef}
         className="overflow-x-auto no-scrollbar pb-4"
       >
-        <div className="min-w-[900px]">
-          {/* Top half: East (LTR) | West (RTL) */}
-          <div className="flex">
+        <div className="min-w-[1400px] flex items-stretch">
+          {/* LEFT HALF: East (top) + South (bottom) flowing L→R */}
+          <div className="flex-1 flex flex-col gap-6">
             {hasR1 && (
-              <div className="flex-1">
-                <RegionBracket
-                  games={games}
-                  region="R1"
-                  direction="ltr"
-                  pickSplits={pickSplits}
-                  totalBrackets={totalBrackets}
-                  eliminatedTeams={eliminatedTeams}
-                  onGameClick={onGameClick}
-                />
-              </div>
+              <RegionBracket
+                games={games}
+                region="R1"
+                direction="ltr"
+                pickSplits={pickSplits}
+                totalBrackets={totalBrackets}
+                eliminatedTeams={eliminatedTeams}
+                onGameClick={onGameClick}
+              />
             )}
-            {hasR3 && (
-              <div className="flex-1">
-                <RegionBracket
-                  games={games}
-                  region="R3"
-                  direction="rtl"
-                  pickSplits={pickSplits}
-                  totalBrackets={totalBrackets}
-                  eliminatedTeams={eliminatedTeams}
-                  onGameClick={onGameClick}
-                />
-              </div>
+            {hasR2 && (
+              <RegionBracket
+                games={games}
+                region="R2"
+                direction="ltr"
+                pickSplits={pickSplits}
+                totalBrackets={totalBrackets}
+                eliminatedTeams={eliminatedTeams}
+                onGameClick={onGameClick}
+              />
             )}
           </div>
 
-          {/* Center: Final Four + Championship */}
+          {/* CENTER: Final Four + Championship */}
           {hasFinalRounds && (
-            <div className="flex justify-center py-4">
+            <div className="flex flex-col items-center justify-center px-3 shrink-0">
               <FinalRoundsBracket
                 games={games}
                 pickSplits={pickSplits}
@@ -471,33 +467,29 @@ export function BracketView({
             </div>
           )}
 
-          {/* Bottom half: South (LTR) | Midwest (RTL) */}
-          <div className="flex">
-            {hasR2 && (
-              <div className="flex-1">
-                <RegionBracket
-                  games={games}
-                  region="R2"
-                  direction="ltr"
-                  pickSplits={pickSplits}
-                  totalBrackets={totalBrackets}
-                  eliminatedTeams={eliminatedTeams}
-                  onGameClick={onGameClick}
-                />
-              </div>
+          {/* RIGHT HALF: West (top) + Midwest (bottom) flowing R→L */}
+          <div className="flex-1 flex flex-col gap-6">
+            {hasR3 && (
+              <RegionBracket
+                games={games}
+                region="R3"
+                direction="rtl"
+                pickSplits={pickSplits}
+                totalBrackets={totalBrackets}
+                eliminatedTeams={eliminatedTeams}
+                onGameClick={onGameClick}
+              />
             )}
             {hasR4 && (
-              <div className="flex-1">
-                <RegionBracket
-                  games={games}
-                  region="R4"
-                  direction="rtl"
-                  pickSplits={pickSplits}
-                  totalBrackets={totalBrackets}
-                  eliminatedTeams={eliminatedTeams}
-                  onGameClick={onGameClick}
-                />
-              </div>
+              <RegionBracket
+                games={games}
+                region="R4"
+                direction="rtl"
+                pickSplits={pickSplits}
+                totalBrackets={totalBrackets}
+                eliminatedTeams={eliminatedTeams}
+                onGameClick={onGameClick}
+              />
             )}
           </div>
         </div>
