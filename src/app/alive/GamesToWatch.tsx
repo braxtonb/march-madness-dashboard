@@ -75,7 +75,7 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                       )}
                     </div>
                     <span className="text-on-surface-variant text-xs shrink-0 ml-2">
-                      {b.champion}
+                      <TeamPill name={b.champion} logo={teamLogos[b.champion]} />
                     </span>
                   </div>
                 ))}

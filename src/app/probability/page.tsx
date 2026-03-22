@@ -56,12 +56,18 @@ export default async function ProbabilityPage() {
     journeyBracketNames = top10Ids;
   }
 
+  // Build team logo lookup
+  const teamLogos: Record<string, string> = Object.fromEntries(
+    data.teams.map((t) => [t.name, t.logo])
+  );
+
   return (
     <ProbabilityClient
       probData={probData}
       journeyData={journeyData}
       journeyBracketNames={journeyBracketNames}
       allSnapshotProbsZero={allSnapshotProbsZero}
+      teamLogos={teamLogos}
     />
   );
 }

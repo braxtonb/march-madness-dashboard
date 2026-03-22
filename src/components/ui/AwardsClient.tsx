@@ -11,6 +11,8 @@ export interface Award {
   bracketName: string;
   stat: string;
   tier: "gold" | "silver" | "bronze";
+  championName?: string;
+  championLogo?: string;
 }
 
 interface AwardsClientProps {

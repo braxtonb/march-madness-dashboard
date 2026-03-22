@@ -75,7 +75,7 @@ function computeAwards(
   // 3. The Faithful — highest scorer whose champion is still alive
   const faithful = sorted.find((b) => b.champion_pick !== "");
   if (faithful) {
-    awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts, champion: ${faithful.champion_pick}`, tier: "silver" });
+    awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts`, tier: "silver", championName: faithful.champion_pick });
   }
 
   // 4. Hot Streak — most consecutive correct picks
@@ -157,6 +157,18 @@ export default async function AwardsPage() {
   const defaultRound = roundsWithPicks.length > 0
     ? roundsWithPicks[roundsWithPicks.length - 1]
     : currentRound;
+
+  // Build team logo lookup and inject logos into awards that have championName
+  const teamLogos: Record<string, string> = Object.fromEntries(
+    data.teams.map((t) => [t.name, t.logo])
+  );
+  for (const awards of Object.values(awardsByRound)) {
+    for (const award of awards) {
+      if (award.championName && teamLogos[award.championName]) {
+        award.championLogo = teamLogos[award.championName];
+      }
+    }
+  }
 
   return (
     <div className="space-y-section">

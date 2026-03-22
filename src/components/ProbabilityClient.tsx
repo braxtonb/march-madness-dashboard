@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -30,6 +31,7 @@ interface ProbabilityClientProps {
   journeyData: JourneyPoint[];
   journeyBracketNames: string[];
   allSnapshotProbsZero: boolean;
+  teamLogos?: Record<string, string>;
 }
 
 type ProbTab = "chances" | "finishes" | "journey";
@@ -67,6 +69,7 @@ export function ProbabilityClient({
   journeyData,
   journeyBracketNames,
   allSnapshotProbsZero,
+  teamLogos = {},
 }: ProbabilityClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -223,7 +226,12 @@ export function ProbabilityClient({
                       <td className="px-2 py-2 font-label text-xs text-secondary">{d.pct_top10.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface">{d.pct_top25.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
-                      <td className="px-2 py-2 text-xs text-on-surface-variant">{d.champion}</td>
+                      <td className="px-2 py-2 text-xs text-on-surface-variant">
+                        <span className="inline-flex items-center gap-1">
+                          {teamLogos[d.champion] && <img src={teamLogos[d.champion]} alt="" className="w-4 h-4 inline-block rounded-sm" />}
+                          {d.champion}
+                        </span>
+                      </td>
                     </tr>
                   );
                 })}

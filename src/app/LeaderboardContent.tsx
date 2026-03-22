@@ -6,6 +6,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
+import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
@@ -191,9 +192,9 @@ function LeaderboardContentInner({
                         <span className="text-xs font-label ml-1">pts</span>
                       </p>
                       {b.champion_pick && (
-                        <p className="text-xs text-on-surface-variant">
-                          Champ: <span className="text-on-surface font-medium">{b.champion_pick}</span>
-                        </p>
+                        <div className="text-xs text-on-surface-variant flex items-center justify-center gap-1">
+                          Champ: <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} />
+                        </div>
                       )}
                     </div>
                   );
@@ -302,10 +303,10 @@ function LeaderboardContentInner({
                     <span className="text-xs text-on-surface-variant ml-2">
                       {gc.bracketOwner}
                     </span>
-                    <p className="text-xs text-on-surface-variant mt-0.5">
-                      Picked {gc.teamPicked} (seed {gc.seedPicked})
+                    <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
+                      Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} />
                       {gc.round &&
-                        ` \u2014 ${ROUND_LABELS[gc.round as Round] || gc.round}`}
+                        <span>{"\u2014"} {ROUND_LABELS[gc.round as Round] || gc.round}</span>}
                     </p>
                   </div>
                 </div>
