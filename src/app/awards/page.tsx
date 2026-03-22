@@ -75,7 +75,7 @@ function computeAwards(
   // 3. The Faithful — highest scorer whose champion is still alive
   const faithful = sorted.find((b) => b.champion_pick !== "");
   if (faithful) {
-    awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts`, tier: "silver", championName: faithful.champion_pick });
+    awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts`, tier: "silver", championName: faithful.champion_pick, championSeed: faithful.champion_seed });
   }
 
   // 4. Hot Streak — most consecutive correct picks
@@ -180,14 +180,26 @@ export default async function AwardsPage() {
   // Default to the current round from meta data
   const defaultRound = currentRound;
 
-  // Build team logo lookup and inject logos into awards that have championName
+  // Build team logo lookup, seed lookup, and eliminated set
   const teamLogos: Record<string, string> = Object.fromEntries(
     data.teams.map((t) => [t.name, t.logo])
   );
+  const teamSeeds: Record<string, number> = Object.fromEntries(
+    data.teams.map((t) => [t.name, t.seed])
+  );
+  const eliminatedTeams = new Set(
+    data.teams.filter((t) => t.eliminated).map((t) => t.name)
+  );
   for (const awards of Object.values(awardsByRound)) {
     for (const award of awards) {
-      if (award.championName && teamLogos[award.championName]) {
-        award.championLogo = teamLogos[award.championName];
+      if (award.championName) {
+        if (teamLogos[award.championName]) {
+          award.championLogo = teamLogos[award.championName];
+        }
+        if (teamSeeds[award.championName]) {
+          award.championSeed = teamSeeds[award.championName];
+        }
+        award.championEliminated = eliminatedTeams.has(award.championName);
       }
     }
   }

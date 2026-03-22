@@ -193,7 +193,7 @@ function LeaderboardContentInner({
                       </p>
                       {b.champion_pick && (
                         <div className="text-xs text-on-surface-variant flex items-center justify-center gap-1">
-                          Champ: <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} />
+                          Champ: <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
                         </div>
                       )}
                     </div>
@@ -248,7 +248,7 @@ function LeaderboardContentInner({
                       {gc.bracketOwner}
                     </span>
                     <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
-                      Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} />
+                      Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />
                       {gc.round &&
                         <span>{"\u2014"} {ROUND_LABELS[gc.round as Round] || gc.round}</span>}
                     </p>

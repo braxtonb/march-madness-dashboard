@@ -77,3 +77,8 @@ body {
 .drawer-slide-in {
   animation: slide-in-right 0.2s ease-out;
 }
+
+th[title] {
+  border-bottom: 1px dotted rgba(167, 171, 178, 0.4);
+  cursor: help;
+}

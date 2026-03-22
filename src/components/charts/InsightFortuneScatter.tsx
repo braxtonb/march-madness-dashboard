@@ -42,7 +42,7 @@ function clusterPoints(data: ScatterPoint[], radius: number = 5): Cluster[] {
   return clusters;
 }
 
-/* ── Searchable dropdown (matches H2H pattern) ── */
+/* ── Searchable multi-select dropdown ── */
 function SearchDropdown({
   options,
   value,
@@ -51,8 +51,8 @@ function SearchDropdown({
   placeholder,
 }: {
   options: { value: string; label: string; sublabel?: string; logo?: string }[];
-  value: string;
-  onChange: (v: string) => void;
+  value: string[];
+  onChange: (v: string[]) => void;
   label: string;
   placeholder: string;
 }) {
@@ -61,7 +61,8 @@ function SearchDropdown({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const selected = options.find((o) => o.value === value);
+  const selectedSet = useMemo(() => new Set(value), [value]);
+
   const filtered = useMemo(() => {
     if (!query) return options;
     const q = query.toLowerCase();
@@ -76,9 +77,30 @@ function SearchDropdown({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  function toggle(v: string) {
+    if (selectedSet.has(v)) {
+      onChange(value.filter((x) => x !== v));
+    } else {
+      onChange([...value, v]);
+    }
+  }
+
   return (
     <div className="space-y-1.5" ref={containerRef}>
       <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">{label}</label>
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {value.map((v) => {
+            const opt = options.find((o) => o.value === v);
+            return (
+              <span key={v} className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[10px] font-label">
+                {opt?.label || v}
+                <button type="button" onClick={() => toggle(v)} className="hover:text-on-surface transition-colors">&times;</button>
+              </span>
+            );
+          })}
+        </div>
+      )}
       <div className="relative">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
           className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none">
@@ -87,38 +109,44 @@ function SearchDropdown({
         <input
           ref={inputRef}
           type="text"
-          value={open ? query : selected ? selected.label : ""}
-          placeholder={placeholder}
+          value={query}
+          placeholder={value.length > 0 ? `${value.length} selected` : placeholder}
           onFocus={() => { setOpen(true); setQuery(""); }}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full rounded-card bg-surface-container border border-outline px-3 py-2 pl-9 pr-3 text-xs text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant truncate"
         />
         {open && (
           <div className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-card bg-surface-container border border-outline shadow-2xl shadow-black/30">
-            <button
-              type="button"
-              onClick={() => { onChange(""); setOpen(false); setQuery(""); inputRef.current?.blur(); }}
-              className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors text-xs ${!value ? "bg-surface-bright" : ""}`}
-            >
-              All
-            </button>
-            {filtered.map((o) => (
+            {value.length > 0 && (
               <button
-                key={o.value}
                 type="button"
-                onClick={() => { onChange(o.value); setOpen(false); setQuery(""); inputRef.current?.blur(); }}
-                className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors border-l-2 ${o.value === value ? "bg-surface-bright border-l-primary" : "border-l-transparent"}`}
+                onClick={() => { onChange([]); setQuery(""); }}
+                className="w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors text-xs text-on-surface-variant"
               >
-                <div className="flex items-center gap-1.5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {o.logo && <img src={o.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px]" />}
-                  <div className="min-w-0">
-                    <div className="text-xs font-medium text-on-surface truncate">{o.label}</div>
-                    {o.sublabel && <div className="text-[10px] text-on-surface-variant truncate">{o.sublabel}</div>}
-                  </div>
-                </div>
+                Clear all
               </button>
-            ))}
+            )}
+            {filtered.map((o) => {
+              const isSelected = selectedSet.has(o.value);
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => { toggle(o.value); setQuery(""); }}
+                  className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors border-l-2 ${isSelected ? "bg-surface-bright border-l-primary" : "border-l-transparent"}`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {o.logo && <img src={o.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px]" />}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium text-on-surface truncate">{o.label}</div>
+                      {o.sublabel && <div className="text-[10px] text-on-surface-variant truncate">{o.sublabel}</div>}
+                    </div>
+                    {isSelected && <span className="text-primary text-xs shrink-0">&#10003;</span>}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -133,9 +161,15 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   const router = useRouter();
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
 
-  // Initialize from URL params
-  const [nameFilter, setNameFilter] = useState(searchParams.get("search") || "");
-  const [championFilter, setChampionFilter] = useState(searchParams.get("champion") || "");
+  // Initialize from URL params (comma-separated for multi-select)
+  const [nameFilter, setNameFilter] = useState<string[]>(() => {
+    const v = searchParams.get("search");
+    return v ? v.split(",").filter(Boolean) : [];
+  });
+  const [championFilter, setChampionFilter] = useState<string[]>(() => {
+    const v = searchParams.get("champion");
+    return v ? v.split(",").filter(Boolean) : [];
+  });
   const [pointsFilter, setPointsFilter] = useState(searchParams.get("pts") || "");
   const [pointsOp, setPointsOp] = useState<PointsOp>((searchParams.get("ptsOp") as PointsOp) || "gte");
 
@@ -146,21 +180,11 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
     router.replace(`?${params.toString()}`, { scroll: false });
   }
 
-  function changeNameFilter(v: string) {
+  function changeNameFilter(v: string[]) {
     setNameFilter(v);
-    updateUrl("search", v);
-    // When selecting a sheet, auto-set champion to their pick and reset points filter
-    if (v) {
-      const match = data.find((d) => d.name === v);
-      if (match?.champion) {
-        setChampionFilter(match.champion);
-        updateUrl("champion", match.champion);
-      }
-      setPointsFilter("");
-      updateUrl("pts", "");
-    }
+    updateUrl("search", v.join(","));
   }
-  function changeChampionFilter(v: string) { setChampionFilter(v); updateUrl("champion", v); }
+  function changeChampionFilter(v: string[]) { setChampionFilter(v); updateUrl("champion", v.join(",")); }
   function changePointsFilter(v: string) { setPointsFilter(v); updateUrl("pts", v); }
   function changePointsOp(v: PointsOp) { setPointsOp(v); updateUrl("ptsOp", v); }
 
@@ -179,10 +203,12 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   // Apply filters
   const filtered = useMemo(() => {
     return data.filter((d) => {
-      if (nameFilter) {
-        if (d.name !== nameFilter) return false;
+      if (nameFilter.length > 0) {
+        if (!nameFilter.includes(d.name)) return false;
       }
-      if (championFilter && d.champion !== championFilter) return false;
+      if (championFilter.length > 0) {
+        if (!d.champion || !championFilter.includes(d.champion)) return false;
+      }
       if (pointsFilter) {
         const val = parseInt(pointsFilter);
         if (!isNaN(val) && d.points != null) {
@@ -195,10 +221,10 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
     });
   }, [data, nameFilter, championFilter, pointsFilter, pointsOp]);
 
-  const hasFilters = nameFilter || championFilter || pointsFilter;
+  const hasFilters = nameFilter.length > 0 || championFilter.length > 0 || pointsFilter;
 
   function clearAll() {
-    setNameFilter(""); setChampionFilter(""); setPointsFilter("");
+    setNameFilter([]); setChampionFilter([]); setPointsFilter("");
     const params = new URLSearchParams(searchParams.toString());
     params.delete("search"); params.delete("champion"); params.delete("pts"); params.delete("ptsOp");
     router.replace(`?${params.toString()}`, { scroll: false });

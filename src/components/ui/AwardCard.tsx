@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
+import { TeamPill } from "@/components/ui/TeamPill";
+
 const AWARD_DESCRIPTIONS: Record<string, string> = {
   "The Oracle": "Most correct picks this round — seeing the future clearly",
   "The Trendsetter": "Most unique correct picks — called winners nobody else had",
@@ -26,6 +28,8 @@ export function AwardCard({
   tier,
   championName,
   championLogo,
+  championSeed,
+  championEliminated,
 }: {
   title: string;
   winner: string;
@@ -34,6 +38,8 @@ export function AwardCard({
   tier: "gold" | "silver" | "bronze";
   championName?: string;
   championLogo?: string;
+  championSeed?: number;
+  championEliminated?: boolean;
 }) {
   const tierColors = {
     gold: "text-achievement",
@@ -68,8 +74,7 @@ export function AwardCard({
           <p className="text-sm text-on-surface-variant">{stat}</p>
           {championName && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
-              Champion: {championLogo && <img src={championLogo} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
-              <span className="text-on-surface font-medium">{championName}</span>
+              Champion: <TeamPill name={championName} seed={championSeed} logo={championLogo} eliminated={championEliminated} showStatus />
             </p>
           )}
         </>

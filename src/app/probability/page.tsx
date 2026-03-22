@@ -19,6 +19,7 @@ export default async function ProbabilityPage() {
         owner: b.owner,
         probability: sim ? (sim.wins / 1000) * 100 : 0,
         champion: b.champion_pick,
+        championSeed: b.champion_seed,
         median_rank: sim?.median_rank ?? data.brackets.length,
         best_rank: sim?.best_rank ?? data.brackets.length,
         max_remaining: b.max_remaining,
@@ -199,6 +200,7 @@ export default async function ProbabilityPage() {
       journeyBracketNames={journeyBracketNames}
       allSnapshotProbsZero={allSnapshotProbsZero}
       teamLogos={teamLogos}
+      eliminatedTeams={eliminatedArr}
       pathData={pathData}
       aliveData={aliveData}
     />

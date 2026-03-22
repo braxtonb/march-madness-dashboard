@@ -15,6 +15,8 @@ export interface Award {
   tier: "gold" | "silver" | "bronze";
   championName?: string;
   championLogo?: string;
+  championSeed?: number;
+  championEliminated?: boolean;
 }
 
 interface AwardsClientProps {

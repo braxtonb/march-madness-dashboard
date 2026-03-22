@@ -1,12 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 import { DrilldownTable } from "@/components/tables/DrilldownTable";
 import { GamesToWatch } from "@/components/GamesToWatch";
 import { StatCard } from "@/components/ui/StatCard";
+import { TeamPill } from "@/components/ui/TeamPill";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 
 interface ProbEntry {
@@ -14,6 +15,7 @@ interface ProbEntry {
   owner: string;
   probability: number;
   champion: string;
+  championSeed?: number;
   median_rank: number;
   best_rank: number;
   max_remaining: number;
@@ -85,6 +87,7 @@ interface ProbabilityClientProps {
   journeyBracketNames: string[];
   allSnapshotProbsZero: boolean;
   teamLogos?: Record<string, string>;
+  eliminatedTeams?: string[];
   pathData?: PathEntry[];
   aliveData?: AliveData;
 }
@@ -128,11 +131,14 @@ export function ProbabilityClient({
   journeyBracketNames,
   allSnapshotProbsZero,
   teamLogos = {},
+  eliminatedTeams: eliminatedTeamsArr = [],
   pathData = [],
   aliveData,
 }: ProbabilityClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const eliminatedTeamsSet = useMemo(() => new Set(eliminatedTeamsArr), [eliminatedTeamsArr]);
 
   const VALID_TABS: ProbTab[] = ["chances", "finishes", "path", "alive"];
   const initialTab = (() => {
@@ -349,10 +355,7 @@ export function ProbabilityClient({
                       )}
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
                       <td className="px-2 py-2 text-xs text-on-surface-variant">
-                        <span className="inline-flex items-center gap-1">
-                          {teamLogos[d.champion] && <img src={teamLogos[d.champion]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
-                          {d.champion}
-                        </span>
+                        <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
                       </td>
                     </tr>
                   );
