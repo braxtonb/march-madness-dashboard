@@ -5,6 +5,8 @@ import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Round } from "@/lib/types";
+import MobileSortDropdown from "@/components/ui/MobileSortDropdown";
+import MobileCard from "@/components/ui/MobileCard";
 
 type SortKey = "rank" | "points" | "max" | "r64" | "r32" | "s16" | "e8" | "ff" | "champ";
 
@@ -71,13 +73,51 @@ export function LeaderboardTable({
     }
   }
 
+  const mobileSortOptions = [
+    { key: "rank", label: "Sort by Rank" },
+    { key: "points", label: "Sort by Points" },
+    { key: "max", label: "Sort by Max Possible" },
+  ];
+
   const hdr = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
   const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant whitespace-nowrap";
   const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
   const colCount = 11;
 
   return (
-    <div className="overflow-x-auto rounded-card bg-surface-container">
+    <>
+      {/* Mobile card view */}
+      <div className="sm:hidden space-y-2">
+        <MobileSortDropdown
+          options={mobileSortOptions}
+          value={sortKey}
+          onChange={(key) => {
+            const newKey = key as SortKey;
+            if (sortKey === newKey) {
+              setSortAsc(!sortAsc);
+            } else {
+              setSortKey(newKey);
+              setSortAsc(newKey === "rank");
+            }
+          }}
+        />
+        {sorted.map((b) => {
+          const a = analytics.get(b.id);
+          if (!a) return null;
+          return (
+            <MobileCard
+              key={b.id}
+              bracket={b}
+              analytics={a}
+              eliminatedTeams={eliminatedTeams}
+              teamLogos={teamLogos}
+            />
+          );
+        })}
+      </div>
+
+      {/* Desktop table view */}
+      <div className="hidden sm:block overflow-x-auto rounded-card bg-surface-container">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-outline">
@@ -198,6 +238,7 @@ export function LeaderboardTable({
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
