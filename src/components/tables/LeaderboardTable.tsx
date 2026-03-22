@@ -80,9 +80,13 @@ export function LeaderboardTable({
     { key: "max", label: "Sort by Max Possible" },
   ];
 
-  const hdr = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
-  const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant whitespace-nowrap";
-  const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
+  const hdr = "group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
+  const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default whitespace-nowrap";
+  const sortIcon = (key: SortKey) => (
+    <span className={`ml-0.5 text-[10px] transition-colors ${sortKey === key ? "text-on-surface-variant" : "text-on-surface-variant/40 group-hover/hdr:text-on-surface-variant/80"}`}>
+      {sortKey === key ? (sortAsc ? "▲" : "▼") : "↕"}
+    </span>
+  );
   const colCount = 12;
 
   return (
@@ -123,17 +127,17 @@ export function LeaderboardTable({
         <thead>
           <tr className="border-b border-outline">
             <th className="w-8"></th>
-            <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{arrow("rank")}</th>
+            <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{sortIcon("rank")}</th>
             <th className={hdrStatic} title="Bracket name and username. Click any row to see path to victory.">Name</th>
             <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
-            <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Pts{arrow("points")}</th>
-            <th className={hdr} onClick={() => toggleSort("max")} title="Maximum possible points if all remaining picks are correct">Max{arrow("max")}</th>
-            <th className={hdr} onClick={() => toggleSort("r64")} title="Points earned in Round of 64">R64{arrow("r64")}</th>
-            <th className={hdr} onClick={() => toggleSort("r32")} title="Points earned in Round of 32">R32{arrow("r32")}</th>
-            <th className={hdr} onClick={() => toggleSort("s16")} title="Points earned in Sweet 16">S16{arrow("s16")}</th>
-            <th className={hdr} onClick={() => toggleSort("e8")} title="Points earned in Elite 8">E8{arrow("e8")}</th>
-            <th className={hdr} onClick={() => toggleSort("ff")} title="Points earned in Final Four">FF{arrow("ff")}</th>
-            <th className={hdr} onClick={() => toggleSort("champ")} title="Points earned in Championship">Champ{arrow("champ")}</th>
+            <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Pts{sortIcon("points")}</th>
+            <th className={hdr} onClick={() => toggleSort("max")} title="Maximum possible points if all remaining picks are correct">Max{sortIcon("max")}</th>
+            <th className={hdr} onClick={() => toggleSort("r64")} title="Points earned in Round of 64">R64{sortIcon("r64")}</th>
+            <th className={hdr} onClick={() => toggleSort("r32")} title="Points earned in Round of 32">R32{sortIcon("r32")}</th>
+            <th className={hdr} onClick={() => toggleSort("s16")} title="Points earned in Sweet 16">S16{sortIcon("s16")}</th>
+            <th className={hdr} onClick={() => toggleSort("e8")} title="Points earned in Elite 8">E8{sortIcon("e8")}</th>
+            <th className={hdr} onClick={() => toggleSort("ff")} title="Points earned in Final Four">FF{sortIcon("ff")}</th>
+            <th className={hdr} onClick={() => toggleSort("champ")} title="Points earned in Championship">Champ{sortIcon("champ")}</th>
           </tr>
         </thead>
         <tbody>
@@ -171,8 +175,10 @@ export function LeaderboardTable({
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                       <div>
-                        <div className="font-body text-on-surface text-xs">{displayName(b)}</div>
-                        <div className="text-[10px] text-on-surface-variant">{b.name}</div>
+                        {(() => { const primary = displayName(b); return (<>
+                          <div className="font-body text-on-surface text-xs">{primary}</div>
+                          {b.name !== primary && <div className="text-[10px] text-on-surface-variant">{b.name}</div>}
+                        </>); })()}
                       </div>
                     </div>
                   </td>

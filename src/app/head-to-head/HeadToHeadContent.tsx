@@ -79,11 +79,11 @@ function BracketDropdown({
             onChange={(e) => setQuery(e.target.value)}
             className="w-full rounded-card bg-surface-container border border-outline px-3 py-2.5 pl-9 text-sm text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant"
           />
-          {selected && !open && (
+          {selected && !open && (() => { const primary = displayName(selected); return selected.name !== primary ? (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant">
               {selected.name}
             </span>
-          )}
+          ) : null; })()}
         </div>
         {open && (
           <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-card bg-surface-container border border-outline shadow-2xl shadow-black/30">
@@ -102,8 +102,10 @@ function BracketDropdown({
                   b.id === value ? "bg-surface-bright border-l-primary" : "border-l-transparent"
                 }`}
               >
-                <div className="text-sm font-medium text-on-surface">{displayName(b)}</div>
-                <div className="text-[10px] text-on-surface-variant">{b.name}</div>
+                {(() => { const primary = displayName(b); return (<>
+                  <div className="text-sm font-medium text-on-surface">{primary}</div>
+                  {b.name !== primary && <div className="text-[10px] text-on-surface-variant">{b.name}</div>}
+                </>); })()}
               </button>
             ))}
           </div>
@@ -315,8 +317,10 @@ export function HeadToHeadContent({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-on-surface truncate">{displayName(b1)}</p>
-                <p className="font-label text-[10px] text-on-surface-variant">{b1.name}</p>
+                {(() => { const primary = displayName(b1); return (<>
+                  <p className="font-display text-sm font-bold text-on-surface truncate">{primary}</p>
+                  {b1.name !== primary && <p className="font-label text-[10px] text-on-surface-variant">{b1.name}</p>}
+                </>); })()}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">
@@ -333,8 +337,10 @@ export function HeadToHeadContent({
 
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-on-surface truncate">{displayName(b2)}</p>
-                <p className="font-label text-[10px] text-on-surface-variant">{b2.name}</p>
+                {(() => { const primary = displayName(b2); return (<>
+                  <p className="font-display text-sm font-bold text-on-surface truncate">{primary}</p>
+                  {b2.name !== primary && <p className="font-label text-[10px] text-on-surface-variant">{b2.name}</p>}
+                </>); })()}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">

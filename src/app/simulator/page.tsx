@@ -637,11 +637,11 @@ export default function SimulatorPage() {
                 <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
                     <th className="w-8"></th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected ranking based on simulated outcomes">Rank</th>
-                    <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Rank change from current standing based on simulation — positive means climbing up">Change</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Current actual points">Pts</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected total points if simulated outcomes happen">Sim Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Projected ranking based on simulated outcomes">Rank</th>
+                    <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Bracket name and username">Bracket</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Rank change from current standing based on simulation — positive means climbing up">Change</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Current actual points">Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Projected total points if simulated outcomes happen">Sim Pts</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -652,8 +652,10 @@ export default function SimulatorPage() {
                         <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
                         <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
-                          <div className="text-on-surface text-xs">{displayName(r)}</div>
-                          <div className="text-[10px] text-on-surface-variant">{r.name}</div>
+                          {(() => { const primary = displayName(r); return (<>
+                            <div className="text-on-surface text-xs">{primary}</div>
+                            {r.name !== primary && <div className="text-[10px] text-on-surface-variant">{r.name}</div>}
+                          </>); })()}
                         </td>
                         <td className="px-3 py-2 font-label">
                           {delta > 0 && <span className="text-secondary">+{delta}</span>}

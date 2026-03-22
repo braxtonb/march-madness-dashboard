@@ -174,7 +174,11 @@ export function ProbabilityClient({
     if (finishSortKey === key) setFinishSortAsc(!finishSortAsc);
     else { setFinishSortKey(key); setFinishSortAsc(false); }
   }
-  const fArrow = (key: FinishSort) => finishSortKey === key ? (finishSortAsc ? " ↑" : " ↓") : "";
+  const fSortIcon = (key: FinishSort) => (
+    <span className={`ml-0.5 text-[10px] transition-colors ${finishSortKey === key ? "text-on-surface-variant" : "text-on-surface-variant/40 group-hover/hdr:text-on-surface-variant/80"}`}>
+      {finishSortKey === key ? (finishSortAsc ? "▲" : "▼") : "↕"}
+    </span>
+  );
 
   // Alive filter state
   const initialAliveFilter = (() => {
@@ -316,12 +320,16 @@ export function ProbabilityClient({
                       <div className="flex items-center gap-2 min-w-0">
                         <CompareCheckbox bracketId={entry.id} />
                         <div className="min-w-0">
-                          <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
-                            {displayName(entry)}
-                          </div>
-                          <div className="text-xs text-on-surface-variant truncate">
-                            {entry.name}
-                          </div>
+                          {(() => { const primary = displayName(entry); return (<>
+                            <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
+                              {primary}
+                            </div>
+                            {entry.name !== primary && (
+                              <div className="text-xs text-on-surface-variant truncate">
+                                {entry.name}
+                              </div>
+                            )}
+                          </>); })()}
                         </div>
                       </div>
                       {showExact && (
@@ -341,33 +349,23 @@ export function ProbabilityClient({
       {/* Simulated Finishes tab */}
       {tab === "finishes" && (
         <div className="rounded-card bg-surface-container p-5">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <h3 className="font-display text-lg font-semibold">Simulated Finishes</h3>
-            <button
-              onClick={() => setShowExact(!showExact)}
-              className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors border border-outline"
-            >
-              {showExact ? "Hide Top 10 & Top 25" : "Show Top 10 & Top 25"}
-            </button>
           </div>
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <table className="min-w-[700px] w-full text-sm">
+            <table className="min-w-[850px] w-full text-sm">
               <thead>
                 <tr className="border-b border-outline">
                   <th className="w-8"></th>
-                  <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Championship chances tier">Tier</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}>Win %{fArrow("probability")}</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 2nd" onClick={() => toggleFinishSort("pct_second")}>2nd %{fArrow("pct_second")}</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 3rd" onClick={() => toggleFinishSort("pct_third")}>3rd %{fArrow("pct_third")}</th>
-                  {showExact && (
-                    <>
-                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 10" onClick={() => toggleFinishSort("pct_top10")}>Top 10{fArrow("pct_top10")}</th>
-                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 25" onClick={() => toggleFinishSort("pct_top25")}>Top 25{fArrow("pct_top25")}</th>
-                    </>
-                  )}
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Median finish position across simulations" onClick={() => toggleFinishSort("median_rank")}>Median{fArrow("median_rank")}</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Championship pick">Champion</th>
+                  <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Bracket name and username">Bracket</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Championship chances tier">Tier</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}>Win %{fSortIcon("probability")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 2nd" onClick={() => toggleFinishSort("pct_second")}>2nd %{fSortIcon("pct_second")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 3rd" onClick={() => toggleFinishSort("pct_third")}>3rd %{fSortIcon("pct_third")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 10" onClick={() => toggleFinishSort("pct_top10")}>Top 10{fSortIcon("pct_top10")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 25" onClick={() => toggleFinishSort("pct_top25")}>Top 25{fSortIcon("pct_top25")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Median finish position across simulations" onClick={() => toggleFinishSort("median_rank")}>Median{fSortIcon("median_rank")}</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Championship pick">Champion</th>
                 </tr>
               </thead>
               <tbody>
@@ -375,7 +373,7 @@ export function ProbabilityClient({
                   const tierKey = getTierKey(d.probability);
                   const tier = TIERS.find((t) => t.key === tierKey)!;
                   const isExpanded = expandedFinishIds.has(d.id);
-                  const finishColSpan = showExact ? 10 : 8;
+                  const finishColSpan = 10;
                   return (
                     <React.Fragment key={d.id}>
                     <tr
@@ -388,12 +386,14 @@ export function ProbabilityClient({
                       })}
                     >
                       <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={d.id} /></td>
-                      <td className="sticky left-0 bg-surface-container z-10 px-2 py-2">
+                      <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors z-10 px-2 py-2">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                           <div>
-                            <div className="text-on-surface text-xs">{displayName(d)}</div>
-                            <div className="text-[10px] text-on-surface-variant">{d.name}</div>
+                            {(() => { const primary = displayName(d); return (<>
+                              <div className="text-on-surface text-xs">{primary}</div>
+                              {d.name !== primary && <div className="text-[10px] text-on-surface-variant">{d.name}</div>}
+                            </>); })()}
                           </div>
                         </div>
                       </td>
@@ -405,12 +405,8 @@ export function ProbabilityClient({
                       <td className="px-2 py-2 font-label text-xs text-tertiary">{d.pct_first.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">{d.pct_second.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">{d.pct_third.toFixed(1)}%</td>
-                      {showExact && (
-                        <>
-                          <td className="px-2 py-2 font-label text-xs text-secondary">{d.pct_top10.toFixed(1)}%</td>
-                          <td className="px-2 py-2 font-label text-xs text-on-surface">{d.pct_top25.toFixed(1)}%</td>
-                        </>
-                      )}
+                      <td className="px-2 py-2 font-label text-xs text-secondary">{d.pct_top10.toFixed(1)}%</td>
+                      <td className="px-2 py-2 font-label text-xs text-on-surface">{d.pct_top25.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
                       <td className="px-2 py-2 text-xs text-on-surface-variant">
                         <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
@@ -494,8 +490,10 @@ export function ProbabilityClient({
                   <div key={entry.name} className="rounded-card bg-surface-container p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-display text-sm font-semibold text-on-surface">{displayName(entry)}</p>
-                        <p className="text-[10px] text-on-surface-variant">{entry.name}</p>
+                        {(() => { const primary = displayName(entry); return (<>
+                          <p className="font-display text-sm font-semibold text-on-surface">{primary}</p>
+                          {entry.name !== primary && <p className="text-[10px] text-on-surface-variant">{entry.name}</p>}
+                        </>); })()}
                       </div>
                       <div className="text-right">
                         <p className="font-label text-xs text-on-surface">{entry.points} pts <span className="text-on-surface-variant">+ {totalPossible} possible</span></p>

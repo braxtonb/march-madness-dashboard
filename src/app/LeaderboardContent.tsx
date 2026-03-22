@@ -189,10 +189,12 @@ function LeaderboardContentInner({
                       <p className={`font-label text-xs uppercase tracking-wider ${m.textClass}`}>
                         {m.label}
                       </p>
-                      <p className="font-display text-base font-bold text-on-surface leading-tight">
-                        {displayName(b)}
-                      </p>
-                      <p className="text-xs text-on-surface-variant">{b.name}</p>
+                      {(() => { const primary = displayName(b); return (<>
+                        <p className="font-display text-base font-bold text-on-surface leading-tight">
+                          {primary}
+                        </p>
+                        {b.name !== primary && <p className="text-xs text-on-surface-variant">{b.name}</p>}
+                      </>); })()}
                       <p className={`font-display text-2xl font-black ${m.textClass}`}>
                         {b.points}
                         <span className="text-xs font-label ml-1">pts</span>
@@ -256,12 +258,16 @@ function LeaderboardContentInner({
                     {i + 1}
                   </span>
                   <div>
-                    <span className="text-on-surface font-body font-medium">
-                      {displayName({ full_name: gc.bracketFullName, name: gc.bracketName, owner: gc.bracketOwner })}
-                    </span>
-                    <span className="text-xs text-on-surface-variant ml-2">
-                      {gc.bracketName}
-                    </span>
+                    {(() => { const primary = displayName({ full_name: gc.bracketFullName, name: gc.bracketName, owner: gc.bracketOwner }); return (<>
+                      <span className="text-on-surface font-body font-medium">
+                        {primary}
+                      </span>
+                      {gc.bracketName !== primary && (
+                        <span className="text-xs text-on-surface-variant ml-2">
+                          {gc.bracketName}
+                        </span>
+                      )}
+                    </>); })()}
                     <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
                       Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />
                       {gc.round &&

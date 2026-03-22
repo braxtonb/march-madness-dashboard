@@ -78,8 +78,13 @@ export function DrilldownTable({
     if (sortKey === key) setSortAsc(!sortAsc);
     else { setSortKey(key); setSortAsc(key === "rank"); }
   }
-  const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
-  const hdr = "px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none";
+  const sortIcon = (key: SortKey) => (
+    <span className={`ml-0.5 text-[10px] transition-colors ${sortKey === key ? "text-on-surface-variant" : "text-on-surface-variant/40 group-hover/hdr:text-on-surface-variant/80"}`}>
+      {sortKey === key ? (sortAsc ? "▲" : "▼") : "↕"}
+    </span>
+  );
+  const hdr = "group/hdr px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none";
+  const hdrStatic = "px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default";
 
   return (
     <div className="space-y-3">
@@ -133,11 +138,11 @@ export function DrilldownTable({
           <thead>
             <tr className="border-b border-outline">
               <th className="w-8"></th>
-              <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{arrow("rank")}</th>
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Name</th>
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Championship pick — green dot if still alive">Champion</th>
-              <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Points{arrow("points")}</th>
-              <th className={hdr} onClick={() => toggleSort("max_remaining")} title="Maximum possible points remaining">MAX{arrow("max_remaining")}</th>
+              <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{sortIcon("rank")}</th>
+              <th className={hdrStatic} title="Bracket name and username">Name</th>
+              <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
+              <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Points{sortIcon("points")}</th>
+              <th className={hdr} onClick={() => toggleSort("max_remaining")} title="Maximum possible points remaining">MAX{sortIcon("max_remaining")}</th>
             </tr>
           </thead>
           <tbody>
@@ -162,8 +167,10 @@ export function DrilldownTable({
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                       <div>
-                        <div className="text-on-surface">{displayName(b)}</div>
-                        <div className="text-xs text-on-surface-variant">{b.name}</div>
+                        {(() => { const primary = displayName(b); return (<>
+                          <div className="text-on-surface">{primary}</div>
+                          {b.name !== primary && <div className="text-xs text-on-surface-variant">{b.name}</div>}
+                        </>); })()}
                       </div>
                     </div>
                   </td>
