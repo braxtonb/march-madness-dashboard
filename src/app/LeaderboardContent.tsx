@@ -131,20 +131,22 @@ function LeaderboardContentInner({
       </div>
 
       {/* Tab pills */}
-      <div className="flex gap-2 flex-wrap">
-        {TAB_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => changeTab(opt.value)}
-            className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
-              tab === opt.value
-                ? "bg-primary/15 text-primary border border-primary/30"
-                : "text-on-surface-variant hover:text-on-surface"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 min-w-max">
+          {TAB_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => changeTab(opt.value)}
+              className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
+                tab === opt.value
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ===== Tab 1: Standings ===== */}

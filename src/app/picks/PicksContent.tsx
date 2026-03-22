@@ -148,37 +148,41 @@ export function PicksContent({
   return (
     <div className="space-y-section">
       {/* Page-level tabs */}
-      <div className="flex gap-2">
-        <button onClick={() => changePageTab("results")} className={pageTab === "results" ? TAB_ACTIVE : TAB_INACTIVE}>
-          Game Results
-        </button>
-        <button onClick={() => changePageTab("champions")} className={pageTab === "champions" ? TAB_ACTIVE : TAB_INACTIVE}>
-          Champion Distribution
-        </button>
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 min-w-max">
+          <button onClick={() => changePageTab("results")} className={pageTab === "results" ? TAB_ACTIVE : TAB_INACTIVE}>
+            Game Results
+          </button>
+          <button onClick={() => changePageTab("champions")} className={pageTab === "champions" ? TAB_ACTIVE : TAB_INACTIVE}>
+            Champion Distribution
+          </button>
+        </div>
       </div>
 
       {pageTab === "results" && (
       <div className="space-y-section">
       <div className="flex flex-wrap items-center gap-3">
         <RoundSelector selected={round} onSelect={changeRound} />
-        <div className="flex gap-1.5">
-          {([
-            { label: `All (${roundGames.length})`, value: "all" as StatusFilter },
-            { label: `Completed (${completedGames.length})`, value: "completed" as StatusFilter },
-            { label: `Scheduled (${scheduledGames.length})`, value: "scheduled" as StatusFilter },
-          ]).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => changeStatusFilter(opt.value)}
-              className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${
-                statusFilter === opt.value
-                  ? "bg-primary/15 text-primary border border-primary/30"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+        <div className="overflow-x-auto no-scrollbar">
+          <div className="flex gap-1.5 min-w-max">
+            {([
+              { label: `All (${roundGames.length})`, value: "all" as StatusFilter },
+              { label: `Completed (${completedGames.length})`, value: "completed" as StatusFilter },
+              { label: `Scheduled (${scheduledGames.length})`, value: "scheduled" as StatusFilter },
+            ]).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => changeStatusFilter(opt.value)}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${
+                  statusFilter === opt.value
+                    ? "bg-primary/15 text-primary border border-primary/30"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -248,19 +248,21 @@ export function ProbabilityClient({
       </div>
 
       {/* Tab pills */}
-      <div className="flex gap-2 flex-wrap">
-        <button onClick={() => changeTab("chances")} className={tab === "chances" ? TAB_ACTIVE : TAB_INACTIVE}>
-          Championship Chances
-        </button>
-        <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
-          Simulated Finishes
-        </button>
-        {/* Path to Victory moved to leaderboard table (expandable rows) */}
-        {aliveData && (
-          <button onClick={() => changeTab("alive")} className={tab === "alive" ? TAB_ACTIVE : TAB_INACTIVE}>
-            Who&apos;s Still Alive
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex gap-2 min-w-max">
+          <button onClick={() => changeTab("chances")} className={tab === "chances" ? TAB_ACTIVE : TAB_INACTIVE}>
+            Championship Chances
           </button>
-        )}
+          <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
+            Simulated Finishes
+          </button>
+          {/* Path to Victory moved to leaderboard table (expandable rows) */}
+          {aliveData && (
+            <button onClick={() => changeTab("alive")} className={tab === "alive" ? TAB_ACTIVE : TAB_INACTIVE}>
+              Who&apos;s Still Alive
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Championship Chances tab */}
@@ -480,27 +482,29 @@ export function ProbabilityClient({
           <GamesToWatch games={aliveData.gamesToWatch} teamLogos={teamLogos} />
 
           <div className="space-y-4">
-            <div className="flex gap-2 flex-wrap">
-              {(
-                [
-                  ["champion", "Champion Alive"],
-                  ["ff3", "3+ Final Four"],
-                  ["ff2", "2+ Final Four"],
-                  ["all", "All Brackets"],
-                ] as const
-              ).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => changeAliveFilter(key)}
-                  className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
-                    aliveFilter === key
-                      ? "bg-primary/15 text-primary border border-primary/30"
-                      : "text-on-surface-variant hover:text-on-surface"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="overflow-x-auto no-scrollbar">
+              <div className="flex gap-2 min-w-max">
+                {(
+                  [
+                    ["champion", "Champion Alive"],
+                    ["ff3", "3+ Final Four"],
+                    ["ff2", "2+ Final Four"],
+                    ["all", "All Brackets"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => changeAliveFilter(key)}
+                    className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
+                      aliveFilter === key
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "text-on-surface-variant hover:text-on-surface"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <DrilldownTable

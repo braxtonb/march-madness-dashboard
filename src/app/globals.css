@@ -78,6 +78,19 @@ body {
   animation: slide-in-right 0.2s ease-out;
 }
 
+@keyframes bottom-sheet-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.bottom-sheet-enter {
+  animation: bottom-sheet-slide-up 0.3s ease-out forwards;
+}
+
+/* Hide scrollbar for filter pill horizontal scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 th[title] {
   border-bottom: 1px dotted rgba(167, 171, 178, 0.4);
   cursor: help;
