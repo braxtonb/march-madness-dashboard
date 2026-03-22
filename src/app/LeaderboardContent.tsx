@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
@@ -226,6 +227,79 @@ function LeaderboardContentInner({
                     </div>
                   ))}
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* Quick Link Hero Cards */}
+          {(() => {
+            const sorted = [...brackets].sort((a, b) => {
+              const aA = analytics.get(a.id);
+              const bA = analytics.get(b.id);
+              if (!aA || !bA) return 0;
+              return aA.rank - bA.rank;
+            });
+            const top1Id = sorted[0]?.id ?? "";
+            const top2Id = sorted[1]?.id ?? "";
+
+            const quickLinks = [
+              {
+                href: "/picks?view=bracket",
+                title: "Bracket View",
+                description: "See every pick in bracket format",
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="M3 3v6h6" /><path d="M3 9l4-4h4" /><path d="M3 15v6h6" /><path d="M3 21l4-4h4" /><path d="M15 5h6" /><path d="M15 19h6" /><path d="M11 5v14" /><path d="M11 12h4" />
+                  </svg>
+                ),
+              },
+              {
+                href: "/simulator",
+                title: "Simulate Favorites",
+                description: "What if all favorites win?",
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                ),
+              },
+              {
+                href: `/head-to-head?b1=${top1Id}&b2=${top2Id}`,
+                title: "Compare Top 2",
+                description: "Head-to-head comparison",
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+                  </svg>
+                ),
+              },
+              {
+                href: "/probability?tab=finishes",
+                title: "Win Probability",
+                description: "Simulated championship odds",
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>
+                  </svg>
+                ),
+              },
+            ];
+
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="group rounded-card bg-surface-container border border-outline-variant/30 p-3 hover:bg-surface-bright hover:border-outline-variant transition-colors"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-primary shrink-0">{link.icon}</span>
+                      <span className="font-display text-sm font-semibold text-on-surface group-hover:text-primary transition-colors">{link.title}</span>
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant leading-relaxed">{link.description}</p>
+                  </Link>
+                ))}
               </div>
             );
           })()}

@@ -9,7 +9,7 @@ import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
-import { Skeleton, CardSkeleton } from "@/components/ui/Skeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
   if (direction === "asc") return (
@@ -603,19 +603,63 @@ export default function SimulatorPage() {
   if (!data) {
     return (
       <div className="space-y-section">
+        {/* Title + description */}
         <div>
           <h2 className="font-display text-2xl font-bold">Scenario Simulator</h2>
           <Skeleton className="h-4 w-64 mt-1" />
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Skeleton className="h-8 w-28 rounded-card" />
-          <Skeleton className="h-8 w-28 rounded-card" />
-          <Skeleton className="h-8 w-28 rounded-card" />
+
+        {/* Action buttons row */}
+        <div className="space-y-2">
+          <div className="flex gap-2 flex-wrap">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-28 rounded-card" />
+            ))}
+          </div>
+          <div className="flex gap-2 flex-wrap items-center">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-7 w-28 rounded-card" />
+            <Skeleton className="h-7 w-28 rounded-card" />
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <CardSkeleton key={i} />
-          ))}
+
+        {/* Two-column layout matching actual grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-section lg:items-start">
+          {/* Left: game picker (takes 2 cols) */}
+          <div className="lg:col-span-2 space-y-2">
+            {Array.from({ length: 3 }).map((_, r) => (
+              <div key={r} className="space-y-1.5">
+                <Skeleton className="h-5 w-32" />
+                <div className="space-y-1.5">
+                  {Array.from({ length: 4 }).map((_, g) => (
+                    <Skeleton key={g} className="h-12 rounded-card" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right: impact table (takes 3 cols) */}
+          <div className="lg:col-span-3 space-y-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-4 w-48" />
+            <div className="rounded-card bg-surface-container p-4 space-y-3">
+              {/* Table header */}
+              <div className="flex gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-4 flex-1" />
+                ))}
+              </div>
+              {/* Table rows */}
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  {Array.from({ length: 6 }).map((_, c) => (
+                    <Skeleton key={c} className="h-8 flex-1" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
