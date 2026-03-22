@@ -2,6 +2,4 @@
 
 ## Deferred
 
-| # | Item | Priority | Notes |
-|---|------|----------|-------|
-| 1 | Mobile responsiveness | Medium | Sidebar collapses but tables/charts need responsive layouts, touch-friendly tap targets, stacked cards on small screens |
+No remaining items — all Plan 1–4 deliverables have been completed.
