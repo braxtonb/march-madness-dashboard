@@ -415,7 +415,7 @@ export function HeadToHeadContent({
               }`}
             >
               <span>All Rounds</span>
-              {id1 && id2 && (currentRoundAgree + currentRoundDiff) > 0 && isAllRounds ? null : id1 && id2 && (() => {
+              {id1 && id2 && (() => {
                 const totalAg = ROUND_ORDER.reduce((s, r) => s + (roundStats[r]?.agree ?? 0), 0);
                 const totalDf = ROUND_ORDER.reduce((s, r) => s + (roundStats[r]?.diff ?? 0), 0);
                 return (totalAg + totalDf) > 0 ? (
