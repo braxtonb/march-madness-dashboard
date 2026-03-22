@@ -59,11 +59,11 @@ function shortName(name: string): string {
 }
 
 /** Region codes to display labels */
-const REGION_LABELS: Record<string, string> = {
-  R1: "Region 1",
-  R2: "Region 2",
-  R3: "Region 3",
-  R4: "Region 4",
+const REGION_NAMES: Record<string, string> = {
+  R1: "East",
+  R2: "South",
+  R3: "West",
+  R4: "Midwest",
 };
 
 /** Rounds within each region (left-to-right) */
@@ -166,6 +166,7 @@ function GameCell({
 function RegionBracket({
   games,
   region,
+  direction = "ltr",
   pickSplits,
   totalBrackets,
   eliminatedTeams,
@@ -173,6 +174,7 @@ function RegionBracket({
 }: {
   games: Game[];
   region: string;
+  direction?: "ltr" | "rtl";
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
   totalBrackets: number;
   eliminatedTeams?: Set<string>;
@@ -199,19 +201,23 @@ function RegionBracket({
   }, [regionGames]);
 
   const activeRounds = REGION_ROUNDS.filter((r) => roundGameMap[r]);
+  // For RTL regions (West, Midwest), reverse the round order so R64 is on the right
+  const displayRounds = direction === "rtl" ? [...activeRounds].reverse() : activeRounds;
 
   if (activeRounds.length === 0) return null;
 
   return (
     <div className="space-y-2">
-      <h3 className="font-display text-sm font-semibold text-on-surface px-1">
-        {REGION_LABELS[region] || region}
+      <h3 className={`font-display text-sm font-semibold text-on-surface px-1 ${direction === "rtl" ? "text-right" : ""}`}>
+        {REGION_NAMES[region] || region}
       </h3>
-      <div className="flex items-center gap-0">
-        {activeRounds.map((round, roundIdx) => {
+      <div className={`flex items-center gap-0 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+        {displayRounds.map((round) => {
           const roundGames = roundGameMap[round];
+          // Use the original index (in the natural LTR order) for gap calculation
+          const naturalIdx = activeRounds.indexOf(round);
           // Exponentially increasing gap to create tree alignment
-          const gapPx = Math.pow(2, roundIdx) * 8;
+          const gapPx = Math.pow(2, naturalIdx) * 8;
 
           return (
             <div key={round} className="flex flex-col items-stretch shrink-0">
@@ -238,7 +244,7 @@ function RegionBracket({
                       onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
                     />
                     {/* Connector line to next round */}
-                    {roundIdx < activeRounds.length - 1 && (
+                    {naturalIdx < activeRounds.length - 1 && (
                       <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
                     )}
                   </div>
@@ -388,6 +394,11 @@ export function BracketView({
     );
   }
 
+  const hasR1 = regions.includes("R1");
+  const hasR2 = regions.includes("R2");
+  const hasR3 = regions.includes("R3");
+  const hasR4 = regions.includes("R4");
+
   return (
     <div className="space-y-3">
       {/* Legend */}
@@ -411,35 +422,84 @@ export function BracketView({
         )}
       </div>
 
-      {/* Horizontally scrollable bracket */}
+      {/* Horizontally scrollable bracket — traditional 2x2 layout */}
       <div
         ref={scrollRef}
         className="overflow-x-auto no-scrollbar pb-4"
       >
-        <div className="space-y-6 min-w-max">
-          {/* Each region as a bracket tree */}
-          {regions.map((region) => (
-            <RegionBracket
-              key={region}
-              games={games}
-              region={region}
-              pickSplits={pickSplits}
-              totalBrackets={totalBrackets}
-              eliminatedTeams={eliminatedTeams}
-              onGameClick={onGameClick}
-            />
-          ))}
+        <div className="min-w-[900px]">
+          {/* Top half: East (LTR) | West (RTL) */}
+          <div className="flex">
+            {hasR1 && (
+              <div className="flex-1">
+                <RegionBracket
+                  games={games}
+                  region="R1"
+                  direction="ltr"
+                  pickSplits={pickSplits}
+                  totalBrackets={totalBrackets}
+                  eliminatedTeams={eliminatedTeams}
+                  onGameClick={onGameClick}
+                />
+              </div>
+            )}
+            {hasR3 && (
+              <div className="flex-1">
+                <RegionBracket
+                  games={games}
+                  region="R3"
+                  direction="rtl"
+                  pickSplits={pickSplits}
+                  totalBrackets={totalBrackets}
+                  eliminatedTeams={eliminatedTeams}
+                  onGameClick={onGameClick}
+                />
+              </div>
+            )}
+          </div>
 
-          {/* Final Four + Championship */}
+          {/* Center: Final Four + Championship */}
           {hasFinalRounds && (
-            <FinalRoundsBracket
-              games={games}
-              pickSplits={pickSplits}
-              totalBrackets={totalBrackets}
-              eliminatedTeams={eliminatedTeams}
-              onGameClick={onGameClick}
-            />
+            <div className="flex justify-center py-4">
+              <FinalRoundsBracket
+                games={games}
+                pickSplits={pickSplits}
+                totalBrackets={totalBrackets}
+                eliminatedTeams={eliminatedTeams}
+                onGameClick={onGameClick}
+              />
+            </div>
           )}
+
+          {/* Bottom half: South (LTR) | Midwest (RTL) */}
+          <div className="flex">
+            {hasR2 && (
+              <div className="flex-1">
+                <RegionBracket
+                  games={games}
+                  region="R2"
+                  direction="ltr"
+                  pickSplits={pickSplits}
+                  totalBrackets={totalBrackets}
+                  eliminatedTeams={eliminatedTeams}
+                  onGameClick={onGameClick}
+                />
+              </div>
+            )}
+            {hasR4 && (
+              <div className="flex-1">
+                <RegionBracket
+                  games={games}
+                  region="R4"
+                  direction="rtl"
+                  pickSplits={pickSplits}
+                  totalBrackets={totalBrackets}
+                  eliminatedTeams={eliminatedTeams}
+                  onGameClick={onGameClick}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

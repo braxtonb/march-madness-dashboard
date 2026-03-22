@@ -269,8 +269,31 @@ export function PicksContent({
 
       {pageTab === "results" && (
       <div className="space-y-section">
-      {/* Round/status filters — hidden when bracket view is active */}
-      {resultView !== "bracket" && (
+      {/* View toggle — ALWAYS shown, above filters */}
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex gap-1.5 min-w-max">
+          {([
+            { label: "Card View", value: "cards" as ResultView },
+            { label: "Bracket", value: "bracket" as ResultView },
+            { label: "Heatmap", value: "heatmap" as ResultView },
+          ]).map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => changeResultView(opt.value)}
+              className={`rounded-card px-2.5 py-1 text-xs font-label h-7 transition-colors ${
+                resultView === opt.value
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Round selector + status filters — ALWAYS visible, disabled for bracket view */}
+      <div className={resultView === "bracket" ? "opacity-40 pointer-events-none" : ""}>
       <div className="flex flex-wrap items-center gap-3">
         <RoundSelector
           selected={round}
@@ -299,29 +322,6 @@ export function PicksContent({
           </div>
         </div>
       </div>
-      )}
-
-      {/* View toggle */}
-      <div className="overflow-x-auto no-scrollbar">
-        <div className="flex gap-1.5 min-w-max">
-          {([
-            { label: "Card View", value: "cards" as ResultView },
-            { label: "Bracket", value: "bracket" as ResultView },
-            { label: "Heatmap", value: "heatmap" as ResultView },
-          ]).map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => changeResultView(opt.value)}
-              className={`rounded-card px-2.5 py-1 text-xs font-label h-7 transition-colors ${
-                resultView === opt.value
-                  ? "bg-primary/15 text-primary border border-primary/30"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Bracket view — shows all rounds, ignores round/status filters */}
