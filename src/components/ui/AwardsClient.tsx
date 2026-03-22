@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { AwardCard } from "@/components/ui/AwardCard";
@@ -38,6 +38,11 @@ export function AwardsClient({
   );
   const [selectedAward, setSelectedAward] = useState<Award | null>(null);
 
+  // Build team logo lookup for AwardCard
+  const teamLogos: Record<string, string> = useMemo(() => {
+    return Object.fromEntries(teams.map((t) => [t.name, t.logo]));
+  }, [teams]);
+
   function changeRound(round: string) {
     setSelectedRound(round);
     const params = new URLSearchParams(searchParams.toString());
@@ -67,6 +72,7 @@ export function AwardsClient({
             key={award.title}
             award={award}
             onClick={() => setSelectedAward(award)}
+            teamLogos={teamLogos}
           />
         ))}
       </div>

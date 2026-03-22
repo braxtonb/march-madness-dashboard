@@ -223,7 +223,7 @@ export function GameCard({
             className="w-full text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1"
           >
             Show individual picks
-            <span className="inline-block">→</span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="inline-block"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg>
           </button>
         )}
       </div>

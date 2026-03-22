@@ -81,7 +81,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
 
   // Build options
   const sheetOptions = useMemo(() =>
-    data.map((d) => ({ value: d.name, label: displayName(d), sublabel: d.name })),
+    data.map((d) => { const dn = displayName(d); return { value: d.name, label: d.name, sublabel: dn !== d.name ? dn : undefined }; }),
     [data]
   );
 

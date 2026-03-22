@@ -103,7 +103,7 @@ function LeaderboardContentInner({
 
   // Build options for MultiSelectSearch
   const bracketOptions: MultiSelectOption[] = useMemo(
-    () => brackets.map((b) => ({ value: b.id, label: displayName(b), sublabel: b.name !== displayName(b) ? b.name : undefined })),
+    () => brackets.map((b) => { const dn = displayName(b); return { value: b.id, label: b.name, sublabel: dn !== b.name ? dn : undefined }; }),
     [brackets]
   );
 
@@ -226,12 +226,11 @@ function LeaderboardContentInner({
 
           {/* Leaderboard table */}
           <div>
-            <p className="text-xs text-on-surface-variant">Click any row to see their path to victory</p>
-            <p className="hidden sm:block text-xs text-on-surface-variant/60 mb-2">
-              Hover any row to compare brackets
+            <p className="hidden sm:block text-xs text-on-surface-variant mb-2">
+              Click any row to see details &middot; Hover any row to compare brackets
             </p>
-            <p className="sm:hidden text-xs text-on-surface-variant/60 mb-2">
-              Tap &#9675; to compare brackets
+            <p className="sm:hidden text-xs text-on-surface-variant mb-2">
+              Tap any row for details &middot; Tap &#9675; to compare brackets
             </p>
           </div>
           <div className="w-full sm:w-72 mb-3">

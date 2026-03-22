@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 
-/* ── types ── */
+/* -- types -- */
 
 export interface MultiSelectOption {
   value: string;
@@ -21,11 +21,11 @@ interface MultiSelectSearchProps {
   /** Label used in compact display (e.g. "Brackets", "Champions") */
   label: string;
 
-  // ── Multi-select props ──
+  // -- Multi-select props --
   selected?: string[];
   onSelectedChange?: (ids: string[]) => void;
 
-  // ── Single-select props ──
+  // -- Single-select props --
   selectedId?: string;
   onSelect?: (id: string) => void;
   onClear?: () => void;
@@ -46,7 +46,7 @@ interface MultiSelectSearchProps {
   searchable?: boolean;
 }
 
-/* ── helpers ── */
+/* -- helpers -- */
 
 function highlightMatch(text: string, query: string): React.ReactNode {
   if (!query) return text;
@@ -61,7 +61,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
   );
 }
 
-/* ── component ── */
+/* -- component -- */
 
 function MultiSelectSearchInner({
   mode,
@@ -99,24 +99,17 @@ function MultiSelectSearchInner({
     return excludeValue ? options.filter((o) => o.value !== excludeValue) : options;
   }, [options, excludeValue]);
 
-  // Filtered + sorted: selected pinned to top, then filter by query
+  // Fix 2: Filtered ONLY — NO reordering based on selection state.
+  // Items stay in their original order always. Selected items show a visual indicator.
   const filtered = useMemo(() => {
-    let list = available;
-    if (query) {
-      const q = query.toLowerCase();
-      list = available.filter(
-        (o) =>
-          o.label.toLowerCase().includes(q) ||
-          (o.sublabel?.toLowerCase().includes(q))
-      );
-    }
-    // Pin selected items to top
-    return [...list].sort((a, b) => {
-      const aS = selectedSet.has(a.value) ? 0 : 1;
-      const bS = selectedSet.has(b.value) ? 0 : 1;
-      return aS - bS;
-    });
-  }, [available, query, selectedSet]);
+    if (!query) return available;
+    const q = query.toLowerCase();
+    return available.filter(
+      (o) =>
+        o.label.toLowerCase().includes(q) ||
+        (o.sublabel?.toLowerCase().includes(q))
+    );
+  }, [available, query]);
 
   // Close on outside click
   useEffect(() => {
@@ -171,7 +164,7 @@ function MultiSelectSearchInner({
 
   const defaultPlaceholder = placeholder || `Search ${label.toLowerCase()}...`;
 
-  // ── handlers ──
+  // -- handlers --
 
   const handleFocus = useCallback(() => {
     setOpen(true);
@@ -197,7 +190,7 @@ function MultiSelectSearchInner({
   const handleItemClick = useCallback(
     (value: string) => {
       if (isMulti) {
-        // Toggle selection — do NOT reset scroll
+        // Toggle selection -- do NOT reset scroll
         if (selectedSet.has(value)) {
           onSelectedChange?.(selected.filter((v) => v !== value));
         } else {
@@ -299,36 +292,9 @@ function MultiSelectSearchInner({
           )}
         </div>
 
-        {/* Dropdown */}
+        {/* Dropdown -- Fix 1: NO secondary search input inside dropdown */}
         {open && (
           <div className="absolute z-50 mt-1 w-full min-w-[240px] max-h-72 bg-surface-container border border-outline rounded-card shadow-2xl shadow-black/30 flex flex-col overflow-hidden">
-            {/* Inline search field when dropdown is open and searchable */}
-            {searchable && (
-              <div className="relative border-b border-outline">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Search ${label.toLowerCase()}...`}
-                  className="w-full px-3 py-2 pl-9 bg-transparent text-on-surface text-xs outline-none placeholder:text-on-surface-variant"
-                  autoFocus
-                />
-              </div>
-            )}
-
             {/* Count header */}
             <div className="sticky top-0 bg-surface-container px-3 py-1.5 border-b border-outline">
               <span className="text-[10px] text-on-surface-variant">
@@ -338,7 +304,7 @@ function MultiSelectSearchInner({
               </span>
             </div>
 
-            {/* Scrollable list — scroll position preserved on item toggle */}
+            {/* Scrollable list -- scroll position preserved on item toggle */}
             <div ref={listRef} className="overflow-y-auto flex-1">
               {filtered.map((o) => {
                 const isItemSelected = isMulti
@@ -392,6 +358,7 @@ function MultiSelectSearchInner({
                           className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px] shrink-0"
                         />
                       )}
+                      {/* Fix 3: Bracket name (label) is PRIMARY, full name (sublabel) is secondary */}
                       <div className="min-w-0">
                         <div className="text-on-surface truncate">
                           {highlightMatch(o.label, query)}

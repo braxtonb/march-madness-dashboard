@@ -25,9 +25,11 @@ const AWARD_ICONS: Record<string, string> = {
 export function AwardCard({
   award,
   onClick,
+  teamLogos = {},
 }: {
   award: Award;
   onClick?: () => void;
+  teamLogos?: Record<string, string>;
 }) {
   const tierColors = {
     gold: "text-achievement",
@@ -79,7 +81,7 @@ export function AwardCard({
           {/* Click hint */}
           {onClick && (
             <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details &rarr;
+              Click for details <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="inline-block"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg>
             </p>
           )}
         </>
@@ -93,14 +95,14 @@ export function AwardCard({
           <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
           {firstWinner.championPick && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
-              Champion: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} eliminated={firstWinner.championEliminated} showStatus />
+              Champion: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
             </p>
           )}
 
           {/* Click hint */}
           {onClick && (
             <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details &rarr;
+              Click for details <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="inline-block"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg>
             </p>
           )}
         </>

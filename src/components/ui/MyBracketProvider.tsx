@@ -1,20 +1,47 @@
 "use client";
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
 
-interface MyBracketContextType {
+/* ── Split into two contexts ──
+   1. MyBracketStateContext — holds `myBracketId` and `isMyBracket` (changes when bracket changes)
+   2. MyBracketActionsContext — holds `setMyBracket` (stable, never changes)
+*/
+
+interface MyBracketStateContextType {
   myBracketId: string | null;
-  setMyBracket: (id: string | null) => void;
   isMyBracket: (id: string) => boolean;
 }
 
-const MyBracketContext = createContext<MyBracketContextType>({
+interface MyBracketActionsContextType {
+  setMyBracket: (id: string | null) => void;
+}
+
+const MyBracketStateContext = createContext<MyBracketStateContextType>({
   myBracketId: null,
-  setMyBracket: () => {},
   isMyBracket: () => false,
 });
 
+const MyBracketActionsContext = createContext<MyBracketActionsContextType>({
+  setMyBracket: () => {},
+});
+
+/** Read bracket state — re-renders when myBracketId changes */
+export function useMyBracketState() {
+  return useContext(MyBracketStateContext);
+}
+
+/** Read actions only — stable, never causes re-render */
+export function useMyBracketActions() {
+  return useContext(MyBracketActionsContext);
+}
+
+/** Legacy hook — returns both state and actions (same API as before) */
 export function useMyBracket() {
-  return useContext(MyBracketContext);
+  const state = useContext(MyBracketStateContext);
+  const actions = useContext(MyBracketActionsContext);
+  return useMemo(
+    () => ({ ...state, ...actions }),
+    [state, actions]
+  );
 }
 
 export default function MyBracketProvider({ children }: { children: ReactNode }) {
@@ -34,14 +61,23 @@ export default function MyBracketProvider({ children }: { children: ReactNode })
 
   const isMyBracket = useCallback((id: string) => id === myBracketId, [myBracketId]);
 
-  const value = useMemo(
-    () => ({ myBracketId, setMyBracket, isMyBracket }),
-    [myBracketId, setMyBracket, isMyBracket]
+  // Actions value is stable (setMyBracket never changes)
+  const actionsValue = useMemo(
+    () => ({ setMyBracket }),
+    [setMyBracket]
+  );
+
+  // State value changes only when myBracketId changes
+  const stateValue = useMemo(
+    () => ({ myBracketId, isMyBracket }),
+    [myBracketId, isMyBracket]
   );
 
   return (
-    <MyBracketContext.Provider value={value}>
-      {children}
-    </MyBracketContext.Provider>
+    <MyBracketActionsContext.Provider value={actionsValue}>
+      <MyBracketStateContext.Provider value={stateValue}>
+        {children}
+      </MyBracketStateContext.Provider>
+    </MyBracketActionsContext.Provider>
   );
 }

@@ -45,10 +45,11 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
   }, [brackets]);
 
   // Build bracket options for MultiSelectSearch
+  // Fix 3: bracket name primary, full name secondary
   const bracketOptions: MultiSelectOption[] = useMemo(
     () => brackets.map((b) => {
       const primary = displayName(b);
-      return { value: b.id, label: primary, sublabel: b.name !== primary ? b.name : undefined };
+      return { value: b.id, label: b.name, sublabel: b.name !== primary ? primary : undefined };
     }),
     [brackets]
   );
@@ -82,7 +83,7 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
         <button
           onClick={() => setOpen(!open)}
           className="flex items-center gap-1.5 rounded-card bg-secondary/10 border border-secondary/20 px-2.5 py-1 text-xs font-label text-secondary hover:bg-secondary/15 transition-colors max-w-[200px]"
-          title="My Bracket — click to change"
+          title="My Bracket -- click to change"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 shrink-0">
             <path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.7 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.4 0-2.5-1.1-2.5-2.5S10.6 6.5 12 6.5s2.5 1.1 2.5 2.5S13.4 11.5 12 11.5z" />

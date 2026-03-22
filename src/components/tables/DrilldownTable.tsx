@@ -109,13 +109,28 @@ export function DrilldownTable({
 
   return (
     <div className="space-y-3">
-      <input
-        type="text"
-        placeholder="Search brackets..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full rounded-card bg-surface-bright px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant outline-none"
-      />
+      <div className="relative w-full sm:w-72">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Search brackets..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-card bg-surface-container border border-outline px-3 py-2.5 pl-9 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all min-h-[36px]"
+        />
+      </div>
 
       {/* Mobile card stack */}
       <div className="sm:hidden space-y-2">

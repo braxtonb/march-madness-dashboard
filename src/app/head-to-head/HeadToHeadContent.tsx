@@ -53,6 +53,30 @@ export function HeadToHeadContent({
   );
   const [selectedRound, setSelectedRound] = useState<AwardRound>(initialRound);
 
+  // Fix 7: Collapsible rounds for All Rounds view
+  // Default: collapse all fully completed rounds (where every game in that round is finished)
+  const fullyCompletedRounds = useMemo(() => {
+    const set = new Set<string>();
+    for (const round of ROUND_ORDER) {
+      const roundGames = games.filter((g) => g.round === round);
+      if (roundGames.length > 0 && roundGames.every((g) => g.completed)) {
+        set.add(round);
+      }
+    }
+    return set;
+  }, [games]);
+
+  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => new Set(fullyCompletedRounds));
+
+  const toggleRoundCollapse = useCallback((round: string) => {
+    setCollapsedRounds((prev) => {
+      const next = new Set(prev);
+      if (next.has(round)) next.delete(round);
+      else next.add(round);
+      return next;
+    });
+  }, []);
+
   const updateUrl = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -78,8 +102,8 @@ export function HeadToHeadContent({
   // Build bracket options for MultiSelectSearch
   const bracketOptions: MultiSelectOption[] = useMemo(
     () => brackets.map((b) => {
-      const primary = displayName(b);
-      return { value: b.id, label: primary, sublabel: b.name !== primary ? b.name : undefined };
+      const dn = displayName(b);
+      return { value: b.id, label: b.name, sublabel: dn !== b.name ? dn : undefined };
     }),
     [brackets]
   );
@@ -385,7 +409,7 @@ export function HeadToHeadContent({
               </p>
             )}
             {isAllRounds ? (
-              /* Group by round with round headers */
+              /* Group by round with collapsible round headers */
               ROUND_ORDER.map((round) => {
                 const roundIds = filteredGameIds.filter((gid) => {
                   const g = gameMap.get(gid);
@@ -395,9 +419,15 @@ export function HeadToHeadContent({
                 const stats = roundStats[round];
                 const roundCompleted = roundIds.filter((gid) => gameMap.get(gid)?.completed);
                 const roundScheduled = roundIds.filter((gid) => !gameMap.get(gid)?.completed);
+                const isCollapsed = collapsedRounds.has(round);
                 return (
                   <div key={round} className="space-y-2">
-                    <div className="flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleRoundCollapse(round)}
+                      className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+                    >
+                      <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
                       <p className="font-label text-xs font-semibold text-on-surface">
                         {ROUND_LABELS[round]}
                       </p>
@@ -406,25 +436,34 @@ export function HeadToHeadContent({
                           {stats.agree} agree / {stats.diff} differ
                         </span>
                       )}
-                    </div>
-                    {roundCompleted.length > 0 && statusFilter !== "scheduled" && (
+                      {isCollapsed && (
+                        <span className="text-[10px] text-on-surface-variant/50 ml-auto">
+                          {roundIds.length} game{roundIds.length !== 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </button>
+                    {!isCollapsed && (
                       <>
-                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                          Completed ({roundCompleted.length})
-                        </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {roundCompleted.map((gid) => renderGameCard(gid))}
-                        </div>
-                      </>
-                    )}
-                    {roundScheduled.length > 0 && statusFilter !== "completed" && (
-                      <>
-                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
-                          Scheduled ({roundScheduled.length})
-                        </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {roundScheduled.map((gid) => renderGameCard(gid))}
-                        </div>
+                        {roundCompleted.length > 0 && statusFilter !== "scheduled" && (
+                          <>
+                            <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                              Completed ({roundCompleted.length})
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {roundCompleted.map((gid) => renderGameCard(gid))}
+                            </div>
+                          </>
+                        )}
+                        {roundScheduled.length > 0 && statusFilter !== "completed" && (
+                          <>
+                            <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
+                              Scheduled ({roundScheduled.length})
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {roundScheduled.map((gid) => renderGameCard(gid))}
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
                   </div>

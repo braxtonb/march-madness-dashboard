@@ -1,6 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import { useCompare } from "./CompareProvider";
+import { useCompareState, useCompareActions } from "./CompareProvider";
 import { useRouter } from "next/navigation";
 import type { Bracket } from "@/lib/types";
 import { displayName } from "@/lib/constants";
@@ -10,7 +10,8 @@ interface CompareBarProps {
 }
 
 export default function CompareBar({ brackets }: CompareBarProps) {
-  const { selected, toggle, clear } = useCompare();
+  const { selected } = useCompareState();
+  const { toggle, clear } = useCompareActions();
   const router = useRouter();
 
   // Memoize bracket lookup map to avoid filtering 75 brackets on every render

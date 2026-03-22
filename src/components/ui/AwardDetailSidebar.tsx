@@ -646,27 +646,34 @@ export default function AwardDetailSidebar({
       title={title}
     >
       <div className="space-y-4">
-        {/* Winner info header with inline prev/next navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            {hasPrev && (
-              <button onClick={() => setWinnerIdx((i) => i - 1)} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        {/* Winner info header with compact prev/next navigation */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            {total > 1 && hasPrev && (
+              <button onClick={() => setWinnerIdx((i) => i - 1)} className="p-1 hover:bg-surface-bright rounded-lg text-on-surface-variant shrink-0">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M5 8L9 4.5V11.5L5 8Z" fill="currentColor" />
+                </svg>
               </button>
             )}
-            <div>
-              <div className="text-on-surface font-semibold">{winnerDisplayName}</div>
-              <div className="text-xs text-on-surface-variant">{winner.name}</div>
+            <div className="min-w-0">
+              <div className="text-on-surface font-semibold truncate">{winnerDisplayName}</div>
+              {winner.name !== winnerDisplayName && (
+                <div className="text-xs text-on-surface-variant truncate">{winner.name}</div>
+              )}
             </div>
-            {hasNext && (
-              <button onClick={() => setWinnerIdx((i) => i + 1)} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            {total > 1 && hasNext && (
+              <button onClick={() => setWinnerIdx((i) => i + 1)} className="p-1 hover:bg-surface-bright rounded-lg text-on-surface-variant shrink-0">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" />
+                </svg>
               </button>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Only show "X of N" when there are multiple winners (not "1 of 1") */}
             {total > 1 && (
-              <span className="text-sm text-on-surface-variant">
+              <span className="text-xs text-on-surface-variant whitespace-nowrap">
                 {winnerIdx + 1} of {total}
               </span>
             )}

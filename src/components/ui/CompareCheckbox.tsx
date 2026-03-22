@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useCompare } from "./CompareProvider";
+import { useCompareState, useCompareActions } from "./CompareProvider";
 
 interface CompareCheckboxProps {
   bracketId: string;
@@ -8,7 +8,8 @@ interface CompareCheckboxProps {
 }
 
 function CompareCheckboxInner({ bracketId, className = "" }: CompareCheckboxProps) {
-  const { toggle, isSelected } = useCompare();
+  const { isSelected } = useCompareState();
+  const { toggle } = useCompareActions();
   const checked = isSelected(bracketId);
 
   return (

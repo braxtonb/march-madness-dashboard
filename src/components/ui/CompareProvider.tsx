@@ -1,22 +1,50 @@
 "use client";
 import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 
-interface CompareContextType {
-  selected: string[];           // bracket IDs, max 2
-  toggle: (id: string) => void; // add/remove, FIFO if > 2
-  clear: () => void;
+/* ── Split into two contexts ──
+   1. CompareStateContext — holds `selected` and `isSelected` (changes when selection changes)
+   2. CompareActionsContext — holds `toggle` and `clear` (stable, never changes)
+   Components that only need actions (e.g. CompareCheckbox toggle) won't re-render on selection changes.
+*/
+
+interface CompareStateContextType {
+  selected: string[];
   isSelected: (id: string) => boolean;
 }
 
-const CompareContext = createContext<CompareContextType>({
+interface CompareActionsContextType {
+  toggle: (id: string) => void;
+  clear: () => void;
+}
+
+const CompareStateContext = createContext<CompareStateContextType>({
   selected: [],
-  toggle: () => {},
-  clear: () => {},
   isSelected: () => false,
 });
 
+const CompareActionsContext = createContext<CompareActionsContextType>({
+  toggle: () => {},
+  clear: () => {},
+});
+
+/** Read selected state — re-renders when selection changes */
+export function useCompareState() {
+  return useContext(CompareStateContext);
+}
+
+/** Read actions only — stable, never causes re-render */
+export function useCompareActions() {
+  return useContext(CompareActionsContext);
+}
+
+/** Legacy hook — returns both state and actions (same API as before) */
 export function useCompare() {
-  return useContext(CompareContext);
+  const state = useContext(CompareStateContext);
+  const actions = useContext(CompareActionsContext);
+  return useMemo(
+    () => ({ ...state, ...actions }),
+    [state, actions]
+  );
 }
 
 export default function CompareProvider({ children }: { children: ReactNode }) {
@@ -36,14 +64,23 @@ export default function CompareProvider({ children }: { children: ReactNode }) {
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const isSelected = useCallback((id: string) => selectedSet.has(id), [selectedSet]);
 
-  const value = useMemo(
-    () => ({ selected, toggle, clear, isSelected }),
-    [selected, toggle, clear, isSelected]
+  // Actions value is stable (toggle and clear never change)
+  const actionsValue = useMemo(
+    () => ({ toggle, clear }),
+    [toggle, clear]
+  );
+
+  // State value changes only when selected changes
+  const stateValue = useMemo(
+    () => ({ selected, isSelected }),
+    [selected, isSelected]
   );
 
   return (
-    <CompareContext.Provider value={value}>
-      {children}
-    </CompareContext.Provider>
+    <CompareActionsContext.Provider value={actionsValue}>
+      <CompareStateContext.Provider value={stateValue}>
+        {children}
+      </CompareStateContext.Provider>
+    </CompareActionsContext.Provider>
   );
 }

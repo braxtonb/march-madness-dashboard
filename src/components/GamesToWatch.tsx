@@ -48,12 +48,8 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                   <span className="text-[10px] text-on-surface-variant">vs</span>
                   <TeamPill name={g.team2} seed={g.seed2} logo={teamLogos[g.team2]} />
                 </span>
-                <span
-                  className={`text-on-surface-variant text-xs transition-transform ${
-                    isExpanded ? "rotate-180" : ""
-                  }`}
-                >
-                  &#9660;
+                <span className="text-on-surface-variant text-sm w-4 text-center font-label leading-none">
+                  {isExpanded ? "\u2212" : "+"}
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant">

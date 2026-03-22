@@ -510,8 +510,8 @@ export default function SimulatorPage() {
                   onClick={() => toggleRoundCollapse(round)}
                   className="w-full flex items-center justify-between sticky top-0 bg-surface z-10 py-2 px-1"
                 >
-                  <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                    {isCollapsed ? "▶" : "▼"} {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
+                  <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
+                    <span className="w-4 text-center text-sm leading-none">{isCollapsed ? "+" : "\u2212"}</span> {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
                   </span>
                   <span className="font-label text-[10px] text-on-surface-variant">
                     {completedCount === games.length
