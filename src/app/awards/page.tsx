@@ -12,7 +12,7 @@ const AWARD_DEFINITIONS: { title: string; tier: "gold" | "silver" | "bronze" }[]
   { title: "The Trendsetter", tier: "gold" },
   { title: "The Faithful", tier: "silver" },
   { title: "Hot Streak", tier: "silver" },
-  { title: "Momentum Builder", tier: "bronze" },
+  { title: "Diamond in the Rough", tier: "bronze" },
   { title: "The People's Champion", tier: "bronze" },
 ];
 
@@ -93,15 +93,20 @@ function computeAwards(
     awards.push({ title: "Hot Streak", winner: b.name, bracketName: b.owner, stat: `${streakBest.count} consecutive correct picks`, tier: "silver" });
   }
 
-  // 5. Momentum Builder — biggest rank climb
-  let momentumBest = { id: "", delta: 0 };
-  for (const b of brackets) {
-    const delta = b.prev_rank > 0 ? b.prev_rank - (sorted.indexOf(b) + 1) : 0;
-    if (delta > momentumBest.delta) momentumBest = { id: b.id, delta };
+  // 5. Diamond in the Rough — single best pick that almost nobody else made and was correct
+  let diamondBest = { id: "", team: "", rate: 1.0, seed: 0 };
+  for (const [bid, bPicks] of picksByBracket) {
+    for (const p of bPicks) {
+      if (!p.correct) continue;
+      const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 1;
+      if (rate < diamondBest.rate) {
+        diamondBest = { id: bid, team: p.team_picked, rate, seed: p.seed_picked };
+      }
+    }
   }
-  if (momentumBest.id && momentumBest.delta > 0) {
-    const b = bracketMap.get(momentumBest.id)!;
-    awards.push({ title: "Momentum Builder", winner: b.name, bracketName: b.owner, stat: `Climbed ${momentumBest.delta} ranks this round`, tier: "bronze" });
+  if (diamondBest.id && diamondBest.rate < 1) {
+    const b = bracketMap.get(diamondBest.id)!;
+    awards.push({ title: "Diamond in the Rough", winner: b.name, bracketName: b.owner, stat: `Picked ${diamondBest.team} — only ${Math.round(diamondBest.rate * 100)}% of the group agreed`, tier: "bronze" });
   }
 
   // 6. The People's Champion — most aligned with group consensus across ALL bracket picks for this round

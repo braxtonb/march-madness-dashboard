@@ -126,7 +126,7 @@ export function LeaderboardTable({
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-on-surface-variant/60 w-3 text-center font-label">{isExpanded ? "−" : "+"}</span>
+                      <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                       <div>
                         <div className="font-body text-on-surface text-xs">{b.name}</div>
                         <div className="text-[10px] text-on-surface-variant">{b.owner}</div>

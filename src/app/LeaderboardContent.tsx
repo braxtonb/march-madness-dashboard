@@ -231,11 +231,11 @@ function LeaderboardContentInner({
             The most contrarian correct picks &mdash; the ones almost nobody
             else got right. Based on {submittedCount} submitted brackets.
           </p>
-          <div className="space-y-2">
-            {greatestCalls.map((gc, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {greatestCalls.slice(0, 15).map((gc, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between rounded-card bg-surface-bright px-4 py-3"
+                className="flex items-center justify-between rounded-card bg-surface-bright px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
                   <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center">

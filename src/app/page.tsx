@@ -109,7 +109,7 @@ export default async function LeaderboardPage() {
     })
     .filter((x) => x.bracket && x.game)
     .sort((a, b) => a.rate - b.rate)
-    .slice(0, 10)
+    .slice(0, 15)
     .map((gc) => ({
       bracketName: gc.bracket!.name,
       bracketOwner: gc.bracket!.owner,

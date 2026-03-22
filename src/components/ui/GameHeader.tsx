@@ -11,10 +11,8 @@ export function GameHeader({
 }) {
   const hasTeams = game.team1 && game.team2;
 
-  // Use direct ESPN URL if available, fallback to scoreboard
-  const espnLink = game.espn_url || game.espnUrl || (hasTeams
-    ? `https://www.espn.com/mens-college-basketball/scoreboard`
-    : undefined);
+  // Only show ESPN link when we have a direct boxscore URL
+  const espnLink = game.espn_url || game.espnUrl || undefined;
 
   return (
     <div className="flex items-center justify-between">

@@ -7,17 +7,17 @@ const AWARD_DESCRIPTIONS: Record<string, string> = {
   "The Trendsetter": "Most unique correct picks — called winners nobody else had",
   "The Faithful": "Highest scorer whose champion is still alive — loyalty rewarded",
   "Hot Streak": "Most consecutive correct picks — on a roll",
-  "Momentum Builder": "Biggest rank climb this round — surging up the standings",
+  "Diamond in the Rough": "Single best pick almost nobody else made — hidden gem",
   "The People's Champion": "Most aligned with group consensus — the voice of the people",
 };
 
 const AWARD_ICONS: Record<string, string> = {
-  "The Oracle": "🔮",
-  "The Trendsetter": "🌟",
-  "The Faithful": "🛡️",
-  "Hot Streak": "🔥",
-  "Momentum Builder": "🚀",
-  "The People's Champion": "👑",
+  "The Oracle": String.fromCodePoint(0x1F52E),
+  "The Trendsetter": String.fromCodePoint(0x1F31F),
+  "The Faithful": String.fromCodePoint(0x1F6E1, 0xFE0F),
+  "Hot Streak": String.fromCodePoint(0x1F525),
+  "Diamond in the Rough": String.fromCodePoint(0x1F48E),
+  "The People's Champion": String.fromCodePoint(0x1F451),
 };
 
 export function AwardCard({
@@ -46,7 +46,7 @@ export function AwardCard({
     silver: "text-on-surface-variant",
     bronze: "text-action",
   };
-  const tierFallback = { gold: "🥇", silver: "🥈", bronze: "🥉" };
+  const tierFallback = { gold: String.fromCodePoint(0x1F947), silver: String.fromCodePoint(0x1F948), bronze: String.fromCodePoint(0x1F949) };
   const icon = AWARD_ICONS[title] || tierFallback[tier];
   const description = AWARD_DESCRIPTIONS[title] || "";
   const isAwaiting = winner === "No winner yet" || !winner;

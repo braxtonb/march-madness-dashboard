@@ -361,7 +361,7 @@ export function HeadToHeadContent({
                 >
                   <span>{ROUND_LABELS[round]}</span>
                   {stats && id1 && id2 && stats.total > 0 && (
-                    <span className="ml-1 text-[8px] opacity-60">{stats.agree}/{stats.diff}</span>
+                    <span className="ml-1.5 text-[10px] opacity-70">{stats.agree}={stats.diff}</span>
                   )}
                 </button>
               );
