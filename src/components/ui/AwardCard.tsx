@@ -80,7 +80,7 @@ export function AwardCard({
           {/* Click hint */}
           {onClick && (
             <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="inline-block"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg>
+              Click for details <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" /></svg>
             </p>
           )}
         </>
@@ -103,7 +103,7 @@ export function AwardCard({
           {/* Click hint */}
           {onClick && (
             <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="inline-block"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg>
+              Click for details <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" /></svg>
             </p>
           )}
         </>

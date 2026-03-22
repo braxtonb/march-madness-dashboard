@@ -64,12 +64,15 @@ export default async function GroupPicksPage() {
 
   // Champion distribution
   const champCounts = new Map<string, number>();
+  const champBrackets = new Map<string, { bracketName: string; fullName: string }[]>();
   for (const b of submittedBrackets) {
     if (b.champion_pick) {
       champCounts.set(
         b.champion_pick,
         (champCounts.get(b.champion_pick) || 0) + 1
       );
+      if (!champBrackets.has(b.champion_pick)) champBrackets.set(b.champion_pick, []);
+      champBrackets.get(b.champion_pick)!.push({ bracketName: b.name, fullName: b.full_name });
     }
   }
   // Build team seed lookup
@@ -84,6 +87,7 @@ export default async function GroupPicksPage() {
       alive: !eliminatedTeams.has(name),
       logo: teamLogos[name] || "",
       seed: teamSeeds[name] || 0,
+      brackets: champBrackets.get(name) || [],
     }))
     .sort((a, b) => b.count - a.count);
 

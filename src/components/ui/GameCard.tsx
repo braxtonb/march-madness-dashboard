@@ -219,10 +219,10 @@ export function GameCard({
         {pickerDetails && onOpenDrawer && (
           <button
             onClick={onOpenDrawer}
-            className="w-full text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1"
+            className="w-full text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1.5"
           >
             Show individual picks
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="inline-block"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg>
+            <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">+</span>
           </button>
         )}
       </div>

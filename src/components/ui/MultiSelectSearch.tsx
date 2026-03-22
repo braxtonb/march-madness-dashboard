@@ -380,7 +380,7 @@ function MultiSelectSearchInner({
               )}
             </div>
 
-            {/* Clear all footer for multi */}
+            {/* Clear footer */}
             {isMulti && selected.length > 0 && (
               <button
                 type="button"
@@ -388,6 +388,15 @@ function MultiSelectSearchInner({
                 className="px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface border-t border-outline transition-colors"
               >
                 Clear all
+              </button>
+            )}
+            {!isMulti && selectedId && onClear && (
+              <button
+                type="button"
+                onClick={() => { onClear(); setOpen(false); setQuery(""); }}
+                className="w-full px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface border-t border-outline transition-colors text-left"
+              >
+                Clear selection
               </button>
             )}
           </div>

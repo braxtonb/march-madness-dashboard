@@ -8,12 +8,18 @@ import { GameCard, PicksDrawer } from "@/components/ui/GameCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import type { PickerDetails } from "@/components/ui/GameCard";
 
+interface ChampBracketInfo {
+  bracketName: string;
+  fullName: string;
+}
+
 interface ChampDistEntry {
   name: string;
   count: number;
   alive: boolean;
   logo: string;
   seed: number;
+  brackets?: ChampBracketInfo[];
 }
 
 export function PicksContent({
@@ -124,6 +130,9 @@ export function PicksContent({
     : statusFilter === "scheduled"
       ? scheduledGames
       : roundGames;
+
+  // Champion distribution expansion state
+  const [expandedChamps, setExpandedChamps] = useState<Set<string>>(new Set());
 
   // Drawer state — managed here for cross-game navigation
   const [drawerGameId, setDrawerGameId] = useState<string | null>(null);
@@ -258,26 +267,59 @@ export function PicksContent({
       {pageTab === "champions" && champDistribution.length > 0 && (
         <div className="space-y-4">
           <p className="text-xs text-on-surface-variant">
-            How many brackets picked each team to win the championship.
+            How many brackets picked each team to win the championship. Click to see who picked each team.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {champDistribution.map((entry) => (
-              <div
-                key={entry.name}
-                className="flex items-center justify-between rounded-card bg-surface-container px-3 py-2.5"
-              >
-                <TeamPill
-                  name={entry.name}
-                  seed={entry.seed}
-                  logo={entry.logo}
-                  eliminated={!entry.alive}
-                  showStatus
-                />
-                <span className="font-label text-xs text-on-surface-variant ml-2 shrink-0">
-                  {entry.count} bracket{entry.count !== 1 ? "s" : ""}
-                </span>
-              </div>
-            ))}
+            {champDistribution.map((entry) => {
+              const isExpanded = expandedChamps.has(entry.name);
+              return (
+                <div
+                  key={entry.name}
+                  className="rounded-card bg-surface-container overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedChamps((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(entry.name)) next.delete(entry.name);
+                      else next.add(entry.name);
+                      return next;
+                    })}
+                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-bright transition-colors"
+                  >
+                    <TeamPill
+                      name={entry.name}
+                      seed={entry.seed}
+                      logo={entry.logo}
+                      eliminated={!entry.alive}
+                      showStatus
+                    />
+                    <div className="flex items-center gap-2 ml-2 shrink-0">
+                      <span className="font-label text-xs text-on-surface-variant">
+                        {entry.count} bracket{entry.count !== 1 ? "s" : ""}
+                      </span>
+                      <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">
+                        {isExpanded ? "\u2212" : "+"}
+                      </span>
+                    </div>
+                  </button>
+                  {isExpanded && entry.brackets && entry.brackets.length > 0 && (
+                    <div className="border-t border-outline/20 px-3 py-2 space-y-1.5">
+                      {entry.brackets.map((b) => (
+                        <div key={b.bracketName} className="flex items-center gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-on-surface truncate">{b.bracketName}</p>
+                            {b.fullName && b.fullName !== b.bracketName && (
+                              <p className="text-[10px] text-on-surface-variant truncate">{b.fullName}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

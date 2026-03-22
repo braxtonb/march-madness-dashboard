@@ -540,7 +540,8 @@ export function HeadToHeadContent({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-md px-2.5 py-2 ${pick1Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface">{b1 ? b1.name : ""}</p>
+            <p className="text-[10px] font-semibold text-on-surface" title={b1 && b1.full_name && b1.full_name !== b1.name ? b1.full_name : undefined}>{b1 ? b1.name : ""}</p>
+            {b1 && b1.full_name && b1.full_name !== b1.name && <p className="text-[8px] text-on-surface-variant">{b1.full_name}</p>}
             {pick1 ? (
               <div className="mt-1">
                 <TeamPill name={pick1} seed={teamSeeds.get(pick1)} logo={teamLogos[pick1]} eliminated={eliminatedTeams.has(pick1)} showStatus />
@@ -555,7 +556,8 @@ export function HeadToHeadContent({
             )}
           </div>
           <div className={`rounded-md px-2.5 py-2 ${pick2Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface">{b2 ? b2.name : ""}</p>
+            <p className="text-[10px] font-semibold text-on-surface" title={b2 && b2.full_name && b2.full_name !== b2.name ? b2.full_name : undefined}>{b2 ? b2.name : ""}</p>
+            {b2 && b2.full_name && b2.full_name !== b2.name && <p className="text-[8px] text-on-surface-variant">{b2.full_name}</p>}
             {pick2 ? (
               <div className="mt-1">
                 <TeamPill name={pick2} seed={teamSeeds.get(pick2)} logo={teamLogos[pick2]} eliminated={eliminatedTeams.has(pick2)} showStatus />

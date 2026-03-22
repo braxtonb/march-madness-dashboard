@@ -9,19 +9,19 @@ import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
   if (direction === "asc") return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
-      <path d="M5 2L8 6H2L5 2Z" fill="currentColor" />
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M12 5v14" /><path d="m12 5-4 4" /><path d="m12 5 4 4" />
     </svg>
   );
   if (direction === "desc") return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
-      <path d="M5 8L2 4H8L5 8Z" fill="currentColor" />
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M12 19V5" /><path d="m12 19-4-4" /><path d="m12 19 4-4" />
     </svg>
   );
   return (
-    <svg width="10" height="14" viewBox="0 0 10 14" fill="none" className="inline-block ml-0.5 opacity-30">
-      <path d="M5 1L8 5H2L5 1Z" fill="currentColor" />
-      <path d="M5 13L2 9H8L5 13Z" fill="currentColor" />
+    <svg width="10" height="14" viewBox="0 0 24 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block ml-0.5 opacity-30">
+      <path d="M12 3v8" /><path d="m12 3-3 3" /><path d="m12 3 3 3" />
+      <path d="M12 25v-8" /><path d="m12 25-3-3" /><path d="m12 25 3-3" />
     </svg>
   );
 }

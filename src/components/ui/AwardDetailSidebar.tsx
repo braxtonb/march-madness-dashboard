@@ -650,8 +650,8 @@ export default function AwardDetailSidebar({
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {total > 1 && hasPrev && (
               <button onClick={() => setWinnerIdx((i) => i - 1)} className="p-1 hover:bg-surface-bright rounded-lg text-on-surface-variant shrink-0">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M5 8L9 4.5V11.5L5 8Z" fill="currentColor" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 12h12" /><path d="m6 12 4-4" /><path d="m6 12 4 4" />
                 </svg>
               </button>
             )}
@@ -663,8 +663,8 @@ export default function AwardDetailSidebar({
             </div>
             {total > 1 && hasNext && (
               <button onClick={() => setWinnerIdx((i) => i + 1)} className="p-1 hover:bg-surface-bright rounded-lg text-on-surface-variant shrink-0">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" />
                 </svg>
               </button>
             )}

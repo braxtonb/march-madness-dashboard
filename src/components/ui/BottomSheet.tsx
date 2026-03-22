@@ -44,9 +44,9 @@ export default function BottomSheet({ open, onClose, title, children, onPrev, on
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-b border-surface-bright sticky top-0 bg-surface-container z-10">
           <div className="flex items-center gap-2">
-            {onPrev && <button onClick={onPrev} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant min-w-[28px] min-h-[28px] flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 8L9 4.5V11.5L5 8Z" fill="currentColor" /></svg></button>}
+            {onPrev && <button onClick={onPrev} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant min-w-[28px] min-h-[28px] flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 12h12" /><path d="m6 12 4-4" /><path d="m6 12 4 4" /></svg></button>}
             <h3 className="text-on-surface font-display font-semibold text-lg truncate">{title}</h3>
-            {onNext && <button onClick={onNext} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant min-w-[28px] min-h-[28px] flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 8L7 4.5V11.5L11 8Z" fill="currentColor" /></svg></button>}
+            {onNext && <button onClick={onNext} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant min-w-[28px] min-h-[28px] flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" /></svg></button>}
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant min-w-[44px] min-h-[44px] flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg></button>
         </div>
