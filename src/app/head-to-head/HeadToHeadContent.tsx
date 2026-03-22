@@ -55,39 +55,45 @@ function BracketDropdown({
         {label}
       </label>
       <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={open ? query : selected ? `${selected.name} — ${selected.owner}` : ""}
-          placeholder="Search brackets..."
-          onFocus={() => {
-            setOpen(true);
-            setQuery("");
-          }}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-card bg-surface-container border border-outline-variant px-3 py-2 text-xs text-on-surface outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant"
-        />
+        <div className="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input
+            ref={inputRef}
+            type="text"
+            value={open ? query : selected ? selected.name : ""}
+            placeholder="Search brackets..."
+            onFocus={() => { setOpen(true); setQuery(""); }}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-card bg-surface-container border border-outline px-3 py-2.5 pl-9 text-sm text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant"
+          />
+          {selected && !open && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant">
+              {selected.owner}
+            </span>
+          )}
+        </div>
         {open && (
-          <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-card bg-surface-container border border-outline-variant shadow-lg">
+          <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-card bg-surface-container border border-outline shadow-2xl shadow-black/30">
+            <div className="sticky top-0 bg-surface-container px-3 py-1.5 border-b border-outline">
+              <span className="text-[10px] text-on-surface-variant">{filtered.length} brackets</span>
+            </div>
             {filtered.length === 0 && (
-              <div className="px-3 py-2 text-xs text-on-surface-variant">No matches</div>
+              <div className="px-3 py-4 text-xs text-on-surface-variant text-center">No matches found</div>
             )}
             {filtered.map((b) => (
               <button
                 key={b.id}
                 type="button"
-                onClick={() => {
-                  onChange(b.id);
-                  setOpen(false);
-                  setQuery("");
-                  inputRef.current?.blur();
-                }}
-                className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors ${
-                  b.id === value ? "bg-surface-bright" : ""
+                onClick={() => { onChange(b.id); setOpen(false); setQuery(""); inputRef.current?.blur(); }}
+                className={`w-full text-left px-3 py-2.5 hover:bg-surface-bright transition-colors border-l-2 ${
+                  b.id === value ? "bg-surface-bright border-l-primary" : "border-l-transparent"
                 }`}
               >
-                <span className="text-xs font-medium text-on-surface">{b.name}</span>
-                <span className="text-[10px] text-on-surface-variant ml-2">{b.owner}</span>
+                <div className="text-sm font-medium text-on-surface">{b.name}</div>
+                <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
               </button>
             ))}
           </div>

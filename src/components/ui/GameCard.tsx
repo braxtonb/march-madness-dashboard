@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import type { Game } from "@/lib/types";
 import { TeamPill } from "./TeamPill";
 
@@ -14,16 +14,20 @@ export interface PickerDetails {
   team2Pickers: PickerInfo[];
 }
 
-function PicksDrawer({
+export function PicksDrawer({
   game,
   pickerDetails,
   onClose,
   teamLogos = {},
+  onPrev,
+  onNext,
 }: {
   game: Game;
   pickerDetails: PickerDetails;
   onClose: () => void;
   teamLogos?: Record<string, string>;
+  onPrev?: () => void;
+  onNext?: () => void;
 }) {
   // Prevent body scroll while drawer is open
   useEffect(() => {
@@ -53,9 +57,21 @@ function PicksDrawer({
       <div className="relative w-full max-w-md bg-surface-container shadow-xl drawer-slide-in overflow-y-auto">
         <div className="sticky top-0 bg-surface-container z-10 p-5 border-b border-surface-bright">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-display text-lg font-semibold">
-              Individual Picks
-            </h3>
+            <div className="flex items-center gap-2">
+              {onPrev && (
+                <button onClick={onPrev} className="rounded-card p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-bright transition-colors" aria-label="Previous game">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+              )}
+              <h3 className="font-display text-lg font-semibold">
+                Individual Picks
+              </h3>
+              {onNext && (
+                <button onClick={onNext} className="rounded-card p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-bright transition-colors" aria-label="Next game">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              )}
+            </div>
             <button
               onClick={onClose}
               className="rounded-card p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-bright transition-colors"
@@ -157,14 +173,15 @@ export function GameCard({
   totalBrackets,
   pickerDetails,
   teamLogos = {},
+  onOpenDrawer,
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
   totalBrackets: number;
   pickerDetails?: PickerDetails;
   teamLogos?: Record<string, string>;
+  onOpenDrawer?: () => void;
 }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const isTBD = !game.team1 && !game.team2;
 
@@ -247,9 +264,9 @@ export function GameCard({
         )}
 
         {/* Button to open drawer for picker details */}
-        {pickerDetails && (
+        {pickerDetails && onOpenDrawer && (
           <button
-            onClick={() => setDrawerOpen(true)}
+            onClick={onOpenDrawer}
             className="w-full text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1"
           >
             Show individual picks
@@ -257,15 +274,6 @@ export function GameCard({
           </button>
         )}
       </div>
-
-      {drawerOpen && pickerDetails && (
-        <PicksDrawer
-          game={game}
-          pickerDetails={pickerDetails}
-          onClose={() => setDrawerOpen(false)}
-          teamLogos={teamLogos}
-        />
-      )}
     </>
   );
 }
