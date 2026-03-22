@@ -201,7 +201,9 @@ export function GameCard({
           <div
             className={`rounded-card px-3 py-1.5 text-xs text-center ${
               consensusCorrect
-                ? "bg-primary/10 text-primary"
+                ? game.winner === game.team1
+                  ? "bg-primary/10 text-primary"
+                  : "bg-secondary/10 text-secondary"
                 : "bg-on-surface-variant/10 text-on-surface-variant"
             }`}
           >

@@ -23,7 +23,6 @@ const AWARD_ICONS: Record<string, ReactNode> = {
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="#00f4fe" fillOpacity="0.08" />
       <circle cx="12" cy="12" r="3.5" fill="#00f4fe" fillOpacity="0.25" />
       <circle cx="12" cy="12" r="1.5" fill="#00f4fe" fillOpacity="0.5" />
-      <path d="M12 3v2" /><path d="M5.5 5.5l1.2 1.2" /><path d="M18.5 5.5l-1.2 1.2" />
     </svg>
   ),
   "The Trendsetter": (

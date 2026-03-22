@@ -649,12 +649,12 @@ function PeoplesChampionContent({
         }`}
       >
         <div className="flex items-center gap-1.5 flex-wrap">
-          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} showStatus />
           <span className="text-[10px] text-on-surface-variant">vs</span>
-          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} showStatus />
         </div>
         <div className="flex items-center justify-between mt-1 text-[10px]">
-          <span className="text-on-surface-variant inline-flex items-center gap-1">Most popular: <TeamPill name={plurality} seed={teamSeed(teams, plurality)} logo={teamLogo(teams, plurality)} eliminated={teamEliminated(teams, plurality)} /></span>
+          <span className="text-on-surface-variant inline-flex items-center gap-1">Most popular: <TeamPill name={plurality} seed={teamSeed(teams, plurality)} logo={teamLogo(teams, plurality)} eliminated={teamEliminated(teams, plurality)} showStatus /></span>
           {matchedPlurality && (
             <span className="text-secondary font-label">Matched</span>
           )}
