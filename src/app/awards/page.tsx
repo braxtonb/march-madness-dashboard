@@ -104,9 +104,29 @@ function computeAwards(
     awards.push({ title: "Momentum Builder", winner: b.name, bracketName: b.owner, stat: `Climbed ${momentumBest.delta} ranks this round`, tier: "bronze" });
   }
 
-  // 6. The People's Champion — most aligned with consensus across ALL bracket picks for this round
-  // Uses all picks (not just completed games) to measure consensus alignment
+  // 6. The People's Champion — most aligned with group consensus across ALL bracket picks for this round
+  // For each game, the "consensus pick" is the team picked by the MOST brackets (plurality, not majority).
+  // The People's Champion is whoever matched the plurality pick on the most games.
   const allRoundPicks = picks.filter((p) => p.round === round);
+
+  // Find the plurality (most popular) pick for each game
+  const pluralityPick = new Map<string, string>();
+  const gamePickCounts = new Map<string, Map<string, number>>();
+  for (const p of allRoundPicks) {
+    if (!gamePickCounts.has(p.game_id)) gamePickCounts.set(p.game_id, new Map());
+    const gc = gamePickCounts.get(p.game_id)!;
+    gc.set(p.team_picked, (gc.get(p.team_picked) || 0) + 1);
+  }
+  for (const [gid, tc] of gamePickCounts) {
+    let bestTeam = "";
+    let bestCount = 0;
+    for (const [team, count] of tc) {
+      if (count > bestCount) { bestTeam = team; bestCount = count; }
+    }
+    pluralityPick.set(gid, bestTeam);
+  }
+
+  // Count how many plurality picks each bracket matched
   const allPicksByBracket = new Map<string, typeof allRoundPicks>();
   for (const p of allRoundPicks) {
     if (!allPicksByBracket.has(p.bracket_id)) allPicksByBracket.set(p.bracket_id, []);
@@ -115,15 +135,12 @@ function computeAwards(
 
   let peopleBest = { id: "", count: 0, total: 0 };
   for (const [bid, bPicks] of allPicksByBracket) {
-    const consensus = bPicks.filter((p) => {
-      const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 0;
-      return rate > 0.5;
-    }).length;
-    if (consensus > peopleBest.count) peopleBest = { id: bid, count: consensus, total: bPicks.length };
+    const matched = bPicks.filter((p) => pluralityPick.get(p.game_id) === p.team_picked).length;
+    if (matched > peopleBest.count) peopleBest = { id: bid, count: matched, total: bPicks.length };
   }
   if (peopleBest.id && peopleBest.count > 0) {
     const b = bracketMap.get(peopleBest.id)!;
-    awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count}/${peopleBest.total} picks aligned with group consensus`, tier: "bronze" });
+    awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count}/${peopleBest.total} picks matched the group's most popular choice`, tier: "bronze" });
   }
 
   // Ensure all 6 awards are present. Fill in missing ones with "No winner yet".
