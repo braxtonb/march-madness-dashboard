@@ -138,18 +138,13 @@ function LeaderboardContentInner({
   const changeTab = useCallback(
     (newTab: LeaderboardTab) => {
       setTab(newTab);
+      // Reset search inputs when switching tabs
+      setSelectedSearchIds([]);
       const url = new URL(window.location.href);
 
-      // Define which params belong to which tab
-      const standingsParams = ["sort", "dir", "brackets"];
-      const styleParams = ["brackets", "champion", "pts", "ptsOp"];
-      // "calls" tab has no URL params
-
-      // Clear params not belonging to the new tab
-      const allTabParams = [...standingsParams, ...styleParams];
+      // Clear ALL tab-specific params, then only the tab param stays
+      const allTabParams = ["sort", "dir", "brackets", "champion", "pts", "ptsOp"];
       for (const p of allTabParams) {
-        if (newTab === "standings" && standingsParams.includes(p)) continue;
-        if (newTab === "style" && styleParams.includes(p)) continue;
         url.searchParams.delete(p);
       }
 
