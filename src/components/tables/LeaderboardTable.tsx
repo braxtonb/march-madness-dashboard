@@ -37,7 +37,7 @@ export function LeaderboardTable({
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const pathMap = new Map(pathEntries.map((p) => [p.bracketId, p]));
 
@@ -100,7 +100,7 @@ export function LeaderboardTable({
             if (!a) return null;
             const champEliminated = eliminatedTeams.has(b.champion_pick);
             const maxOverall = b.points + b.max_remaining;
-            const isExpanded = expandedId === b.id;
+            const isExpanded = expandedIds.has(b.id);
             const path = pathMap.get(b.id);
 
             return (
@@ -108,7 +108,12 @@ export function LeaderboardTable({
                 <tr
                   key={b.id}
                   className={`border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
-                  onClick={() => setExpandedId(isExpanded ? null : b.id)}
+                  onClick={() => setExpandedIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(b.id)) next.delete(b.id);
+                    else next.add(b.id);
+                    return next;
+                  })}
                 >
                   <td className="px-2 py-2 font-label">
                     <span className="text-on-surface">{a.rank}</span>
@@ -121,7 +126,7 @@ export function LeaderboardTable({
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-[9px] text-on-surface-variant/50 transition-transform ${isExpanded ? "rotate-90" : ""}`}>▶</span>
+                      <span className="text-[10px] text-on-surface-variant/60 w-3 text-center font-label">{isExpanded ? "−" : "+"}</span>
                       <div>
                         <div className="font-body text-on-surface text-xs">{b.name}</div>
                         <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
@@ -165,8 +170,9 @@ export function LeaderboardTable({
                               if (picks.length === 0) return null;
                               return (
                                 <div key={round} className="flex items-center gap-2">
-                                  <span className="font-label text-[10px] text-on-surface-variant w-20 shrink-0">
+                                  <span className="font-label text-[10px] text-on-surface-variant w-28 shrink-0">
                                     {ROUND_LABELS[round as Round] || round}
+                                    <span className="ml-1 text-secondary">+{picks.reduce((s, p) => s + p.pts, 0)}</span>
                                   </span>
                                   <div className="flex flex-wrap gap-1">
                                     {picks.map((p) => (
@@ -178,9 +184,6 @@ export function LeaderboardTable({
                                       />
                                     ))}
                                   </div>
-                                  <span className="font-label text-[10px] text-on-surface-variant">
-                                    +{picks.reduce((s, p) => s + p.pts, 0)} pts
-                                  </span>
                                 </div>
                               );
                             })}

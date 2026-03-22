@@ -148,7 +148,7 @@ export function ProbabilityClient({
   })();
 
   const [tab, setTab] = useState<ProbTab>(initialTab);
-  const [showExact, setShowExact] = useState(false);
+  const [showExact, setShowExact] = useState(true);
 
   // Alive filter state
   const initialAliveFilter = (() => {

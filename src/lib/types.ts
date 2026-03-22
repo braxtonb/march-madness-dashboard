@@ -45,6 +45,7 @@ export interface Game {
   winner: string;
   completed: boolean;
   national_pct_team1: number;
+  espn_url?: string;
 }
 
 /** Matches the `teams` Sheet tab */

@@ -5,14 +5,14 @@ export function GameHeader({
   teamLogos = {},
   eliminatedTeams,
 }: {
-  game: { team1: string; seed1: number; team2: string; seed2: number; completed: boolean; winner: string; espnUrl?: string };
+  game: { team1: string; seed1: number; team2: string; seed2: number; completed: boolean; winner: string; espnUrl?: string; espn_url?: string };
   teamLogos?: Record<string, string>;
   eliminatedTeams?: Set<string>;
 }) {
   const hasTeams = game.team1 && game.team2;
 
-  // Build ESPN search URL as fallback if no direct URL
-  const espnLink = game.espnUrl || (hasTeams && game.completed
+  // Use direct ESPN URL if available, fallback to scoreboard
+  const espnLink = game.espn_url || game.espnUrl || (hasTeams
     ? `https://www.espn.com/mens-college-basketball/scoreboard`
     : undefined);
 

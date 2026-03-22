@@ -28,7 +28,7 @@ PICKS_HEADERS = [
 ]
 GAMES_HEADERS = [
     'game_id', 'round', 'region', 'team1', 'seed1', 'team2', 'seed2',
-    'winner', 'completed', 'national_pct_team1',
+    'winner', 'completed', 'national_pct_team1', 'espn_url',
 ]
 TEAMS_HEADERS = ['name', 'seed', 'region', 'conference', 'eliminated', 'eliminated_round', 'logo']
 SNAPSHOTS_HEADERS = ['bracket_id', 'round', 'rank', 'points', 'max_remaining', 'win_prob']
@@ -171,6 +171,12 @@ def run():
             'national_pct_team1': 0.0,
         }
 
+    # Backfill espn_url from API games onto all games in map
+    api_game_urls = {g['game_id']: g.get('espn_url', '') for g in games if g.get('espn_url')}
+    for gid, url in api_game_urls.items():
+        if gid in game_map and not game_map[gid].get('espn_url'):
+            game_map[gid]['espn_url'] = url
+
     merged_games = list(game_map.values())
     logger.info(f"Merged games: {len(merged_games)} total ({sum(1 for g in merged_games if g.get('completed') or str(g.get('completed')) == 'True')} completed)")
     store.write_tab('games', merged_games, GAMES_HEADERS)
@@ -307,5 +313,195 @@ def _determine_current_round(games_completed: int) -> str:
     return 'CHAMP'
 
 
+def run_local():
+    """Generate data.json from local fixtures only — no API calls, no Google Sheets.
+
+    Usage: python -m scraper.scrape --local
+    """
+    import json
+    from pathlib import Path
+
+    fixtures_dir = Path(__file__).resolve().parent / 'fixtures'
+    logger.info("Running in local mode — using fixtures only")
+
+    # Load challenge data from all periods
+    all_props = []
+    seen_ids: set[str] = set()
+    for period in range(1, 7):
+        fp = fixtures_dir / f'challenge_period_{period}.json'
+        if fp.exists():
+            with open(fp) as f:
+                data = json.load(f)
+            for p in data.get('propositions', []):
+                pid = str(p.get('id', ''))
+                if pid and pid not in seen_ids:
+                    all_props.append(p)
+                    seen_ids.add(pid)
+    challenge_data = {'propositions': all_props}
+    logger.info(f"Loaded {len(all_props)} propositions from fixtures")
+
+    outcome_map = build_outcome_map(challenge_data)
+    proposition_map = build_proposition_map(challenge_data)
+
+    # Load group entries from fixtures
+    with open(fixtures_dir / 'group_slug.json') as f:
+        slug_data = json.load(f)
+    with open(fixtures_dir / 'group_chui.json') as f:
+        chui_data = json.load(f)
+
+    entries_with_picks = {e['id']: e for e in slug_data.get('entries', [])}
+
+    # Load individual entries
+    ind_path = fixtures_dir / 'individual_entries.json'
+    if ind_path.exists():
+        with open(ind_path) as f:
+            individual = json.load(f)
+        for eid_str, entry in individual.items():
+            eid = entry.get('id', int(eid_str) if eid_str.isdigit() else eid_str)
+            entries_with_picks[eid] = entry
+
+    # Merge
+    merged_entries = []
+    for entry in chui_data.get('entries', []):
+        eid = entry['id']
+        if eid in entries_with_picks:
+            full = entries_with_picks[eid]
+            if 'score' in entry:
+                full['score'] = entry['score']
+            merged_entries.append(full)
+        else:
+            merged_entries.append(entry)
+    chui_data['entries'] = merged_entries
+
+    brackets, all_picks = parse_entries(chui_data, outcome_map, proposition_map)
+    games = parse_games(proposition_map)
+    teams = parse_teams(outcome_map)
+    logger.info(f"Parsed {len(brackets)} brackets, {len(all_picks)} picks, {len(games)} games, {len(teams)} teams")
+
+    # Build game map with reconstruction (same logic as run())
+    game_map: dict[str, dict] = {}
+    for g in games:
+        game_map[g['game_id']] = g
+
+    active_teams: set[str] = set()
+    for prop in proposition_map.values():
+        if prop.get('team1'): active_teams.add(prop['team1'])
+        if prop.get('team2'): active_teams.add(prop['team2'])
+
+    picks_by_game: dict[str, list] = {}
+    for p in all_picks:
+        gid = p['game_id']
+        if gid not in picks_by_game:
+            picks_by_game[gid] = []
+        picks_by_game[gid].append(p)
+
+    round_order = ['R64', 'R32', 'S16', 'E8', 'FF', 'CHAMP']
+    for gid, game_picks in picks_by_game.items():
+        if gid in game_map:
+            continue
+        sample = game_picks[0]
+        teams_in_game: dict[str, int] = {}
+        for p in game_picks:
+            if p['team_picked'] and p['team_picked'] not in teams_in_game:
+                teams_in_game[p['team_picked']] = p['seed_picked']
+        team_list = list(teams_in_game.items())
+        team1 = team_list[0][0] if len(team_list) > 0 else ''
+        seed1 = team_list[0][1] if len(team_list) > 0 else 0
+        team2 = team_list[1][0] if len(team_list) > 1 else ''
+        seed2 = team_list[1][1] if len(team_list) > 1 else 0
+
+        winner = ''
+        for p in game_picks:
+            if p['correct']:
+                winner = p['team_picked']
+                break
+        if not winner and team1 and team2:
+            rnd = sample['round']
+            rnd_idx = round_order.index(rnd) if rnd in round_order else -1
+            if rnd_idx >= 0 and rnd_idx < len(round_order) - 1:
+                if team1 in active_teams and team2 not in active_teams:
+                    winner = team1
+                elif team2 in active_teams and team1 not in active_teams:
+                    winner = team2
+
+        game_map[gid] = {
+            'game_id': gid, 'round': sample['round'], 'region': sample['region'],
+            'team1': team1, 'seed1': seed1, 'team2': team2, 'seed2': seed2,
+            'winner': winner, 'completed': bool(winner),
+            'national_pct_team1': 0.0, 'espn_url': '',
+        }
+
+    # Backfill espn_url
+    for g in games:
+        if g.get('espn_url') and g['game_id'] in game_map:
+            game_map[g['game_id']]['espn_url'] = g['espn_url']
+
+    merged_games = list(game_map.values())
+
+    # Compute elimination
+    losers: set[str] = set()
+    for g in merged_games:
+        if g.get('completed') and g.get('winner'):
+            if g.get('team1') and g['team1'] != g['winner']: losers.add(g['team1'])
+            if g.get('team2') and g['team2'] != g['winner']: losers.add(g['team2'])
+    for t in teams:
+        if t['name'] in losers:
+            t['eliminated'] = True
+
+    games_completed = sum(1 for g in merged_games if g.get('completed'))
+    current_round = _determine_current_round(games_completed)
+
+    meta = {
+        'last_updated': datetime.now(timezone.utc).isoformat(),
+        'current_round': current_round,
+        'games_completed': games_completed,
+    }
+
+    # Export data.json (no sheets needed)
+    from pathlib import Path as P
+    _export_data_json_local(brackets, all_picks, merged_games, teams, meta)
+    logger.info(f"Done (local). {games_completed}/63 games. Round: {current_round}")
+
+
+def _export_data_json_local(brackets, picks, games, teams, meta):
+    """Export data.json without needing a Google Sheets store for snapshots."""
+    import json
+    from pathlib import Path
+
+    def _normalize(rows, bool_fields=None):
+        bool_fields = bool_fields or []
+        result = []
+        for row in rows:
+            r = {}
+            for k, v in row.items():
+                if k in bool_fields:
+                    r[k] = str(v).lower() in ('true', '1') if isinstance(v, str) else bool(v)
+                elif isinstance(v, str) and v.replace('.', '', 1).replace('-', '', 1).isdigit():
+                    try: r[k] = int(v) if '.' not in v else float(v)
+                    except ValueError: r[k] = v
+                else:
+                    r[k] = v
+            result.append(r)
+        return result
+
+    data = {
+        'brackets': _normalize(brackets),
+        'picks': _normalize(picks, bool_fields=['correct', 'vacated']),
+        'games': _normalize(games, bool_fields=['completed']),
+        'teams': _normalize(teams, bool_fields=['eliminated']),
+        'snapshots': [],
+        'meta': meta,
+    }
+
+    out_path = Path(__file__).resolve().parent.parent / 'public' / 'data.json'
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(data, default=str), encoding='utf-8')
+    logger.info(f"Exported data.json ({out_path.stat().st_size // 1024}KB)")
+
+
 if __name__ == '__main__':
-    run()
+    import sys
+    if '--local' in sys.argv:
+        run_local()
+    else:
+        run()

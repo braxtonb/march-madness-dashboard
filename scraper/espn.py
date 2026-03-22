@@ -171,6 +171,17 @@ def build_proposition_map(challenge_data: dict) -> dict[str, dict]:
         if round_label in ('FF', 'CHAMP'):
             region = round_label
 
+        # Extract ESPN competition ID for deep linking to boxscore
+        espn_url = ''
+        for o in outcomes:
+            for m in o.get('mappings', []):
+                key = m.get('type') or m.get('mappingType') or ''
+                if key == 'COMPETITION_ID' and m.get('value'):
+                    espn_url = f"https://www.espn.com/mens-college-basketball/game/_/gameId/{m['value']}"
+                    break
+            if espn_url:
+                break
+
         prop_map[pid] = {
             'name': prop.get('name', ''),
             'round': round_label,
@@ -182,6 +193,7 @@ def build_proposition_map(challenge_data: dict) -> dict[str, dict]:
             'winner': winner,
             'completed': completed,
             'national_pct_team1': national_pct_team1,
+            'espn_url': espn_url,
         }
 
     return prop_map
@@ -316,6 +328,7 @@ def parse_games(proposition_map: dict[str, dict]) -> list[dict]:
             'winner': prop['winner'],
             'completed': prop['completed'],
             'national_pct_team1': prop['national_pct_team1'],
+            'espn_url': prop.get('espn_url', ''),
         })
     return games
 
