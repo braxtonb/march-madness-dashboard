@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { displayName } from "@/lib/constants";
+import FilterDropdown from "@/components/ui/FilterDropdown";
 
 interface ScatterPoint {
   name: string;
@@ -42,124 +43,6 @@ function clusterPoints(data: ScatterPoint[], radius: number = 5): Cluster[] {
     clusters.push({ x: avgX, y: avgY, points: group });
   }
   return clusters;
-}
-
-/* ── Searchable multi-select dropdown ── */
-function SearchDropdown({
-  options,
-  value,
-  onChange,
-  label,
-  placeholder,
-}: {
-  options: { value: string; label: string; sublabel?: string; logo?: string }[];
-  value: string[];
-  onChange: (v: string[]) => void;
-  label: string;
-  placeholder: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const selectedSet = useMemo(() => new Set(value), [value]);
-
-  const filtered = useMemo(() => {
-    if (!query) return options;
-    const q = query.toLowerCase();
-    return options.filter((o) => o.label.toLowerCase().includes(q) || o.sublabel?.toLowerCase().includes(q));
-  }, [options, query]);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  function toggle(v: string) {
-    if (selectedSet.has(v)) {
-      onChange(value.filter((x) => x !== v));
-    } else {
-      onChange([...value, v]);
-    }
-  }
-
-  return (
-    <div className="space-y-1.5" ref={containerRef}>
-      <div className="flex items-center gap-2">
-        <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant shrink-0">{label}</label>
-        {value.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {value.map((v) => {
-              const opt = options.find((o) => o.value === v);
-              return (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => toggle(v)}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[10px] font-label hover:bg-primary/25 transition-colors cursor-pointer"
-                >
-                  {opt?.label || v} &times;
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      <div className="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-        </svg>
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          placeholder={value.length > 0 ? `${value.length} selected` : placeholder}
-          onFocus={() => { setOpen(true); setQuery(""); }}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-card bg-surface-container border border-outline px-3 py-2 pl-9 pr-3 text-xs text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant truncate"
-        />
-        {open && (
-          <div className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-card bg-surface-container border border-outline shadow-2xl shadow-black/30">
-            {value.length > 0 && (
-              <button
-                type="button"
-                onClick={() => { onChange([]); setQuery(""); }}
-                className="w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors text-xs text-on-surface-variant"
-              >
-                Clear all
-              </button>
-            )}
-            {filtered.map((o) => {
-              const isSelected = selectedSet.has(o.value);
-              return (
-                <button
-                  key={o.value}
-                  type="button"
-                  onClick={() => { toggle(o.value); setQuery(""); }}
-                  className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors border-l-2 ${isSelected ? "bg-surface-bright border-l-primary" : "border-l-transparent"}`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {o.logo && <img src={o.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px]" />}
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium text-on-surface truncate">{o.label}</div>
-                      {o.sublabel && <div className="text-[10px] text-on-surface-variant truncate">{o.sublabel}</div>}
-                    </div>
-                    {isSelected && <span className="text-primary text-xs shrink-0">&#10003;</span>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 type PointsOp = "gte" | "lte" | "eq";
@@ -250,66 +133,58 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="w-48">
-          <SearchDropdown
-            options={sheetOptions}
-            value={nameFilter}
-            onChange={changeNameFilter}
-            label="Sheet"
-            placeholder="Search sheets..."
-          />
-        </div>
-        <div className="w-44">
-          <SearchDropdown
-            options={championOptions}
-            value={championFilter}
-            onChange={changeChampionFilter}
-            label="Champion"
-            placeholder="All champions..."
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Points</label>
-          <div className="flex gap-1 items-center">
-            <div className="flex rounded-card bg-surface-container border border-outline overflow-hidden">
-              {([["gte", "\u2265"], ["lte", "\u2264"], ["eq", "="]] as const).map(([op, symbol]) => (
-                <button
-                  key={op}
-                  type="button"
-                  onClick={() => changePointsOp(op)}
-                  className={`px-2.5 py-2 text-xs font-label transition-colors ${
-                    pointsOp === op
-                      ? "bg-primary/15 text-primary"
-                      : "text-on-surface-variant hover:text-on-surface"
-                  }`}
-                >
-                  {symbol}
-                </button>
-              ))}
-            </div>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={pointsFilter}
-              onChange={(e) => changePointsFilter(e.target.value.replace(/\D/g, ""))}
-              placeholder="0"
-              className="rounded-card bg-surface-container border border-outline px-3 py-2 text-xs text-on-surface outline-none focus:border-primary/50 transition-colors w-20"
-            />
+      {/* Filters — fixed-height row, no layout shift */}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterDropdown
+          label="Brackets"
+          options={sheetOptions}
+          selected={nameFilter}
+          onChange={changeNameFilter}
+          searchable
+        />
+        <FilterDropdown
+          label="Champions"
+          options={championOptions}
+          selected={championFilter}
+          onChange={changeChampionFilter}
+        />
+        <div className="flex gap-1 items-center">
+          <div className="flex rounded-lg bg-surface-bright border border-outline-variant overflow-hidden min-h-[36px]">
+            {([["gte", "\u2265"], ["lte", "\u2264"], ["eq", "="]] as const).map(([op, symbol]) => (
+              <button
+                key={op}
+                type="button"
+                onClick={() => changePointsOp(op)}
+                className={`px-2.5 py-1.5 text-xs font-label transition-colors ${
+                  pointsOp === op
+                    ? "bg-primary/15 text-primary"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                {symbol}
+              </button>
+            ))}
           </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={pointsFilter}
+            onChange={(e) => changePointsFilter(e.target.value.replace(/\D/g, ""))}
+            placeholder="Pts"
+            className="rounded-lg bg-surface-bright border border-outline-variant px-3 py-1.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors w-16 min-h-[36px]"
+          />
         </div>
         {hasFilters && (
           <button
             onClick={clearAll}
-            className="text-[10px] font-label text-on-surface-variant hover:text-on-surface transition-colors pb-2"
+            className="text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors"
           >
-            Clear filters
+            Clear all
           </button>
         )}
-        <span className="text-[10px] text-on-surface-variant pb-2 ml-auto">
-          {filtered.length}/{data.length} shown
+        <span className="text-xs text-on-surface-variant ml-auto">
+          {filtered.length}/{data.length}
         </span>
       </div>
 

@@ -249,10 +249,9 @@ function LeaderboardContentInner({
             {greatestCalls.slice(0, 15).map((gc, i) => (
               <div
                 key={i}
-                className="group flex items-center justify-between rounded-card bg-surface-bright px-3 py-2.5"
+                className="flex items-center justify-between rounded-card bg-surface-bright px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
-                  <CompareCheckbox bracketId={gc.bracketId} />
                   <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center">
                     {i + 1}
                   </span>
