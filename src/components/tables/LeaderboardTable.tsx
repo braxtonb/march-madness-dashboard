@@ -117,9 +117,9 @@ export function LeaderboardTable({
     { key: "max", label: "Sort by Max Possible" },
   ];
 
-  const hdr = "group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
+  const hdr = "group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
   const hdrDotted = "border-b border-dotted border-on-surface-variant/40";
-  const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default whitespace-nowrap";
+  const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-default whitespace-nowrap";
   const sortIcon = (key: SortKey) => {
     const active = sortKey === key;
     const direction = active ? (sortAsc ? "asc" : "desc") : "neutral";

@@ -135,9 +135,9 @@ export function DrilldownTable({
     const direction = active ? (sortAsc ? "asc" : "desc") : "neutral";
     return <SortIcon direction={direction} active={active} />;
   };
-  const hdr = "group/hdr px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none";
+  const hdr = "group/hdr px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant !cursor-pointer hover:text-on-surface select-none";
   const hdrDotted = "border-b border-dotted border-on-surface-variant/40";
-  const hdrStatic = "px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default";
+  const hdrStatic = "px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant !cursor-default";
 
   return (
     <div className="space-y-3">
