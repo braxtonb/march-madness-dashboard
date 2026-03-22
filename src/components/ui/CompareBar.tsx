@@ -1,7 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import { useCompareState, useCompareActions } from "./CompareProvider";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type { Bracket } from "@/lib/types";
 
 interface CompareBarProps {
@@ -12,6 +12,7 @@ export default function CompareBar({ brackets }: CompareBarProps) {
   const { selected } = useCompareState();
   const { toggle, clear } = useCompareActions();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Memoize bracket lookup map to avoid filtering 75 brackets on every render
   const bracketMap = useMemo(() => {
@@ -29,7 +30,13 @@ export default function CompareBar({ brackets }: CompareBarProps) {
 
   const handleCompare = () => {
     if (selected.length === 2) {
-      router.push(`/head-to-head?b1=${selected[0]}&b2=${selected[1]}`);
+      const url = `/head-to-head?b1=${selected[0]}&b2=${selected[1]}`;
+      if (pathname === "/head-to-head") {
+        // Already on head-to-head — use window.location to force a full param reload
+        window.location.href = url;
+      } else {
+        router.push(url);
+      }
       clear();
     }
   };

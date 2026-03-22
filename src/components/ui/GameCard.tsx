@@ -183,7 +183,7 @@ export function GameCard({
             style={{ width: `${team1Pct}%` }}
           />
           <div
-            className="bg-[#64748b] transition-all"
+            className="bg-secondary transition-all"
             style={{ width: `${team2Pct}%` }}
           />
         </div>

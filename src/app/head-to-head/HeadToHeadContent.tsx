@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Bracket, Pick, Game, BracketAnalytics, Round, AwardRound, Team } from "@/lib/types";
 import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
@@ -44,6 +44,22 @@ export function HeadToHeadContent({
   // If both URL params point to the same bracket, only pre-populate bracket 1
   const [id1, setId1] = useState(paramB1);
   const [id2, setId2] = useState(paramB1 && paramB1 === paramB2 ? "" : paramB2);
+
+  // Fix 2: Reactively sync from searchParams when URL changes (e.g. CompareBar navigation)
+  useEffect(() => {
+    const b1 = searchParams.get("b1") ?? "";
+    const b2 = searchParams.get("b2") ?? "";
+    if (b1) setId1(b1);
+    if (b2) setId2(b1 && b1 === b2 ? "" : b2);
+  }, [searchParams]);
+
+  // Fix 3: Deep-link bracket selections to URL for shareability
+  const updateBracketUrl = useCallback((newId1: string, newId2: string) => {
+    const params = new URLSearchParams(window.location.search);
+    if (newId1) params.set("b1", newId1); else params.delete("b1");
+    if (newId2) params.set("b2", newId2); else params.delete("b2");
+    window.history.replaceState(null, "", `/head-to-head?${params.toString()}`);
+  }, []);
   const [diffFilter, setDiffFilter] = useState<DiffFilter>(
     ["all", "differences", "agreement"].includes(initialDiffFilter) ? initialDiffFilter : "all"
   );
@@ -258,8 +274,8 @@ export function HeadToHeadContent({
     <div className="space-y-4">
       {/* Bracket selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <MultiSelectSearch mode="single" label="Brackets" options={bracketOptions} selectedId={id1} onSelect={setId1} onClear={() => setId1("")} inputLabel="Bracket 1" excludeValue={id2} placeholder="Search brackets..." />
-        <MultiSelectSearch mode="single" label="Brackets" options={bracketOptions} selectedId={id2} onSelect={setId2} onClear={() => setId2("")} inputLabel="Bracket 2" excludeValue={id1} placeholder="Search brackets..." />
+        <MultiSelectSearch mode="single" label="Brackets" options={bracketOptions} selectedId={id1} onSelect={(v) => { setId1(v); updateBracketUrl(v, id2); }} onClear={() => { setId1(""); updateBracketUrl("", id2); }} inputLabel="Bracket 1" excludeValue={id2} placeholder="Search brackets..." />
+        <MultiSelectSearch mode="single" label="Brackets" options={bracketOptions} selectedId={id2} onSelect={(v) => { setId2(v); updateBracketUrl(id1, v); }} onClear={() => { setId2(""); updateBracketUrl(id1, ""); }} inputLabel="Bracket 2" excludeValue={id1} placeholder="Search brackets..." />
       </div>
 
       {b1 && b2 && a1 && a2 ? (
