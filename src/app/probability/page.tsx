@@ -160,6 +160,8 @@ export default async function ProbabilityPage() {
         owner: b.owner,
         full_name: b.full_name,
         champion: b.champion_pick,
+        championSeed: b.champion_seed,
+        bracketId: b.id,
       }));
       return {
         gameId: g.game_id,

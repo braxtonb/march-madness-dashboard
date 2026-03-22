@@ -4,12 +4,15 @@ import { useState } from "react";
 import { TeamPill } from "@/components/ui/TeamPill";
 import BottomSheet from "@/components/ui/BottomSheet";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { ROUND_LABELS } from "@/lib/constants";
+import type { Round } from "@/lib/types";
 
 interface AffectedBracket {
   name: string;
   owner: string;
   full_name: string;
   champion: string;
+  championSeed?: number;
   bracketId?: string;
 }
 
@@ -24,7 +27,7 @@ interface GameToWatch {
   affectedBrackets: AffectedBracket[];
 }
 
-export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; teamLogos?: Record<string, string> }) {
+export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games: GameToWatch[]; teamLogos?: Record<string, string>; eliminatedTeams?: Set<string> }) {
   const [selectedGameIdx, setSelectedGameIdx] = useState<number | null>(null);
 
   const selectedGame = selectedGameIdx !== null ? games[selectedGameIdx] : null;
@@ -51,9 +54,13 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                 <span className="text-[10px] text-on-surface-variant">vs</span>
                 <TeamPill name={g.team2} seed={g.seed2} logo={teamLogos[g.team2]} />
               </span>
-              <span className="text-on-surface-variant text-sm w-4 text-center font-label leading-none shrink-0">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant/60">
-                  <path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" />
+              <span className="shrink-0 ml-2 flex items-center gap-1.5">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">
+                  {ROUND_LABELS[g.round as Round] ?? g.round}
+                </span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M15 3v18" />
                 </svg>
               </span>
             </div>
@@ -94,14 +101,14 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                 (b) => b.champion !== selectedGame.team1 && b.champion !== selectedGame.team2
               );
 
-              function renderBracketList(brackets: AffectedBracket[], teamName: string) {
+              function renderBracketList(brackets: AffectedBracket[]) {
                 if (brackets.length === 0) {
                   return <p className="text-xs text-on-surface-variant italic">No brackets</p>;
                 }
                 return (
                   <div className="space-y-1.5">
                     {brackets.map((b) => (
-                      <div key={b.name} className="flex items-center gap-2 rounded-lg bg-surface-bright/50 px-3 py-2">
+                      <div key={b.name} className="group flex items-center gap-2 rounded-lg bg-surface-bright/50 px-3 py-2">
                         {b.bracketId && <CompareCheckbox bracketId={b.bracketId} />}
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-on-surface truncate">{b.name}</p>
@@ -121,25 +128,23 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <TeamPill name={selectedGame.team1} seed={selectedGame.seed1} logo={teamLogos[selectedGame.team1]} />
-                        <span className="text-xs text-on-surface-variant">({team1Brackets.length})</span>
                       </div>
-                      {renderBracketList(team1Brackets, selectedGame.team1)}
+                      {renderBracketList(team1Brackets)}
                     </div>
                   )}
                   {team2Brackets.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <TeamPill name={selectedGame.team2} seed={selectedGame.seed2} logo={teamLogos[selectedGame.team2]} />
-                        <span className="text-xs text-on-surface-variant">({team2Brackets.length})</span>
                       </div>
-                      {renderBracketList(team2Brackets, selectedGame.team2)}
+                      {renderBracketList(team2Brackets)}
                     </div>
                   )}
                   {otherBrackets.length > 0 && (
                     <div className="space-y-2">
                       <p className="font-label text-xs text-on-surface-variant">Other affected brackets</p>
                       {otherBrackets.map((b) => (
-                        <div key={b.name} className="flex items-center gap-2 rounded-lg bg-surface-bright/50 px-3 py-2">
+                        <div key={b.name} className="group flex items-center gap-2 rounded-lg bg-surface-bright/50 px-3 py-2">
                           {b.bracketId && <CompareCheckbox bracketId={b.bracketId} />}
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold text-on-surface truncate">{b.name}</p>
@@ -148,7 +153,7 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                             )}
                           </div>
                           <span className="text-on-surface-variant text-xs shrink-0 ml-2">
-                            <TeamPill name={b.champion} logo={teamLogos[b.champion]} />
+                            <TeamPill name={b.champion} seed={b.championSeed} logo={teamLogos[b.champion]} eliminated={eliminatedTeams?.has(b.champion)} />
                           </span>
                         </div>
                       ))}

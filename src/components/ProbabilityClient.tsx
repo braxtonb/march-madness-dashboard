@@ -84,6 +84,8 @@ interface AffectedBracket {
   owner: string;
   full_name: string;
   champion: string;
+  championSeed?: number;
+  bracketId?: string;
 }
 
 interface GameToWatch {
@@ -625,7 +627,7 @@ export function ProbabilityClient({
             />
           </div>
 
-          <GamesToWatch games={aliveData.gamesToWatch} teamLogos={teamLogos} />
+          <GamesToWatch games={aliveData.gamesToWatch} teamLogos={teamLogos} eliminatedTeams={eliminatedTeamsSet} />
 
           <div className="space-y-4">
             <div className="overflow-x-auto no-scrollbar">
