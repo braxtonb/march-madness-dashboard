@@ -49,10 +49,10 @@ export const ARCHETYPE_COLORS: Record<Archetype, string> = {
 
 export const NAV_PAGES = [
   { path: "/", label: "Leaderboard", icon: "trophy" },
+  { path: "/probability", label: "Probability", icon: "bar-chart" },
+  { path: "/simulator", label: "Simulator", icon: "sliders" },
+  { path: "/head-to-head", label: "Head-to-Head", icon: "git-compare" },
   { path: "/picks", label: "Group Picks", icon: "users" },
   { path: "/alive", label: "Alive Board", icon: "heart-pulse" },
-  { path: "/simulator", label: "Simulator", icon: "sliders" },
   { path: "/awards", label: "Awards", icon: "award" },
-  { path: "/probability", label: "Probability", icon: "bar-chart" },
-  { path: "/head-to-head", label: "Head-to-Head", icon: "git-compare" },
 ] as const;
