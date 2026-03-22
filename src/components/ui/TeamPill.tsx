@@ -33,7 +33,7 @@ export function TeamPill({
           alt=""
           width={16}
           height={16}
-          className="inline-block rounded-sm"
+          className="inline-block rounded-sm bg-white/90 p-[1px]"
         />
       )}
       {seed != null && seed > 0 && (

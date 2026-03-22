@@ -338,35 +338,35 @@ function LeaderboardContentInner({
             </p>
             <InsightFortuneScatter data={scatterData} />
           </div>
-          {/* Quadrant legend */}
+          {/* Quadrant legend — ordered to match chart layout (TL, TR, BL, BR) */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-xs text-on-surface-variant uppercase">
-                High Chalk + High Upset Success
+              <p className="font-label text-[10px] text-on-surface-variant uppercase">
+                ↖ Low Chalk + High Upset Success
               </p>
-              <p className="text-sm text-on-surface mt-1">Sharp Chalk Pickers</p>
+              <p className="text-sm text-on-surface mt-1 font-semibold">Upset Artists</p>
+              <p className="text-[10px] text-on-surface-variant mt-1">Go against the grain and nail it</p>
             </div>
             <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-xs text-on-surface-variant uppercase">
-                Low Chalk + High Upset Success
+              <p className="font-label text-[10px] text-on-surface-variant uppercase">
+                ↗ High Chalk + High Upset Success
               </p>
-              <p className="text-sm text-on-surface mt-1">
-                Upset Artists
-              </p>
+              <p className="text-sm text-on-surface mt-1 font-semibold">Sharp Chalk Pickers</p>
+              <p className="text-[10px] text-on-surface-variant mt-1">Play it smart and still find edges</p>
             </div>
             <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-xs text-on-surface-variant uppercase">
-                High Chalk + Low Upset Success
+              <p className="font-label text-[10px] text-on-surface-variant uppercase">
+                ↙ Low Chalk + Low Upset Success
               </p>
-              <p className="text-sm text-on-surface mt-1">Playing It Safe</p>
+              <p className="text-sm text-on-surface mt-1 font-semibold">Bold Believers</p>
+              <p className="text-[10px] text-on-surface-variant mt-1">Swinging for the fences — upside ahead</p>
             </div>
             <div className="rounded-card bg-surface-container p-4 text-center">
-              <p className="font-label text-xs text-on-surface-variant uppercase">
-                Low Chalk + Low Upset Success
+              <p className="font-label text-[10px] text-on-surface-variant uppercase">
+                ↘ High Chalk + Low Upset Success
               </p>
-              <p className="text-sm text-on-surface mt-1">
-                Bold Believers
-              </p>
+              <p className="text-sm text-on-surface mt-1 font-semibold">Playing It Safe</p>
+              <p className="text-[10px] text-on-surface-variant mt-1">Steady and reliable — few surprises</p>
             </div>
           </div>
         </div>

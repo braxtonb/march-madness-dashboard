@@ -62,8 +62,13 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
 
   const activeCluster = pinnedCluster ?? hoveredCluster;
 
+  // Click anywhere outside a cluster to dismiss pinned
+  function handleBackgroundClick() {
+    setPinnedCluster(null);
+  }
+
   return (
-    <div className="relative">
+    <div className="relative" onClick={handleBackgroundClick}>
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ maxHeight: 500 }}>
         {/* Grid lines */}
         {[0, 25, 50, 75, 100].map((v) => (
@@ -108,7 +113,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
               key={i}
               onMouseEnter={() => setHoveredCluster(i)}
               onMouseLeave={() => setHoveredCluster(null)}
-              onClick={() => setPinnedCluster(pinnedCluster === i ? null : i)}
+              onClick={(e) => { e.stopPropagation(); setPinnedCluster(pinnedCluster === i ? null : i); }}
               className="cursor-pointer"
             >
               {isSingle ? (
