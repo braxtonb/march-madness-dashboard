@@ -17,11 +17,13 @@ function BracketDropdown({
   value,
   onChange,
   label,
+  excludeId,
 }: {
   brackets: Bracket[];
   value: string;
   onChange: (id: string) => void;
   label: string;
+  excludeId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -30,15 +32,20 @@ function BracketDropdown({
 
   const selected = brackets.find((b) => b.id === value);
 
+  // Filter out the bracket selected on the other side, then apply search query
+  const available = useMemo(() => {
+    return excludeId ? brackets.filter((b) => b.id !== excludeId) : brackets;
+  }, [brackets, excludeId]);
+
   const filtered = useMemo(() => {
-    if (!query) return brackets;
+    if (!query) return available;
     const q = query.toLowerCase();
-    return brackets.filter(
+    return available.filter(
       (b) =>
         b.name.toLowerCase().includes(q) ||
         b.owner.toLowerCase().includes(q)
     );
-  }, [brackets, query]);
+  }, [available, query]);
 
   // Close on outside click
   useEffect(() => {
@@ -132,8 +139,11 @@ export function HeadToHeadContent({
     return currentRound;
   })();
 
-  const [id1, setId1] = useState("");
-  const [id2, setId2] = useState("");
+  const paramB1 = searchParams.get("b1") ?? "";
+  const paramB2 = searchParams.get("b2") ?? "";
+  // If both URL params point to the same bracket, only pre-populate bracket 1
+  const [id1, setId1] = useState(paramB1);
+  const [id2, setId2] = useState(paramB1 && paramB1 === paramB2 ? "" : paramB2);
   const [diffFilter, setDiffFilter] = useState<DiffFilter>(
     ["all", "differences", "agreement"].includes(initialDiffFilter) ? initialDiffFilter : "all"
   );
@@ -292,8 +302,8 @@ export function HeadToHeadContent({
     <div className="space-y-4">
       {/* Bracket selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <BracketDropdown brackets={brackets} value={id1} onChange={setId1} label="Bracket 1" />
-        <BracketDropdown brackets={brackets} value={id2} onChange={setId2} label="Bracket 2" />
+        <BracketDropdown brackets={brackets} value={id1} onChange={setId1} label="Bracket 1" excludeId={id2} />
+        <BracketDropdown brackets={brackets} value={id2} onChange={setId2} label="Bracket 2" excludeId={id1} />
       </div>
 
       {b1 && b2 && a1 && a2 ? (
