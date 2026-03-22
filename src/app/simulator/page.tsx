@@ -37,38 +37,45 @@ function buildGameChain(
   picks: Pick[],
   games: Game[]
 ): Map<string, { nextGameId: string }> {
-  // Use the first bracket that has picks
+  // Build chain from ALL brackets' picks to get complete coverage.
+  // Using a single bracket misses links for teams that bracket didn't
+  // predict to advance (only captures one of two feeders per game).
+  const roundIdx: Record<string, number> = { R64: 0, R32: 1, S16: 2, E8: 3, FF: 4, CHAMP: 5 };
+  const chain = new Map<string, { nextGameId: string }>();
+
+  // Group picks by bracket
   const byBracket = new Map<string, Pick[]>();
   for (const p of picks) {
-    if (!p.team_picked) continue;
+    if (!p.team_picked || !p.round) continue;
     if (!byBracket.has(p.bracket_id)) byBracket.set(p.bracket_id, []);
     byBracket.get(p.bracket_id)!.push(p);
   }
 
-  const samplePicks = [...byBracket.values()][0];
-  if (!samplePicks) return new Map();
+  // Process each bracket to discover game-to-game links
+  for (const [, bracketPicks] of byBracket) {
+    // Group this bracket's picks by team
+    const teamGames = new Map<string, { gameId: string; round: string }[]>();
+    for (const p of bracketPicks) {
+      if (!teamGames.has(p.team_picked)) teamGames.set(p.team_picked, []);
+      teamGames.get(p.team_picked)!.push({ gameId: p.game_id, round: p.round });
+    }
 
-  const roundIdx: Record<string, number> = { R64: 0, R32: 1, S16: 2, E8: 3, FF: 4, CHAMP: 5 };
-
-  // Group picks by team
-  const teamGames = new Map<string, { gameId: string; round: string }[]>();
-  for (const p of samplePicks) {
-    if (!p.team_picked || !p.round) continue;
-    if (!teamGames.has(p.team_picked)) teamGames.set(p.team_picked, []);
-    teamGames.get(p.team_picked)!.push({ gameId: p.game_id, round: p.round });
-  }
-
-  // For each team, sort by round and create chain links
-  const chain = new Map<string, { nextGameId: string }>();
-  for (const [, tGames] of teamGames) {
-    tGames.sort((a, b) => (roundIdx[a.round] ?? 0) - (roundIdx[b.round] ?? 0));
-    for (let i = 0; i < tGames.length - 1; i++) {
-      const curr = tGames[i].gameId;
-      const next = tGames[i + 1].gameId;
-      if (!chain.has(curr)) {
-        chain.set(curr, { nextGameId: next });
+    // For each team, trace through rounds to create chain links
+    for (const [, tGames] of teamGames) {
+      tGames.sort((a, b) => (roundIdx[a.round] ?? 0) - (roundIdx[b.round] ?? 0));
+      for (let i = 0; i < tGames.length - 1; i++) {
+        const curr = tGames[i].gameId;
+        const next = tGames[i + 1].gameId;
+        if (!chain.has(curr)) {
+          chain.set(curr, { nextGameId: next });
+        }
       }
     }
+
+    // Once we have enough links, we can stop (all brackets share the same structure)
+    // Check if we have links for all non-championship games
+    const nonChampGames = games.filter((g) => g.round !== "CHAMP");
+    if (nonChampGames.every((g) => chain.has(g.game_id))) break;
   }
 
   return chain;

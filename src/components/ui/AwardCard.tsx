@@ -21,12 +21,22 @@ export function AwardCard({
     silver: "text-on-surface-variant",
     bronze: "text-action",
   };
-  const tierIcons = { gold: "\uD83C\uDFC6", silver: "\uD83E\uDD48", bronze: "\uD83E\uDD49" };
+  // Award-specific icons based on title
+  const AWARD_ICONS: Record<string, string> = {
+    "The Oracle": "🔮",
+    "The Trendsetter": "🌟",
+    "The Faithful": "🛡️",
+    "Hot Streak": "🔥",
+    "Momentum Builder": "🚀",
+    "The People's Champion": "👑",
+  };
+  const tierFallback = { gold: "🥇", silver: "🥈", bronze: "🥉" };
+  const icon = AWARD_ICONS[title] || tierFallback[tier];
 
   return (
     <div className="rounded-card bg-surface-container p-5 space-y-3 hover:bg-surface-bright transition-colors">
       <div className="flex items-center gap-2">
-        <span className="text-2xl">{tierIcons[tier]}</span>
+        <span className="text-2xl">{icon}</span>
         <h4 className={`font-display font-semibold ${tierColors[tier]}`}>
           {title}
         </h4>

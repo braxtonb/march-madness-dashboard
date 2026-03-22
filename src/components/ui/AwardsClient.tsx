@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { AwardCard } from "@/components/ui/AwardCard";
 import type { Round } from "@/lib/types";
+import { ROUND_ORDER } from "@/lib/constants";
 
 export interface Award {
   title: string;
@@ -22,13 +24,31 @@ interface AwardsClientProps {
 }
 
 export function AwardsClient({ awardsByRound, completedRounds, currentRound }: AwardsClientProps) {
-  const [selectedRound, setSelectedRound] = useState<Round>(currentRound);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const paramRound = searchParams.get("round") as Round | null;
+  // Default to most recent completed round (one before current), or current if R64
+  const defaultRound = (() => {
+    const currentIdx = ROUND_ORDER.indexOf(currentRound);
+    if (currentIdx > 0) return ROUND_ORDER[currentIdx - 1]; // previous round (just completed)
+    return currentRound;
+  })();
+  const [selectedRound, setSelectedRound] = useState<Round>(
+    paramRound && ROUND_ORDER.includes(paramRound) ? paramRound : defaultRound
+  );
+
+  function changeRound(round: Round) {
+    setSelectedRound(round);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("round", round);
+    router.replace(`/awards?${params.toString()}`, { scroll: false });
+  }
 
   const awards = awardsByRound[selectedRound] ?? [];
 
   return (
     <>
-      <RoundSelector selected={selectedRound} onSelect={setSelectedRound} />
+      <RoundSelector selected={selectedRound} onSelect={changeRound} />
 
       {completedRounds.length === 0 && (
         <div className="rounded-card bg-surface-container p-8 text-center">
