@@ -36,21 +36,11 @@ export function DrilldownTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-outline">
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                Rank
-              </th>
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                Name
-              </th>
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                Champion
-              </th>
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                Points
-              </th>
-              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                MAX
-              </th>
+              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Current ranking based on total points">Rank</th>
+              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Name</th>
+              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Championship pick — green dot if still alive">Champion</th>
+              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Total points earned so far">Points</th>
+              <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Maximum possible points if all remaining picks are correct">MAX</th>
             </tr>
           </thead>
           <tbody>

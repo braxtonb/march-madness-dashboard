@@ -532,11 +532,11 @@ export default function SimulatorPage() {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Rank</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Bracket</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Change</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Pts</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Sim Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected ranking based on simulated outcomes">Rank</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Rank change from current standing based on simulation — positive means climbing up">Change</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Current actual points">Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected total points if simulated outcomes happen">Sim Pts</th>
                   </tr>
                 </thead>
                 <tbody>

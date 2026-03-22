@@ -59,17 +59,17 @@ export function LeaderboardTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-outline">
-            <th className={hdr} onClick={() => toggleSort("rank")}>Rank{arrow("rank")}</th>
-            <th className={hdrStatic}>Name</th>
-            <th className={hdrStatic}>Champion</th>
-            <th className={hdr} onClick={() => toggleSort("points")}>Pts{arrow("points")}</th>
-            <th className={hdr} onClick={() => toggleSort("max")}>Max{arrow("max")}</th>
-            <th className={hdr} onClick={() => toggleSort("r64")}>R64{arrow("r64")}</th>
-            <th className={hdr} onClick={() => toggleSort("r32")}>R32{arrow("r32")}</th>
-            <th className={hdr} onClick={() => toggleSort("s16")}>S16{arrow("s16")}</th>
-            <th className={hdr} onClick={() => toggleSort("e8")}>E8{arrow("e8")}</th>
-            <th className={hdr} onClick={() => toggleSort("ff")}>FF{arrow("ff")}</th>
-            <th className={hdr} onClick={() => toggleSort("champ")}>Champ{arrow("champ")}</th>
+            <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{arrow("rank")}</th>
+            <th className={hdrStatic} title="Bracket name and username">Name</th>
+            <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
+            <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Pts{arrow("points")}</th>
+            <th className={hdr} onClick={() => toggleSort("max")} title="Maximum possible points if all remaining picks are correct">Max{arrow("max")}</th>
+            <th className={hdr} onClick={() => toggleSort("r64")} title="Points earned in Round of 64">R64{arrow("r64")}</th>
+            <th className={hdr} onClick={() => toggleSort("r32")} title="Points earned in Round of 32">R32{arrow("r32")}</th>
+            <th className={hdr} onClick={() => toggleSort("s16")} title="Points earned in Sweet 16">S16{arrow("s16")}</th>
+            <th className={hdr} onClick={() => toggleSort("e8")} title="Points earned in Elite 8">E8{arrow("e8")}</th>
+            <th className={hdr} onClick={() => toggleSort("ff")} title="Points earned in Final Four">FF{arrow("ff")}</th>
+            <th className={hdr} onClick={() => toggleSort("champ")} title="Points earned in Championship">Champ{arrow("champ")}</th>
           </tr>
         </thead>
         <tbody>

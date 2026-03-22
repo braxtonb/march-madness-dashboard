@@ -75,7 +75,7 @@ export function ProbabilityClient({
   const router = useRouter();
   const initialTab = (searchParams.get("tab") as ProbTab) || "chances";
   const [tab, setTab] = useState<ProbTab>(initialTab);
-  const [showExact, setShowExact] = useState(true);
+  const [showExact, setShowExact] = useState(false);
 
   function changeTab(t: ProbTab) {
     setTab(t);
@@ -184,19 +184,19 @@ export function ProbabilityClient({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-outline">
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Bracket</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Tier</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Win %</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">2nd %</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">3rd %</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Championship chances tier based on simulation results">Tier</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Percentage of 1,000 simulations where this bracket finishes 1st">Win %</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Percentage of simulations finishing 2nd">2nd %</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Percentage of simulations finishing 3rd">3rd %</th>
                   {showExact && (
                     <>
-                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Top 10</th>
-                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Top 25</th>
+                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Percentage of simulations finishing in the top 10">Top 10</th>
+                      <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Percentage of simulations finishing in the top 25">Top 25</th>
                     </>
                   )}
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Median</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Champion</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Median finish position across 1,000 simulations">Median</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Championship pick for this bracket">Champion</th>
                 </tr>
               </thead>
               <tbody>
