@@ -194,13 +194,29 @@ export default function SimulatorPage() {
     return true;
   });
 
-  // Flag to restore picks from hash once data loads
-  const picksRestoredRef = useRef(false);
+  // Flag to track hash restoration status:
+  // "pending" = haven't tried yet, "done" = restored (or nothing to restore)
+  const hashRestoreRef = useRef<"pending" | "done">("pending");
+
+  // Save the initial hash before any effects can modify it
+  const initialHashRef = useRef(typeof window !== "undefined" ? window.location.hash : "");
 
   useEffect(() => {
     fetch("/api/data")
       .then((r) => r.json())
       .then((d: DashboardData) => {
+        // Restore picks from the initial hash immediately with the data
+        if (hashRestoreRef.current === "pending") {
+          hashRestoreRef.current = "done";
+          const hash = initialHashRef.current;
+          if (hash) {
+            const restored = decodePicks(hash, d.games);
+            if (restored.size > 0) {
+              setSelections(restored);
+            }
+          }
+        }
+
         setData(d);
         // Collapse completed rounds by default
         const completed = new Set<string>();
@@ -217,19 +233,6 @@ export default function SimulatorPage() {
       })
       .catch(() => {});
   }, []);
-
-  // Restore picks from URL hash once data is available
-  useEffect(() => {
-    if (!data || picksRestoredRef.current) return;
-    picksRestoredRef.current = true;
-    const hash = window.location.hash;
-    if (hash) {
-      const restored = decodePicks(hash, data.games);
-      if (restored.size > 0) {
-        setSelections(restored);
-      }
-    }
-  }, [data]);
 
   // Build bracket structure chain
   const gameChain = useMemo(() => {
@@ -384,9 +387,9 @@ export default function SimulatorPage() {
     return map;
   }, [data]);
 
-  // Sync selections to URL hash
+  // Sync selections to URL hash (only after initial restore is complete)
   useEffect(() => {
-    if (!data) return;
+    if (!data || hashRestoreRef.current !== "done") return;
     const hp = parseHashParams(window.location.hash);
     const picksStr = encodePicks(selections, data.games);
     if (picksStr) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo, useRef } from "react";
 import type { Game, Round } from "@/lib/types";
 import { ROUND_LABELS } from "@/lib/constants";
 
@@ -379,31 +379,6 @@ export function BracketView({
     () => games.some((g) => g.round === "FF" || g.round === "CHAMP"),
     [games]
   );
-
-  // Auto-scroll to show the latest action
-  useEffect(() => {
-    if (scrollRef.current) {
-      // Find the latest round with completed games and scroll there
-      const latestRoundIdx = (() => {
-        const allRounds: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
-        let latest = 0;
-        for (let i = allRounds.length - 1; i >= 0; i--) {
-          if (games.some((g) => g.round === allRounds[i] && (g.completed || (g.team1 && g.team2)))) {
-            latest = i;
-            break;
-          }
-        }
-        return latest;
-      })();
-
-      // On mobile, give a horizontal nudge if deeper rounds are active
-      if (latestRoundIdx >= 2 && scrollRef.current.scrollWidth > scrollRef.current.clientWidth) {
-        // Scroll to approximately where the active round is
-        const approxOffset = latestRoundIdx * 170;
-        scrollRef.current.scrollTo({ left: Math.max(0, approxOffset - 100), behavior: "smooth" });
-      }
-    }
-  }, [games]);
 
   if (games.length === 0) {
     return (

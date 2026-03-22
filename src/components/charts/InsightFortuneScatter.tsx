@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 
 interface ScatterPoint {
+  id?: string;
   name: string;
   owner?: string;
   full_name?: string;
@@ -51,9 +52,9 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   const router = useRouter();
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
 
-  // Initialize from URL params (comma-separated for multi-select)
+  // Initialize from URL params (comma-separated bracket IDs for multi-select)
   const [nameFilter, setNameFilter] = useState<string[]>(() => {
-    const v = searchParams.get("search");
+    const v = searchParams.get("brackets");
     return v ? v.split(",").filter(Boolean) : [];
   });
   const [championFilter, setChampionFilter] = useState<string[]>(() => {
@@ -72,21 +73,28 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
 
   function changeNameFilter(v: string[]) {
     setNameFilter(v);
-    updateUrl("search", v.join(","));
+    updateUrl("brackets", v.join(","));
   }
   function changeChampionFilter(v: string[]) { setChampionFilter(v); updateUrl("champion", v.join(",")); }
   function changePointsFilter(v: string) { setPointsFilter(v); updateUrl("pts", v); }
   function changePointsOp(v: PointsOp) { setPointsOp(v); updateUrl("ptsOp", v); }
 
-  // Build options
+  // Build options — use bracket ID as value for consistent deep linking
   const sheetOptions = useMemo(() =>
     data.map((d) => ({
-      value: d.name,
+      value: d.id || d.name,
       label: d.name,
       sublabel: d.full_name && d.full_name !== d.name ? d.full_name : undefined,
     })),
     [data]
   );
+
+  // Build a lookup from bracket ID to ScatterPoint for filtering
+  const idToPoint = useMemo(() => {
+    const m = new Map<string, ScatterPoint>();
+    for (const d of data) m.set(d.id || d.name, d);
+    return m;
+  }, [data]);
 
   const championOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -98,7 +106,8 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   const filtered = useMemo(() => {
     return data.filter((d) => {
       if (nameFilter.length > 0) {
-        if (!nameFilter.includes(d.name)) return false;
+        const bracketId = d.id || d.name;
+        if (!nameFilter.includes(bracketId)) return false;
       }
       if (championFilter.length > 0) {
         if (!d.champion || !championFilter.includes(d.champion)) return false;
@@ -120,7 +129,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   function clearAll() {
     setNameFilter([]); setChampionFilter([]); setPointsFilter("");
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("search"); params.delete("champion"); params.delete("pts"); params.delete("ptsOp");
+    params.delete("brackets"); params.delete("champion"); params.delete("pts"); params.delete("ptsOp");
     router.replace(`?${params.toString()}`, { scroll: false });
   }
 

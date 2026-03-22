@@ -142,7 +142,7 @@ function LeaderboardContentInner({
 
       // Define which params belong to which tab
       const standingsParams = ["sort", "dir", "brackets"];
-      const styleParams = ["search", "champion", "pts", "ptsOp"];
+      const styleParams = ["brackets", "champion", "pts", "ptsOp"];
       // "calls" tab has no URL params
 
       // Clear params not belonging to the new tab

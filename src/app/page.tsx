@@ -87,6 +87,7 @@ export default async function LeaderboardPage() {
     }
 
     return {
+      id: b.id,
       name: b.name,
       owner: b.owner,
       full_name: b.full_name,

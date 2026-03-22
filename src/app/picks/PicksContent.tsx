@@ -348,6 +348,19 @@ export function PicksContent({
       )}
 
       {/* Card view: All Rounds grouped by round with collapsible sections */}
+      {resultView === "cards" && (
+        <div className="flex items-center gap-3 text-xs text-on-surface-variant mb-3">
+          <span className="font-label">Pick Split:</span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm bg-primary" />
+            Team 1
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm bg-secondary" />
+            Team 2
+          </span>
+        </div>
+      )}
       {resultView === "cards" && (isAllRounds ? (
         <div className="space-y-3">
           {(() => {
