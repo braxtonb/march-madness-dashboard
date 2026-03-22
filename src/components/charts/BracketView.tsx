@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import type { Game, Round } from "@/lib/types";
-import { ROUND_LABELS } from "@/lib/constants";
+import { ROUND_LABELS, ROUND_POINTS } from "@/lib/constants";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -16,6 +16,36 @@ interface BracketViewProps {
   eliminatedTeams?: Set<string>;
   onGameClick?: (gameId: string) => void;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const GAME_H = 56;
+const GAME_W = 144; // w-36
+const BASE_GAP = 4;
+const CONNECTOR_W = 24; // w-6
+
+/** Region codes to display labels */
+const REGION_NAMES: Record<string, string> = {
+  R1: "East",
+  R2: "South",
+  R3: "West",
+  R4: "Midwest",
+};
+
+/** Rounds within each region (left-to-right) */
+const REGION_ROUNDS: Round[] = ["R64", "R32", "S16", "E8"];
+
+/** Short round labels for column headers */
+const SHORT_ROUND_LABELS: Record<string, string> = {
+  R64: "R64",
+  R32: "R32",
+  S16: "S16",
+  E8: "Elite 8",
+  FF: "Final Four",
+  CHAMP: "Championship",
+};
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -58,17 +88,6 @@ function shortName(name: string): string {
   return name;
 }
 
-/** Region codes to display labels */
-const REGION_NAMES: Record<string, string> = {
-  R1: "East",
-  R2: "South",
-  R3: "West",
-  R4: "Midwest",
-};
-
-/** Rounds within each region (left-to-right) */
-const REGION_ROUNDS: Round[] = ["R64", "R32", "S16", "E8"];
-
 /* ------------------------------------------------------------------ */
 /*  GameCell — a single matchup in the bracket tree                   */
 /* ------------------------------------------------------------------ */
@@ -96,7 +115,10 @@ function GameCell({
 
   if (isTBD) {
     return (
-      <div className="w-40 rounded border border-outline-variant/20 bg-surface-container/50 opacity-50 text-left">
+      <div
+        className="rounded border border-outline-variant/20 bg-surface-container/50 opacity-50 text-left shrink-0"
+        style={{ width: GAME_W }}
+      >
         <div className="flex items-center justify-between px-2 py-1 text-xs border-b border-outline-variant/10">
           <span className="text-on-surface-variant/50">TBD</span>
         </div>
@@ -118,7 +140,8 @@ function GameCell({
   return (
     <button
       onClick={onClick}
-      className={`w-40 rounded border border-outline-variant/30 bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer ${mirror ? "text-right" : "text-left"}`}
+      className={`rounded border border-outline-variant/30 bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"}`}
+      style={{ width: GAME_W }}
     >
       {/* Team 1 */}
       <div
@@ -132,9 +155,19 @@ function GameCell({
       >
         <span className="truncate">
           {mirror ? (
-            <>{shortName(game.team1)} <span className="text-on-surface-variant/60 ml-1">{game.seed1 || ""}</span></>
+            <>
+              {shortName(game.team1)}{" "}
+              <span className="text-on-surface-variant/60 ml-1">
+                {game.seed1 || ""}
+              </span>
+            </>
           ) : (
-            <><span className="text-on-surface-variant/60 mr-1">{game.seed1 || ""}</span>{shortName(game.team1)}</>
+            <>
+              <span className="text-on-surface-variant/60 mr-1">
+                {game.seed1 || ""}
+              </span>
+              {shortName(game.team1)}
+            </>
           )}
         </span>
         <span className="text-[10px] shrink-0">{pct1}%</span>
@@ -151,14 +184,24 @@ function GameCell({
       >
         <span className="truncate">
           {mirror ? (
-            <>{shortName(game.team2)} <span className="text-on-surface-variant/60 ml-1">{game.seed2 || ""}</span></>
+            <>
+              {shortName(game.team2)}{" "}
+              <span className="text-on-surface-variant/60 ml-1">
+                {game.seed2 || ""}
+              </span>
+            </>
           ) : (
-            <><span className="text-on-surface-variant/60 mr-1">{game.seed2 || ""}</span>{shortName(game.team2)}</>
+            <>
+              <span className="text-on-surface-variant/60 mr-1">
+                {game.seed2 || ""}
+              </span>
+              {shortName(game.team2)}
+            </>
           )}
         </span>
         <span className="text-[10px] shrink-0">{pct2}%</span>
       </div>
-      {/* ESPN link + pick split bar */}
+      {/* ESPN link + status */}
       <div className="flex items-center justify-between px-2 pt-0.5 pb-1">
         {game.espn_url && isCompleted ? (
           <a
@@ -170,19 +213,106 @@ function GameCell({
           >
             ESPN
           </a>
-        ) : <span />}
-        {isCompleted && <span className="text-[9px] text-on-surface-variant/40">Final</span>}
+        ) : (
+          <span />
+        )}
+        {isCompleted && (
+          <span className="text-[9px] text-on-surface-variant/40">Final</span>
+        )}
       </div>
+      {/* Pick split bar */}
       <div className="flex h-1">
-        <div className="bg-primary transition-all" style={{ width: `${pct1}%` }} />
-        <div className="bg-secondary transition-all" style={{ width: `${pct2}%` }} />
+        <div
+          className="bg-primary transition-all"
+          style={{ width: `${pct1}%` }}
+        />
+        <div
+          className="bg-secondary transition-all"
+          style={{ width: `${pct2}%` }}
+        />
       </div>
     </button>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  RegionBracket — one region as a horizontal tree                   */
+/*  ConnectorColumn — draws bracket tree lines between round columns  */
+/* ------------------------------------------------------------------ */
+
+function ConnectorColumn({
+  gameCount,
+  regionHeight,
+  mirror = false,
+}: {
+  gameCount: number;
+  regionHeight: number;
+  mirror?: boolean;
+}) {
+  const pairs = gameCount / 2;
+
+  return (
+    <div
+      className="flex flex-col shrink-0"
+      style={{ height: regionHeight, width: CONNECTOR_W }}
+    >
+      {Array.from({ length: pairs }).map((_, i) => (
+        <div key={i} className="flex-1 flex items-stretch">
+          {mirror ? (
+            /* RTL: horizontal stub on left, then bracket on right */
+            <>
+              <div className="flex items-center">
+                <div className="h-px bg-outline-variant/30" style={{ width: CONNECTOR_W / 2 }} />
+              </div>
+              <div className="flex flex-col" style={{ width: CONNECTOR_W / 2 }}>
+                <div className="flex-1 border-t border-l border-outline-variant/30 rounded-tl" />
+                <div className="flex-1 border-b border-l border-outline-variant/30 rounded-bl" />
+              </div>
+            </>
+          ) : (
+            /* LTR: bracket on left, horizontal stub on right */
+            <>
+              <div className="flex flex-col" style={{ width: CONNECTOR_W / 2 }}>
+                <div className="flex-1 border-t border-r border-outline-variant/30 rounded-tr" />
+                <div className="flex-1 border-b border-r border-outline-variant/30 rounded-br" />
+              </div>
+              <div className="flex items-center">
+                <div className="h-px bg-outline-variant/30" style={{ width: CONNECTOR_W / 2 }} />
+              </div>
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  ColumnHeader — round label + point value for a single column      */
+/* ------------------------------------------------------------------ */
+
+function ColumnHeader({ round }: { round: Round }) {
+  const pts = ROUND_POINTS[round];
+  return (
+    <div
+      className="shrink-0 text-center py-1"
+      style={{ width: GAME_W }}
+    >
+      <div className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider leading-tight">
+        {SHORT_ROUND_LABELS[round] || round}
+      </div>
+      <div className="text-[9px] text-primary font-semibold leading-tight">
+        {pts} pts
+      </div>
+    </div>
+  );
+}
+
+function ConnectorHeaderSpacer() {
+  return <div className="shrink-0" style={{ width: CONNECTOR_W, height: 1 }} />;
+}
+
+/* ------------------------------------------------------------------ */
+/*  RegionBracket — one region as a horizontal bracket tree            */
 /* ------------------------------------------------------------------ */
 
 function RegionBracket({
@@ -204,11 +334,9 @@ function RegionBracket({
 }) {
   const regionGames = useMemo(
     () => games.filter((g) => g.region === region),
-    [games, region]
+    [games, region],
   );
 
-  // Group and sort games by round. Sort by game_id within each round
-  // to maintain standard bracket topology (1v16, 8v9, 5v12, 4v13, 6v11, 3v14, 7v10, 2v15)
   const roundGameMap = useMemo(() => {
     const map: Record<string, Game[]> = {};
     for (const round of REGION_ROUNDS) {
@@ -223,168 +351,77 @@ function RegionBracket({
   }, [regionGames]);
 
   const activeRounds = REGION_ROUNDS.filter((r) => roundGameMap[r]);
-  // For RTL regions (West, Midwest): keep round order as-is but use flex-row-reverse on container
-  // This puts R64 on the right and E8 on the left (flowing toward center)
-  const displayRounds = activeRounds;
 
   if (activeRounds.length === 0) return null;
 
+  // Calculate region height based on R64 game count (or largest available round)
+  const firstRound = activeRounds[0];
+  const r64Count = roundGameMap[firstRound]?.length || 8;
+  const regionHeight = r64Count * GAME_H + (r64Count - 1) * BASE_GAP;
+
+  const isMirror = direction === "rtl";
+
   return (
-    <div className="space-y-2">
-      <h3 className={`font-display text-sm font-semibold text-on-surface px-1 ${direction === "rtl" ? "text-right" : ""}`}>
+    <div>
+      {/* Region label */}
+      <div
+        className={`font-display text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-widest mb-1 px-1 ${isMirror ? "text-right" : ""}`}
+      >
         {REGION_NAMES[region] || region}
-      </h3>
-      <div className={`flex items-center gap-0 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-        {displayRounds.map((round) => {
-          const roundGames = roundGameMap[round];
-          // Use the original index (in the natural LTR order) for gap calculation
-          const naturalIdx = activeRounds.indexOf(round);
-          // Exponentially increasing gap to create tree alignment
-          const gapPx = Math.pow(2, naturalIdx) * 8;
-
-          return (
-            <div key={round} className="flex flex-col items-stretch shrink-0">
-              {/* Round label */}
-              <div className="text-center mb-1">
-                <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
-                  {ROUND_LABELS[round] || round}
-                </span>
-              </div>
-              {/* Games column with increasing gap */}
-              <div
-                className="flex flex-col justify-around"
-                style={{ gap: `${gapPx}px` }}
-              >
-                {roundGames.map((game) => (
-                  <div key={game.game_id} className="flex items-center">
-                    <GameCell
-                      game={game}
-                      pickSplit={
-                        pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
-                      }
-                      totalBrackets={totalBrackets}
-                      eliminatedTeams={eliminatedTeams}
-                      onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
-                      mirror={direction === "rtl"}
-                    />
-                    {/* Connector line to next round */}
-                    {naturalIdx < activeRounds.length - 1 && (
-                      <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
       </div>
-    </div>
-  );
-}
 
-/* ------------------------------------------------------------------ */
-/*  FinalRoundsBracket — Final Four + Championship in the center      */
-/* ------------------------------------------------------------------ */
+      <div className={`flex ${isMirror ? "flex-row-reverse" : ""} items-stretch`}>
+        {activeRounds.map((round, ri) => (
+          <div key={round} className="flex items-stretch shrink-0">
+            {/* Connector BEFORE game column (only for RTL, rounds after the first) */}
+            {isMirror && ri > 0 && (
+              <ConnectorColumn
+                gameCount={roundGameMap[activeRounds[ri - 1]]?.length || 0}
+                regionHeight={regionHeight}
+                mirror
+              />
+            )}
 
-function FinalRoundsBracket({
-  games,
-  pickSplits,
-  totalBrackets,
-  eliminatedTeams,
-  onGameClick,
-}: {
-  games: Game[];
-  pickSplits: Record<string, { team1Count: number; team2Count: number }>;
-  totalBrackets: number;
-  eliminatedTeams?: Set<string>;
-  onGameClick?: (gameId: string) => void;
-}) {
-  const ffGames = useMemo(
-    () =>
-      games
-        .filter((g) => g.round === "FF")
-        .sort((a, b) => a.game_id.localeCompare(b.game_id)),
-    [games]
-  );
-  const champGames = useMemo(
-    () =>
-      games
-        .filter((g) => g.round === "CHAMP")
-        .sort((a, b) => a.game_id.localeCompare(b.game_id)),
-    [games]
-  );
+            {/* Games column */}
+            <div
+              className="flex flex-col justify-around shrink-0"
+              style={{
+                height: regionHeight,
+                minHeight: regionHeight,
+              }}
+            >
+              {roundGameMap[round].map((game) => (
+                <GameCell
+                  key={game.game_id}
+                  game={game}
+                  pickSplit={
+                    pickSplits[game.game_id] || {
+                      team1Count: 0,
+                      team2Count: 0,
+                    }
+                  }
+                  totalBrackets={totalBrackets}
+                  eliminatedTeams={eliminatedTeams}
+                  onClick={
+                    onGameClick
+                      ? () => onGameClick(game.game_id)
+                      : undefined
+                  }
+                  mirror={isMirror}
+                />
+              ))}
+            </div>
 
-  if (ffGames.length === 0 && champGames.length === 0) return null;
-
-  // Split FF games: first feeds from left side, second from right side
-  const ffLeft = ffGames[0];
-  const ffRight = ffGames[1];
-
-  return (
-    <div className="flex items-center gap-0">
-      {/* FF from left side (East/South winner) */}
-      {ffLeft && (
-        <div className="flex flex-col items-stretch shrink-0">
-          <div className="text-center mb-1">
-            <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
-              {ROUND_LABELS["FF"]}
-            </span>
+            {/* Connector AFTER game column (only for LTR, not after last round) */}
+            {!isMirror && ri < activeRounds.length - 1 && (
+              <ConnectorColumn
+                gameCount={roundGameMap[round]?.length || 0}
+                regionHeight={regionHeight}
+              />
+            )}
           </div>
-          <div className="flex items-center">
-            <GameCell
-              game={ffLeft}
-              pickSplit={pickSplits[ffLeft.game_id] || { team1Count: 0, team2Count: 0 }}
-              totalBrackets={totalBrackets}
-              eliminatedTeams={eliminatedTeams}
-              onClick={onGameClick ? () => onGameClick(ffLeft.game_id) : undefined}
-            />
-            <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
-          </div>
-        </div>
-      )}
-
-      {/* Championship in center */}
-      {champGames.length > 0 && (
-        <div className="flex flex-col items-stretch shrink-0">
-          <div className="text-center mb-1">
-            <span className="text-[9px] font-label text-primary uppercase tracking-wider font-semibold">
-              {ROUND_LABELS["CHAMP"]}
-            </span>
-          </div>
-          {champGames.map((game) => (
-            <GameCell
-              key={game.game_id}
-              game={game}
-              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-              totalBrackets={totalBrackets}
-              eliminatedTeams={eliminatedTeams}
-              onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* FF from right side (West/Midwest winner) */}
-      {ffRight && (
-        <div className="flex flex-col items-stretch shrink-0">
-          <div className="text-center mb-1">
-            <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
-              {ROUND_LABELS["FF"]}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
-            <GameCell
-              game={ffRight}
-              pickSplit={pickSplits[ffRight.game_id] || { team1Count: 0, team2Count: 0 }}
-              totalBrackets={totalBrackets}
-              eliminatedTeams={eliminatedTeams}
-              onClick={onGameClick ? () => onGameClick(ffRight.game_id) : undefined}
-              mirror
-            />
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
@@ -403,11 +440,10 @@ export function BracketView({
 }: BracketViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Determine which regions have games
   const regions = useMemo(() => {
     const regionSet = new Set<string>();
     for (const g of games) {
-      if (g.region && !["FF", "CHAMP"].includes(g.region)) {
+      if (g.region && !["FF", "CHAMP"].includes(g.round)) {
         regionSet.add(g.region);
       }
     }
@@ -416,7 +452,23 @@ export function BracketView({
 
   const hasFinalRounds = useMemo(
     () => games.some((g) => g.round === "FF" || g.round === "CHAMP"),
-    [games]
+    [games],
+  );
+
+  const ffGames = useMemo(
+    () =>
+      games
+        .filter((g) => g.round === "FF")
+        .sort((a, b) => a.game_id.localeCompare(b.game_id)),
+    [games],
+  );
+
+  const champGames = useMemo(
+    () =>
+      games
+        .filter((g) => g.round === "CHAMP")
+        .sort((a, b) => a.game_id.localeCompare(b.game_id)),
+    [games],
   );
 
   if (games.length === 0) {
@@ -431,6 +483,24 @@ export function BracketView({
   const hasR2 = regions.includes("R2");
   const hasR3 = regions.includes("R3");
   const hasR4 = regions.includes("R4");
+
+  // Column header rounds for each side
+  const leftRounds: Round[] = ["R64", "R32", "S16", "E8"];
+  const rightRounds: Round[] = ["E8", "S16", "R32", "R64"];
+  const centerRounds: Round[] = hasFinalRounds
+    ? [
+        ...(ffGames.length > 0 ? (["FF"] as Round[]) : []),
+        ...(champGames.length > 0 ? (["CHAMP"] as Round[]) : []),
+        ...(ffGames.length > 1 ? (["FF"] as Round[]) : []),
+      ]
+    : [];
+
+  const ffLeft = ffGames[0];
+  const ffRight = ffGames[1];
+
+  // Calculate the total height for the left and right halves
+  // Each side has two regions stacked with a gap between them
+  const regionGap = 24;
 
   return (
     <div className="space-y-3">
@@ -455,14 +525,60 @@ export function BracketView({
         )}
       </div>
 
-      {/* Horizontally scrollable bracket — left regions → center → right regions */}
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto no-scrollbar pb-4"
-      >
-        <div className="min-w-[1400px] flex items-stretch">
+      {/* Horizontally scrollable bracket */}
+      <div ref={scrollRef} className="overflow-x-auto no-scrollbar pb-4">
+        {/* Column Headers */}
+        <div className="flex items-end sticky top-0 z-10 bg-surface/95 backdrop-blur-sm pb-1 border-b border-outline-variant/10 mb-2">
+          {/* Left side headers: R64 → R32 → S16 → E8 */}
+          <div className="flex items-end">
+            {leftRounds.map((round, i) => (
+              <div key={`lh-${round}`} className="flex items-end">
+                <ColumnHeader round={round} />
+                {i < leftRounds.length - 1 && <ConnectorHeaderSpacer />}
+              </div>
+            ))}
+          </div>
+
+          {/* Center headers: FF → CHAMP → FF */}
+          {hasFinalRounds && (
+            <div className="flex items-end">
+              {ffLeft && (
+                <>
+                  <ConnectorHeaderSpacer />
+                  <ColumnHeader round="FF" />
+                </>
+              )}
+              {champGames.length > 0 && (
+                <>
+                  <ConnectorHeaderSpacer />
+                  <ColumnHeader round="CHAMP" />
+                </>
+              )}
+              {ffRight && (
+                <>
+                  <ConnectorHeaderSpacer />
+                  <ColumnHeader round="FF" />
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Right side headers: E8 → S16 → R32 → R64 */}
+          <div className="flex items-end">
+            {rightRounds.map((round, i) => (
+              <div key={`rh-${i}-${round}`} className="flex items-end">
+                {i === 0 && <ConnectorHeaderSpacer />}
+                <ColumnHeader round={round} />
+                {i < rightRounds.length - 1 && <ConnectorHeaderSpacer />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bracket body */}
+        <div className="flex items-stretch">
           {/* LEFT HALF: East (top) + South (bottom) flowing L→R */}
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex flex-col shrink-0" style={{ gap: regionGap }}>
             {hasR1 && (
               <RegionBracket
                 games={games}
@@ -489,19 +605,106 @@ export function BracketView({
 
           {/* CENTER: Final Four + Championship */}
           {hasFinalRounds && (
-            <div className="flex flex-col items-center justify-center px-3 shrink-0">
-              <FinalRoundsBracket
-                games={games}
-                pickSplits={pickSplits}
-                totalBrackets={totalBrackets}
-                eliminatedTeams={eliminatedTeams}
-                onGameClick={onGameClick}
-              />
+            <div className="flex items-center shrink-0">
+              {/* Left FF game */}
+              {ffLeft && (
+                <div className="flex items-stretch shrink-0">
+                  {/* Connector from E8 left to FF left */}
+                  <ConnectorColumn gameCount={2} regionHeight={GAME_H * 2 + BASE_GAP} />
+                  <div
+                    className="flex flex-col justify-around shrink-0"
+                    style={{ height: GAME_H * 2 + BASE_GAP }}
+                  >
+                    <GameCell
+                      game={ffLeft}
+                      pickSplit={
+                        pickSplits[ffLeft.game_id] || {
+                          team1Count: 0,
+                          team2Count: 0,
+                        }
+                      }
+                      totalBrackets={totalBrackets}
+                      eliminatedTeams={eliminatedTeams}
+                      onClick={
+                        onGameClick
+                          ? () => onGameClick(ffLeft.game_id)
+                          : undefined
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Championship */}
+              {champGames.length > 0 && (
+                <div className="flex items-stretch shrink-0">
+                  {ffLeft && (
+                    <ConnectorColumn gameCount={2} regionHeight={GAME_H * 2 + BASE_GAP} />
+                  )}
+                  <div
+                    className="flex flex-col justify-around shrink-0"
+                    style={{ height: GAME_H * 2 + BASE_GAP }}
+                  >
+                    {champGames.map((game) => (
+                      <GameCell
+                        key={game.game_id}
+                        game={game}
+                        pickSplit={
+                          pickSplits[game.game_id] || {
+                            team1Count: 0,
+                            team2Count: 0,
+                          }
+                        }
+                        totalBrackets={totalBrackets}
+                        eliminatedTeams={eliminatedTeams}
+                        onClick={
+                          onGameClick
+                            ? () => onGameClick(game.game_id)
+                            : undefined
+                        }
+                      />
+                    ))}
+                  </div>
+                  {ffRight && (
+                    <ConnectorColumn gameCount={2} regionHeight={GAME_H * 2 + BASE_GAP} mirror />
+                  )}
+                </div>
+              )}
+
+              {/* Right FF game */}
+              {ffRight && (
+                <div className="flex items-stretch shrink-0">
+                  <div
+                    className="flex flex-col justify-around shrink-0"
+                    style={{ height: GAME_H * 2 + BASE_GAP }}
+                  >
+                    <GameCell
+                      game={ffRight}
+                      pickSplit={
+                        pickSplits[ffRight.game_id] || {
+                          team1Count: 0,
+                          team2Count: 0,
+                        }
+                      }
+                      totalBrackets={totalBrackets}
+                      eliminatedTeams={eliminatedTeams}
+                      onClick={
+                        onGameClick
+                          ? () => onGameClick(ffRight.game_id)
+                          : undefined
+                      }
+                      mirror
+                    />
+                  </div>
+                  {/* Connector from FF right to E8 right */}
+                  <ConnectorColumn gameCount={2} regionHeight={GAME_H * 2 + BASE_GAP} mirror />
+                </div>
+              )}
             </div>
           )}
 
           {/* RIGHT HALF: West (top) + Midwest (bottom) flowing R→L */}
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex flex-col shrink-0" style={{ gap: regionGap }}>
             {hasR3 && (
               <RegionBracket
                 games={games}
