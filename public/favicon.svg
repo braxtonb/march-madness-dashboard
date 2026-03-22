@@ -1,7 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <circle cx="16" cy="16" r="15" fill="#FF3008" />
-  <circle cx="16" cy="16" r="10" fill="none" stroke="#fff" stroke-width="1.5" />
-  <path d="M16 6v20M6 16h20" stroke="#fff" stroke-width="1.5" />
-  <path d="M8.5 8.5Q16 13 23.5 8.5" fill="none" stroke="#fff" stroke-width="1.5" />
-  <path d="M8.5 23.5Q16 19 23.5 23.5" fill="none" stroke="#fff" stroke-width="1.5" />
+  <!-- Basketball background -->
+  <circle cx="16" cy="16" r="15" fill="#ff8c42"/>
+  <!-- Basketball lines -->
+  <path d="M16 1v30" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+  <path d="M1 16h30" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+  <path d="M4 5Q16 11 28 5" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+  <path d="M4 27Q16 21 28 27" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+  <!-- DoorDash "D" door shape in center -->
+  <rect x="10" y="8" width="12" height="16" rx="6" fill="none" stroke="#fff" stroke-width="2.5"/>
+  <rect x="10" y="8" width="12" height="16" rx="6" fill="#ff8c42" opacity="0.6"/>
+  <!-- Bracket lines inside the door -->
+  <path d="M14 12v8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M18 12v8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M14 16h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
 </svg>

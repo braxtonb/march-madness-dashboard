@@ -20,9 +20,10 @@ function getAwardDescription(title: string, roundLabel?: string): string {
 const AWARD_ICONS: Record<string, ReactNode> = {
   "The Oracle": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f4fe" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="3" fill="#00f4fe" fillOpacity="0.3" />
-      <path d="M12 2v2" /><path d="M12 20v2" /><path d="M2 12h2" /><path d="M20 12h2" />
+      <circle cx="12" cy="14" r="7" fill="#00f4fe" fillOpacity="0.1" />
+      <circle cx="12" cy="14" r="3" fill="#00f4fe" fillOpacity="0.3" />
+      <path d="M12 7v-2" /><path d="M8 8l-1-1" /><path d="M16 8l1-1" />
+      <path d="M7 21h10" /><path d="M9 21v-2a3 3 0 0 1 6 0v2" />
     </svg>
   ),
   "The Trendsetter": (
@@ -120,7 +121,7 @@ export function AwardCard({
                 </div>
               </div>
               <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
-              {firstWinner.championPick && (
+              {firstWinner.championPick && award.title !== "The Contrarian" && award.title !== "Diamond in the Rough" && (
                 <p className="text-xs text-on-surface-variant flex items-center gap-1">
                   <span className="inline-flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary shrink-0"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg> Champion</span>: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
                 </p>
@@ -135,10 +136,8 @@ export function AwardCard({
         <div className="mt-3 pt-2 border-t border-outline-variant/30 flex items-center justify-between text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
           <span>Show details</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M15 3v18" />
           </svg>
         </div>
       )}
