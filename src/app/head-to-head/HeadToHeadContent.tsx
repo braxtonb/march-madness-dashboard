@@ -450,6 +450,16 @@ export function HeadToHeadContent({
                   if (!showRoundHeaders) {
                     return (
                       <div key={round} className="space-y-2">
+                        <div className="pt-3 first:pt-0">
+                          <p className="font-label text-xs font-semibold text-on-surface">
+                            {ROUND_LABELS[round]}
+                          </p>
+                          {stats && id1 && id2 && stats.total > 0 && (
+                            <span className="text-[10px] text-on-surface-variant">
+                              {stats.agree} agree / {stats.diff} differ
+                            </span>
+                          )}
+                        </div>
                         {renderRoundContent()}
                       </div>
                     );

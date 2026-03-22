@@ -8,9 +8,14 @@ import { RoundSelector } from "@/components/ui/RoundSelector";
 import { GameCard, PicksDrawer } from "@/components/ui/GameCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import BottomSheet from "@/components/ui/BottomSheet";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { UpsetImpactMap } from "@/components/charts/UpsetImpactMap";
+import { GameHeatmap } from "@/components/charts/GameHeatmap";
+import { ChampionSankey } from "@/components/charts/ChampionSankey";
 import type { PickerDetails } from "@/components/ui/GameCard";
 
 interface ChampBracketInfo {
+  bracketId: string;
   bracketName: string;
   fullName: string;
 }
@@ -106,6 +111,24 @@ export function PicksContent({
     return "all" as StatusFilter;
   })();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
+
+  type ResultView = "cards" | "heatmap" | "upsets";
+  const initialResultView = (() => {
+    const param = searchParams.get("rview");
+    if (param && ["cards", "heatmap", "upsets"].includes(param)) return param as ResultView;
+    return "cards" as ResultView;
+  })();
+  const [resultView, setResultView] = useState<ResultView>(initialResultView);
+
+  const changeResultView = useCallback(
+    (v: ResultView) => {
+      setResultView(v);
+      const params = new URLSearchParams(window.location.search);
+      params.set("rview", v);
+      window.history.replaceState(null, "", `?${params.toString()}`);
+    },
+    []
+  );
 
   const changeStatusFilter = useCallback(
     (v: StatusFilter) => {
@@ -231,8 +254,51 @@ export function PicksContent({
         </div>
       </div>
 
-      {/* All Rounds view: grouped by round with collapsible sections */}
-      {isAllRounds ? (
+      {/* View toggle */}
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex gap-1.5 min-w-max">
+          {([
+            { label: "Card View", value: "cards" as ResultView },
+            { label: "Heatmap", value: "heatmap" as ResultView },
+            { label: "Upset Map", value: "upsets" as ResultView },
+          ]).map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => changeResultView(opt.value)}
+              className={`rounded-card px-2.5 py-1 text-xs font-label h-7 transition-colors ${
+                resultView === opt.value
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Heatmap view */}
+      {resultView === "heatmap" && (
+        <GameHeatmap
+          games={games}
+          pickSplits={pickSplits}
+          totalBrackets={totalBrackets}
+          round={round}
+          statusFilter={statusFilter}
+        />
+      )}
+
+      {/* Upset Map view */}
+      {resultView === "upsets" && (
+        <UpsetImpactMap
+          games={games}
+          pickSplits={pickSplits}
+          totalBrackets={totalBrackets}
+        />
+      )}
+
+      {/* Card view: All Rounds grouped by round with collapsible sections */}
+      {resultView === "cards" && (isAllRounds ? (
         <div className="space-y-3">
           {(() => {
             const roundsWithData = ROUND_ORDER.filter((r) => {
@@ -309,6 +375,14 @@ export function PicksContent({
               if (!showRoundHeaders) {
                 return (
                   <div key={r} className="space-y-2">
+                    <div className="pt-3 first:pt-0">
+                      <p className="font-label text-xs font-semibold text-on-surface">
+                        {ROUND_LABELS[r]}
+                      </p>
+                      <span className="text-[10px] text-on-surface-variant">
+                        {rCompleted.length} completed / {rScheduled.length} scheduled
+                      </span>
+                    </div>
                     {renderRoundContent()}
                   </div>
                 );
@@ -394,7 +468,7 @@ export function PicksContent({
             </p>
           )}
         </>
-      )}
+      ))}
 
       {/* Centralized drawer with prev/next navigation */}
       {drawerGame && pickerDetailsMap[drawerGame.game_id] && (
@@ -417,6 +491,19 @@ export function PicksContent({
           <p className="text-xs text-on-surface-variant">
             How many brackets picked each team to win the championship. Click to see who picked each team.
           </p>
+
+          {/* Champion Flow Diagram */}
+          <ChampionSankey
+            distribution={champDistribution.map((e) => ({
+              team: e.name,
+              seed: e.seed,
+              count: e.count,
+              logo: e.logo,
+              alive: e.alive,
+            }))}
+            totalBrackets={totalBrackets}
+          />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {champDistribution.map((entry) => (
               <div
@@ -469,7 +556,8 @@ export function PicksContent({
                   </span>
                 </div>
                 {champDrawerEntry.brackets.map((b) => (
-                  <div key={b.bracketName} className="flex items-center gap-2 py-1.5">
+                  <div key={b.bracketName} className="group flex items-center gap-2 py-1.5">
+                    <CompareCheckbox bracketId={b.bracketId} />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-on-surface truncate">{b.bracketName}</p>
                       {b.fullName && b.fullName !== b.bracketName && (

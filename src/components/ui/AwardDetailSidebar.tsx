@@ -156,6 +156,9 @@ function OracleContent({
         <div className="space-y-2">
           {rounds.length === 1 ? (
             <div className="space-y-2">
+              <div className="pt-2 border-t border-surface-bright">
+                <p className="font-label text-xs font-semibold text-on-surface">{ROUND_LABELS[rounds[0] as Round]}</p>
+              </div>
               {rGames.filter((g) => g.round === rounds[0]).map(renderGame)}
             </div>
           ) : (
@@ -250,7 +253,12 @@ function TrendsetterContent({
   if (groupByRound && rounds) {
     if (rounds.length === 1) {
       return (
-        <div className="space-y-3">{uniquePicks.filter((p) => p.round === rounds[0]).map(renderPick)}</div>
+        <div className="space-y-3">
+          <div className="pt-2 border-t border-surface-bright">
+            <p className="font-label text-xs font-semibold text-on-surface">{ROUND_LABELS[rounds[0] as Round]}</p>
+          </div>
+          {uniquePicks.filter((p) => p.round === rounds[0]).map(renderPick)}
+        </div>
       );
     }
     return (
@@ -437,6 +445,9 @@ function HotStreakContent({
     if (rounds.length === 1) {
       return (
         <div className="space-y-2">
+          <div className="pt-2 border-t border-surface-bright">
+            <p className="font-label text-xs font-semibold text-on-surface">{ROUND_LABELS[rounds[0] as Round]}</p>
+          </div>
           {best.map((p, i) => renderStreakItem(p, i))}
         </div>
       );
@@ -638,6 +649,9 @@ function PeoplesChampionContent({
       {groupByRound ? (
         rounds.length === 1 ? (
           <div className="space-y-2">
+            <div className="pt-2 border-t border-surface-bright">
+              <p className="font-label text-xs font-semibold text-on-surface">{ROUND_LABELS[rounds[0] as Round]}</p>
+            </div>
             {rGames.filter((g) => g.round === rounds[0]).map(renderGameCard)}
           </div>
         ) : (
@@ -791,8 +805,8 @@ export default function AwardDetailSidebar({
     >
       <div className="space-y-4">
         {/* Winner info header with compact prev/next navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 min-w-0">
             {total > 1 && hasPrev && (
               <button onClick={() => setWinnerIdx((i) => i - 1)} className="p-1 hover:bg-surface-bright rounded-lg text-on-surface-variant shrink-0">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -800,7 +814,7 @@ export default function AwardDetailSidebar({
                 </svg>
               </button>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-on-surface font-semibold truncate">{winner.name}</div>
               {winner.fullName && winner.fullName !== winner.name && (
                 <div className="text-xs text-on-surface-variant truncate">{winner.fullName}</div>
@@ -813,15 +827,16 @@ export default function AwardDetailSidebar({
                 </svg>
               </button>
             )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Only show "X of N" when there are multiple winners (not "1 of 1") */}
             {total > 1 && (
-              <span className="text-xs text-on-surface-variant whitespace-nowrap">
+              <span className="text-xs text-on-surface-variant whitespace-nowrap shrink-0">
                 {winnerIdx + 1} of {total}
               </span>
             )}
-            {winner.championPick && (
+          </div>
+          {winner.championPick && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">&#127942;</span>
+              <span className="text-xs text-on-surface-variant">Champion:</span>
               <TeamPill
                 name={winner.championPick}
                 seed={winner.championSeed}
@@ -829,8 +844,8 @@ export default function AwardDetailSidebar({
                 eliminated={winner.championEliminated}
                 showStatus
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
         <p className="text-sm text-on-surface-variant">{winner.stat}</p>
 

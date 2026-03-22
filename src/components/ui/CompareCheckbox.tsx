@@ -16,11 +16,11 @@ function CompareCheckboxInner({ bracketId, className = "" }: CompareCheckboxProp
     <button
       onClick={(e) => { e.stopPropagation(); toggle(bracketId); }}
       className={`
-        w-5 h-5 min-w-[20px] min-h-[20px] rounded-full border flex items-center justify-center
+        w-5 h-5 min-w-[20px] min-h-[20px] rounded-full flex items-center justify-center
         transition-all duration-150 shrink-0
         ${checked
-          ? "bg-secondary border-secondary text-surface opacity-100"
-          : "border-outline-variant sm:opacity-0 sm:group-hover:opacity-100 opacity-40"
+          ? "bg-secondary border border-secondary text-surface opacity-100"
+          : "border-[1.5px] border-outline-variant sm:opacity-0 sm:group-hover:opacity-100 opacity-60 hover:shadow-[0_0_4px_rgba(0,244,254,0.3)]"
         }
         ${className}
       `}
