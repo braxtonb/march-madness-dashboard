@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
+import BracketSearch from "@/components/ui/BracketSearch";
 import { displayName } from "@/lib/constants";
 import type { Bracket } from "@/lib/types";
 
@@ -12,7 +13,6 @@ interface MyBracketBadgeProps {
 export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
   const { myBracketId, setMyBracket } = useMyBracket();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -46,19 +46,23 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
   const pinned = brackets.find((b) => b.id === myBracketId);
   const pinnedRank = pinned ? rankMap.get(pinned.id) : null;
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return brackets
-      .filter((b) => {
-        if (!q) return true;
-        return (
-          b.name.toLowerCase().includes(q) ||
-          b.owner.toLowerCase().includes(q) ||
-          (b.full_name || "").toLowerCase().includes(q)
-        );
-      })
-      .sort((a, b) => b.points - a.points);
-  }, [brackets, search]);
+  const handleSelect = useCallback(
+    (id: string) => {
+      // Toggle: if already pinned, unpin; otherwise pin the new one
+      if (id === myBracketId) {
+        setMyBracket(null);
+      } else {
+        setMyBracket(id);
+      }
+      setOpen(false);
+    },
+    [myBracketId, setMyBracket]
+  );
+
+  const handleClear = useCallback(() => {
+    setMyBracket(null);
+    setOpen(false);
+  }, [setMyBracket]);
 
   if (brackets.length === 0) return null;
 
@@ -66,7 +70,7 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
     <div ref={ref} className="relative">
       {pinned ? (
         <button
-          onClick={() => { setOpen(!open); setSearch(""); }}
+          onClick={() => setOpen(!open)}
           className="flex items-center gap-1.5 rounded-card bg-secondary/10 border border-secondary/20 px-2.5 py-1 text-xs font-label text-secondary hover:bg-secondary/15 transition-colors max-w-[200px]"
           title="My Bracket — click to change"
         >
@@ -80,7 +84,7 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
         </button>
       ) : (
         <button
-          onClick={() => { setOpen(!open); setSearch(""); }}
+          onClick={() => setOpen(!open)}
           className="flex items-center gap-1 rounded-card bg-surface-bright border border-outline-variant px-2.5 py-1 text-xs font-label text-on-surface-variant hover:text-on-surface hover:border-on-surface-variant transition-colors"
           title="Pin your bracket for highlights across all pages"
         >
@@ -93,74 +97,20 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
       )}
 
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-72 max-h-80 bg-surface-container border border-outline-variant rounded-lg shadow-2xl shadow-black/30 z-50 flex flex-col overflow-hidden">
-          {/* Search */}
-          <div className="relative border-b border-outline-variant">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search brackets..."
-              className="w-full px-3 py-2 pl-9 bg-transparent text-on-surface text-xs outline-none placeholder:text-on-surface-variant"
-              autoFocus
-            />
-          </div>
-
-          {/* List */}
-          <div className="overflow-y-auto flex-1">
-            {filtered.map((b) => {
-              const isPinned = b.id === myBracketId;
-              const rank = rankMap.get(b.id);
-              const primary = displayName(b);
-              return (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => {
-                    setMyBracket(isPinned ? null : b.id);
-                    setOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors ${
-                    isPinned ? "bg-secondary/5" : ""
-                  }`}
-                >
-                  <span className="font-label text-on-surface-variant w-6 text-right shrink-0">#{rank}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className={`truncate ${isPinned ? "text-secondary" : "text-on-surface"}`}>{primary}</div>
-                    {primary !== b.name && (
-                      <div className="text-[10px] text-on-surface-variant truncate">{b.name}</div>
-                    )}
-                  </div>
-                  <span className="font-label text-on-surface-variant shrink-0">{b.points} pts</span>
-                  {isPinned && (
-                    <span className="text-secondary text-[10px] shrink-0">Pinned</span>
-                  )}
-                </button>
-              );
-            })}
-            {filtered.length === 0 && (
-              <p className="text-on-surface-variant text-xs text-center py-4">No matches</p>
-            )}
-          </div>
-
-          {/* Clear */}
+        <div className="absolute top-full right-0 mt-1 w-72 bg-surface-container border border-outline-variant rounded-lg shadow-2xl shadow-black/30 z-50 flex flex-col overflow-hidden">
+          <BracketSearch
+            brackets={brackets}
+            mode="select"
+            selectedId={myBracketId ?? undefined}
+            onSelect={handleSelect}
+            onClear={handleClear}
+            placeholder="Search brackets..."
+          />
+          {/* Clear my bracket */}
           {pinned && (
             <button
               type="button"
-              onClick={() => { setMyBracket(null); setOpen(false); }}
+              onClick={handleClear}
               className="px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface border-t border-outline-variant transition-colors"
             >
               Clear my bracket

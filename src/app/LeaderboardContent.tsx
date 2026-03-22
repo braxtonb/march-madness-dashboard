@@ -8,6 +8,7 @@ import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import BracketSearch from "@/components/ui/BracketSearch";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
@@ -232,26 +233,14 @@ function LeaderboardContentInner({
               Tap &#9675; to compare brackets
             </p>
           </div>
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
+          <div className="w-full sm:w-64 mb-3">
+            <BracketSearch
+              brackets={brackets}
+              mode="filter"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={setSearch}
               placeholder="Search brackets..."
-              className="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface text-sm placeholder:text-on-surface-variant/50 outline-none focus:border-secondary/50 mb-3 pr-8"
             />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-2 top-2 text-on-surface-variant/60 hover:text-on-surface transition-colors"
-                aria-label="Clear search"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-            )}
           </div>
           {search && (
             <p className="text-xs text-on-surface-variant mb-2">
