@@ -56,7 +56,43 @@ export function DrilldownTable({
         onChange={(e) => setSearch(e.target.value)}
         className="w-full rounded-card bg-surface-bright px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant outline-none"
       />
-      <div className="overflow-x-auto rounded-card bg-surface-container">
+
+      {/* Mobile card stack */}
+      <div className="sm:hidden space-y-2">
+        {filtered.map((b) => {
+          const a = analytics.get(b.id);
+          const showOwner = b.owner !== b.name;
+          return (
+            <div key={b.id} className="rounded-card bg-surface-container border border-outline-variant p-3 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="shrink-0 w-7 h-7 rounded-full bg-surface-bright flex items-center justify-center">
+                    <span className="font-label text-xs font-bold text-on-surface">{a?.rank ?? "—"}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-body text-sm text-on-surface font-medium truncate">{b.name}</p>
+                    {showOwner && (
+                      <p className="text-[11px] text-on-surface-variant truncate">{b.owner}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-display text-lg font-bold text-on-surface leading-tight">{b.points}</p>
+                  <p className="text-[10px] text-on-surface-variant">Max {b.points + b.max_remaining}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-on-surface-variant uppercase font-label tracking-wide">Champ:</span>
+                <TeamPill name={b.champion_pick} seed={b.champion_seed} eliminated={eliminatedTeams.has(b.champion_pick)} logo={teamLogos[b.champion_pick]} showStatus />
+                <span className="ml-auto text-[10px] text-on-surface-variant font-label">+{b.max_remaining} remaining</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto rounded-card bg-surface-container">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-outline">

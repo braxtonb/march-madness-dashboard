@@ -282,7 +282,7 @@ export function ProbabilityClient({
             const entries = tierGroups.get(tier.key)!;
             if (entries.length === 0) return null;
             return (
-              <div key={tier.key} className="rounded-card bg-surface-container p-5 space-y-3">
+              <div key={tier.key} className="rounded-card bg-surface-container p-4 sm:p-5 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className={`inline-block rounded-card px-2.5 py-1 font-label text-xs font-semibold ${tier.badgeClass}`}>
                     {tier.label}
@@ -295,7 +295,7 @@ export function ProbabilityClient({
                   {entries.map((entry) => (
                     <div
                       key={entry.name}
-                      className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2"
+                      className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2 overflow-hidden"
                     >
                       <div className="min-w-0">
                         <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
@@ -331,11 +331,11 @@ export function ProbabilityClient({
               {showExact ? "Hide Top 10 & Top 25" : "Show Top 10 & Top 25"}
             </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <table className="min-w-[700px] w-full text-sm">
               <thead>
                 <tr className="border-b border-outline">
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
+                  <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Championship chances tier">Tier</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}>Win %{fArrow("probability")}</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 2nd" onClick={() => toggleFinishSort("pct_second")}>2nd %{fArrow("pct_second")}</th>
@@ -356,7 +356,7 @@ export function ProbabilityClient({
                   const tier = TIERS.find((t) => t.key === tierKey)!;
                   return (
                     <tr key={d.name} className="border-b border-outline hover:bg-surface-bright transition-colors">
-                      <td className="px-2 py-2">
+                      <td className="sticky left-0 bg-surface-container z-10 px-2 py-2">
                         <div className="text-on-surface text-xs">{d.name}</div>
                         <div className="text-[10px] text-on-surface-variant">{d.owner}</div>
                       </td>
