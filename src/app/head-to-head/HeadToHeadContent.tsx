@@ -7,6 +7,7 @@ import { RoundSelector } from "@/components/ui/RoundSelector";
 import { TeamPill } from "@/components/ui/TeamPill";
 
 type DiffFilter = "all" | "differences" | "agreement";
+type StatusFilter = "all" | "completed" | "scheduled";
 
 /* ── Custom searchable dropdown ── */
 function BracketDropdown({
@@ -115,6 +116,7 @@ export function HeadToHeadContent({
   const [id1, setId1] = useState("");
   const [id2, setId2] = useState("");
   const [diffFilter, setDiffFilter] = useState<DiffFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedRound, setSelectedRound] = useState<Round>(currentRound);
 
   const b1 = brackets.find((b) => b.id === id1);
@@ -174,23 +176,49 @@ export function HeadToHeadContent({
     return [...ids].sort();
   }, [picks, games, selectedRound, id1, id2]);
 
-  // Apply diff filter on picks-based game list
+  // Compute per-round agreement/difference counts
+  const roundStats = useMemo(() => {
+    const stats: Record<string, { agree: number; diff: number; completed: number; scheduled: number; total: number }> = {};
+    for (const round of ROUND_ORDER) {
+      const ids = new Set<string>();
+      for (const p of picks) {
+        if (p.round === round && (p.bracket_id === id1 || p.bracket_id === id2)) ids.add(p.game_id);
+      }
+      for (const g of games) { if (g.round === round) ids.add(g.game_id); }
+      let ag = 0, df = 0, comp = 0, sched = 0;
+      for (const gid of ids) {
+        const p1 = pickMap1.get(gid), p2 = pickMap2.get(gid);
+        if (p1 === p2) ag++; else df++;
+        const g = gameMap.get(gid);
+        if (g?.completed) comp++; else sched++;
+      }
+      stats[round] = { agree: ag, diff: df, completed: comp, scheduled: sched, total: ids.size };
+    }
+    return stats;
+  }, [picks, games, id1, id2, pickMap1, pickMap2, gameMap]);
+
+  // Apply diff + status filter
   const filteredGameIds = useMemo(() => {
     return roundGameIds.filter((gid) => {
       const pick1 = pickMap1.get(gid);
       const pick2 = pickMap2.get(gid);
       const same = pick1 === pick2;
-      if (diffFilter === "differences") return !same;
-      if (diffFilter === "agreement") return same;
+      if (diffFilter === "differences" && same) return false;
+      if (diffFilter === "agreement" && !same) return false;
+      const g = gameMap.get(gid);
+      if (statusFilter === "completed" && !g?.completed) return false;
+      if (statusFilter === "scheduled" && g?.completed) return false;
       return true;
     });
-  }, [roundGameIds, pickMap1, pickMap2, diffFilter]);
+  }, [roundGameIds, pickMap1, pickMap2, diffFilter, statusFilter, gameMap]);
 
-  const FILTER_OPTIONS: { label: string; value: DiffFilter }[] = [
-    { label: "All Games", value: "all" },
-    { label: "Differences Only", value: "differences" },
-    { label: "Agreement Only", value: "agreement" },
-  ];
+  // Separate filtered games by status for grouping
+  const completedFilteredIds = filteredGameIds.filter((gid) => gameMap.get(gid)?.completed);
+  const scheduledFilteredIds = filteredGameIds.filter((gid) => !gameMap.get(gid)?.completed);
+
+  // Counts for current round
+  const currentRoundAgree = roundStats[selectedRound]?.agree ?? 0;
+  const currentRoundDiff = roundStats[selectedRound]?.diff ?? 0;
 
   return (
     <div className="space-y-4">
@@ -202,20 +230,7 @@ export function HeadToHeadContent({
 
       {b1 && b2 && a1 && a2 ? (
         <>
-          {/* Agreement stat — compact */}
-          <div className="rounded-card bg-surface-container px-4 py-3 flex items-center justify-between">
-            <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-              Agreement
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-3xl font-black text-secondary">
-                {total > 0 ? Math.round((agree / total) * 100) : 0}%
-              </span>
-              <p className="text-on-surface-variant text-xs">
-                {agree}/{total} match
-              </p>
-            </div>
-          </div>
+          {/* Agreement stat — inline subtle */}
 
           {/* Stat comparison cards — compact */}
           <div className="grid grid-cols-2 gap-3">
@@ -272,149 +287,102 @@ export function HeadToHeadContent({
             </div>
           </div>
 
-          {/* Round selector + filter pills */}
-          <div className="flex flex-wrap items-center gap-3">
-            <RoundSelector selected={selectedRound} onSelect={setSelectedRound} />
-            <div className="flex gap-2">
-              {FILTER_OPTIONS.map((opt) => (
+          {/* Round selector with counts */}
+          <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1">
+            {ROUND_ORDER.map((round) => {
+              const stats = roundStats[round];
+              const isActive = selectedRound === round;
+              return (
                 <button
-                  key={opt.value}
-                  onClick={() => setDiffFilter(opt.value)}
-                  className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${
-                    diffFilter === opt.value
+                  key={round}
+                  onClick={() => setSelectedRound(round)}
+                  className={`rounded-card px-2.5 py-1.5 font-label text-[10px] transition-colors ${
+                    isActive
                       ? "bg-primary/15 text-primary border border-primary/30"
                       : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
-                  {opt.label}
+                  <span>{ROUND_LABELS[round]}</span>
+                  {stats && id1 && id2 && (
+                    <span className="ml-1 text-[9px] opacity-70">
+                      {stats.agree}={stats.diff}
+                    </span>
+                  )}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
-          {/* Game cards for the selected round — primary content area */}
+          {/* Filter pills with counts + status filter */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setDiffFilter("all")}
+                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                All ({currentRoundAgree + currentRoundDiff})
+              </button>
+              <button
+                onClick={() => setDiffFilter("agreement")}
+                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                Agreement ({currentRoundAgree})
+              </button>
+              <button
+                onClick={() => setDiffFilter("differences")}
+                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                Differences ({currentRoundDiff})
+              </button>
+            </div>
+            <span className="text-on-surface-variant/30">|</span>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "all" ? "bg-surface-bright text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                All status
+              </button>
+              <button
+                onClick={() => setStatusFilter("completed")}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "completed" ? "bg-surface-bright text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                Completed
+              </button>
+              <button
+                onClick={() => setStatusFilter("scheduled")}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "scheduled" ? "bg-surface-bright text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
+              >
+                Scheduled
+              </button>
+            </div>
+            <span className="text-on-surface-variant text-[10px] ml-auto">
+              Overall: {agree}/{total} agree ({total > 0 ? Math.round((agree / total) * 100) : 0}%)
+            </span>
+          </div>
+
+          {/* Game cards for the selected round — grouped by status */}
           <div className="space-y-2">
             {filteredGameIds.length === 0 && (
               <p className="text-on-surface-variant text-sm text-center py-8">
                 No games match the current filter for {ROUND_LABELS[selectedRound]}.
               </p>
             )}
-            {filteredGameIds.map((gid) => {
-              const g = gameMap.get(gid);
-              const pick1 = pickMap1.get(gid);
-              const pick2 = pickMap2.get(gid);
-              const same = pick1 === pick2;
-              const isComplete = g?.completed ?? false;
-              const pick1Correct = isComplete && !!pick1 && pick1 === g?.winner;
-              const pick2Correct = isComplete && !!pick2 && pick2 === g?.winner;
-
-              // Use game teams if available, otherwise derive from picks
-              const team1 = g?.team1 || "";
-              const team2 = g?.team2 || "";
-              const hasTeams = team1 && team2;
-
-              return (
-                <div
-                  key={gid}
-                  className={`rounded-card p-3 border-l-4 ${
-                    same
-                      ? "border-l-teal-500/30 bg-surface/60"
-                      : "border-l-orange-400/30 bg-surface/60"
-                  }`}
-                >
-                  {/* Game header */}
-                  <div className="mb-2 flex items-center justify-between">
-                    <div>
-                      {hasTeams ? (
-                        <div className="flex items-center gap-1.5">
-                          <TeamPill name={team1} seed={g?.seed1} logo={teamLogos[team1]} />
-                          <span className="text-[10px] text-on-surface-variant">vs</span>
-                          <TeamPill name={team2} seed={g?.seed2} logo={teamLogos[team2]} />
-                        </div>
-                      ) : (
-                        <p className="font-label text-xs text-on-surface-variant">
-                          Game {gid}
-                        </p>
-                      )}
-                      {isComplete && g?.winner && (
-                        <p className="text-[10px] text-secondary mt-0.5">
-                          Winner: {g.winner}
-                        </p>
-                      )}
-                    </div>
-                    {isComplete ? (
-                      <span className="text-[10px] font-label text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
-                        Final
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-label text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
-                        Pending
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Pick columns */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Bracket 1 pick */}
-                    <div
-                      className={`rounded-md px-2.5 py-2 ${
-                        pick1Correct
-                          ? "bg-secondary/10 border border-secondary/40"
-                          : "bg-surface-container"
-                      }`}
-                    >
-                      <p className="text-[10px] font-semibold text-on-surface">{b1.name}</p>
-                      {pick1 ? (
-                        <div className="mt-1">
-                          <TeamPill name={pick1} logo={teamLogos[pick1]} />
-                          {isComplete && (
-                            <p
-                              className={`text-[10px] mt-0.5 ${
-                                pick1Correct
-                                  ? "text-secondary"
-                                  : "text-on-surface-variant"
-                              }`}
-                            >
-                              {pick1Correct ? "Correct" : "Incorrect"}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
-                      )}
-                    </div>
-
-                    {/* Bracket 2 pick */}
-                    <div
-                      className={`rounded-md px-2.5 py-2 ${
-                        pick2Correct
-                          ? "bg-secondary/10 border border-secondary/40"
-                          : "bg-surface-container"
-                      }`}
-                    >
-                      <p className="text-[10px] font-semibold text-on-surface">{b2.name}</p>
-                      {pick2 ? (
-                        <div className="mt-1">
-                          <TeamPill name={pick2} logo={teamLogos[pick2]} />
-                          {isComplete && (
-                            <p
-                              className={`text-[10px] mt-0.5 ${
-                                pick2Correct
-                                  ? "text-secondary"
-                                  : "text-on-surface-variant"
-                              }`}
-                            >
-                              {pick2Correct ? "Correct" : "Incorrect"}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
+            {completedFilteredIds.length > 0 && statusFilter !== "scheduled" && (
+              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
+                Completed ({completedFilteredIds.length})
+              </p>
+            )}
+            {completedFilteredIds.map((gid) => {
+              return renderGameCard(gid);
+            })}
+            {scheduledFilteredIds.length > 0 && statusFilter !== "completed" && completedFilteredIds.length > 0 && (
+              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-3">
+                Scheduled ({scheduledFilteredIds.length})
+              </p>
+            )}
+            {scheduledFilteredIds.map((gid) => {
+              return renderGameCard(gid);
             })}
           </div>
         </>
@@ -426,22 +394,84 @@ export function HeadToHeadContent({
             Compare Two Brackets
           </p>
           <p className="text-on-surface-variant text-sm max-w-md mx-auto">
-            Select two brackets above to see how they stack up. You will get a full
-            breakdown of agreement percentage, side-by-side stats, and pick-by-pick
-            comparisons for every round.
+            Select two brackets above to see how they stack up.
           </p>
-          <div className="flex justify-center gap-6 mt-4 text-xs text-on-surface-variant">
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-3 h-3 rounded-sm border-l-4 border-l-teal-500/30 bg-surface" />
-              Matching picks
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-3 h-3 rounded-sm border-l-4 border-l-orange-400/30 bg-surface" />
-              Different picks
-            </div>
-          </div>
         </div>
       )}
     </div>
   );
+
+  function renderGameCard(gid: string) {
+    const g = gameMap.get(gid);
+    const pick1 = pickMap1.get(gid);
+    const pick2 = pickMap2.get(gid);
+    const same = pick1 === pick2;
+    const isComplete = g?.completed ?? false;
+    const pick1Correct = isComplete && !!pick1 && pick1 === g?.winner;
+    const pick2Correct = isComplete && !!pick2 && pick2 === g?.winner;
+    const team1 = g?.team1 || "";
+    const team2 = g?.team2 || "";
+    const hasTeams = team1 && team2;
+
+    return (
+      <div
+        key={gid}
+        className={`rounded-card p-3 border-l-4 ${
+          same ? "border-l-teal-500/30 bg-surface/60" : "border-l-orange-400/30 bg-surface/60"
+        }`}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            {hasTeams ? (
+              <div className="flex items-center gap-1.5">
+                <TeamPill name={team1} seed={g?.seed1} logo={teamLogos[team1]} />
+                <span className="text-[10px] text-on-surface-variant">vs</span>
+                <TeamPill name={team2} seed={g?.seed2} logo={teamLogos[team2]} />
+              </div>
+            ) : (
+              <p className="font-label text-xs text-on-surface-variant">Matchup TBD</p>
+            )}
+            {isComplete && g?.winner && (
+              <p className="text-[10px] text-secondary mt-0.5">Winner: {g.winner}</p>
+            )}
+          </div>
+          <span className={`text-[10px] font-label bg-surface-container rounded-full px-2 py-0.5 ${isComplete ? "text-secondary" : "text-on-surface-variant"}`}>
+            {isComplete ? "Final" : "Scheduled"}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className={`rounded-md px-2.5 py-2 ${pick1Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
+            <p className="text-[10px] font-semibold text-on-surface">{b1?.name}</p>
+            {pick1 ? (
+              <div className="mt-1">
+                <TeamPill name={pick1} logo={teamLogos[pick1]} />
+                {isComplete && (
+                  <p className={`text-[10px] mt-0.5 ${pick1Correct ? "text-secondary" : "text-on-surface-variant"}`}>
+                    {pick1Correct ? "Correct" : "Incorrect"}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
+            )}
+          </div>
+          <div className={`rounded-md px-2.5 py-2 ${pick2Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
+            <p className="text-[10px] font-semibold text-on-surface">{b2?.name}</p>
+            {pick2 ? (
+              <div className="mt-1">
+                <TeamPill name={pick2} logo={teamLogos[pick2]} />
+                {isComplete && (
+                  <p className={`text-[10px] mt-0.5 ${pick2Correct ? "text-secondary" : "text-on-surface-variant"}`}>
+                    {pick2Correct ? "Correct" : "Incorrect"}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
