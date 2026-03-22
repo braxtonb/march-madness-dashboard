@@ -1,13 +1,20 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import type { Game, Round } from "@/lib/types";
 import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
+
+interface BustedBracketInfo {
+  name: string;
+  fullName: string;
+}
 
 interface UpsetImpactMapProps {
   games: Game[];
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
   totalBrackets: number;
+  /** Optional: bracket names who picked the losing team per game. Key = game_id */
+  bustedBracketsMap?: Record<string, BustedBracketInfo[]>;
 }
 
 interface UpsetData {
@@ -20,6 +27,7 @@ interface UpsetData {
   loserSeed: number;
   seedDiff: number;
   bustedCount: number;
+  score?: string;
 }
 
 const ROUND_COLORS: Record<string, string> = {
@@ -31,9 +39,23 @@ const ROUND_COLORS: Record<string, string> = {
   CHAMP: "#f43f5e",
 };
 
-export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpactMapProps) {
+export function UpsetImpactMap({ games, pickSplits, totalBrackets, bustedBracketsMap }: UpsetImpactMapProps) {
+  const [selectedUpset, setSelectedUpset] = useState<string | null>(null);
   const [hoveredUpset, setHoveredUpset] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!selectedUpset) return;
+    function handleClick(e: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setSelectedUpset(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [selectedUpset]);
 
   const upsets = useMemo(() => {
     const results: UpsetData[] = [];
@@ -80,6 +102,24 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
     [upsets]
   );
 
+  // Determine the top N most impactful upsets per round for labeling
+  const labeledUpsets = useMemo(() => {
+    const labeled = new Set<string>();
+    for (const r of activeRounds) {
+      const roundUpsets = upsets
+        .filter((u) => u.round === r)
+        .sort((a, b) => b.bustedCount - a.bustedCount);
+      // Label top 2 per round (or top 1 if few)
+      const topN = Math.min(2, roundUpsets.length);
+      for (let i = 0; i < topN; i++) {
+        if (roundUpsets[i].bustedCount > 0) {
+          labeled.add(roundUpsets[i].gameId);
+        }
+      }
+    }
+    return labeled;
+  }, [upsets, activeRounds]);
+
   const handleMouseMove = useCallback((e: React.MouseEvent<SVGElement>) => {
     const svg = e.currentTarget.closest("svg");
     if (!svg) return;
@@ -98,19 +138,19 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
     );
   }
 
-  // Chart dimensions
-  const padding = { top: 30, right: 30, bottom: 50, left: 60 };
-  const chartWidth = 700;
-  const chartHeight = 400;
+  // Chart dimensions - compact
+  const padding = { top: 30, right: 20, bottom: 50, left: 50 };
+  const chartWidth = 550;
+  const chartHeight = 380;
   const plotWidth = chartWidth - padding.left - padding.right;
   const plotHeight = chartHeight - padding.top - padding.bottom;
 
-  // Scales
+  // Scales — use column-based layout with even spacing
+  const colWidth = activeRounds.length > 1 ? plotWidth / activeRounds.length : plotWidth;
   const xScale = (roundIdx: number) => {
-    if (activeRounds.length <= 1) return plotWidth / 2;
     const idx = activeRounds.indexOf(ROUND_ORDER[roundIdx]);
     if (idx < 0) return 0;
-    return (idx / (activeRounds.length - 1)) * plotWidth;
+    return (idx + 0.5) * colWidth;
   };
 
   const yScale = (seedDiff: number) => {
@@ -118,19 +158,21 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
   };
 
   const sizeScale = (busted: number) => {
-    const minR = 8;
-    const maxR = 35;
+    const minR = 6;
+    const maxR = 30;
     return minR + (busted / maxBusted) * (maxR - minR);
   };
 
   const hoveredData = hoveredUpset ? upsets.find((u) => u.gameId === hoveredUpset) : null;
+  const selectedData = selectedUpset ? upsets.find((u) => u.gameId === selectedUpset) : null;
+  const selectedBrackets = selectedUpset && bustedBracketsMap ? bustedBracketsMap[selectedUpset] : null;
 
   return (
     <div className="rounded-card bg-surface-container p-4 space-y-3">
       <div>
         <h4 className="font-display text-sm font-semibold text-on-surface">Upset Impact Map</h4>
         <p className="text-[10px] text-on-surface-variant">
-          Bubble size = brackets busted. Higher = more surprising upset.
+          Bubble size = brackets busted. Higher = more surprising upset. Click a bubble for details.
         </p>
       </div>
 
@@ -148,7 +190,7 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
       </div>
 
       <div className="overflow-x-auto -mx-4 px-4">
-        <div className="relative min-w-[500px]">
+        <div className="relative max-w-xl mx-auto">
           <svg
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             className="w-full h-auto"
@@ -183,9 +225,22 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
                 );
               })}
 
+              {/* Column backgrounds for each round */}
+              {activeRounds.map((r, i) => (
+                <rect
+                  key={r}
+                  x={i * colWidth}
+                  y={0}
+                  width={colWidth}
+                  height={plotHeight}
+                  fill={ROUND_COLORS[r] || "#666"}
+                  fillOpacity={0.03}
+                />
+              ))}
+
               {/* X axis labels */}
               {activeRounds.map((r, i) => {
-                const x = activeRounds.length <= 1 ? plotWidth / 2 : (i / (activeRounds.length - 1)) * plotWidth;
+                const x = (i + 0.5) * colWidth;
                 return (
                   <text
                     key={r}
@@ -219,6 +274,9 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
                 const r = sizeScale(u.bustedCount);
                 const color = ROUND_COLORS[u.round] || "#666";
                 const isHovered = hoveredUpset === u.gameId;
+                const isSelected = selectedUpset === u.gameId;
+                const isHighlighted = isHovered || isSelected;
+                const showLabel = labeledUpsets.has(u.gameId);
 
                 return (
                   <g key={u.gameId}>
@@ -227,15 +285,17 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
                       cy={cy}
                       r={r}
                       fill={color}
-                      fillOpacity={isHovered ? 0.9 : 0.5}
+                      fillOpacity={isHighlighted ? 0.9 : 0.5}
                       stroke={color}
-                      strokeWidth={isHovered ? 2 : 1}
-                      strokeOpacity={isHovered ? 1 : 0.7}
+                      strokeWidth={isHighlighted ? 2.5 : 1}
+                      strokeOpacity={isHighlighted ? 1 : 0.7}
                       className="transition-all duration-150 cursor-pointer"
                       onMouseEnter={() => setHoveredUpset(u.gameId)}
                       onMouseLeave={() => setHoveredUpset(null)}
+                      onClick={() => setSelectedUpset(selectedUpset === u.gameId ? null : u.gameId)}
                     />
-                    {r >= 16 && (
+                    {/* Busted count inside large bubbles */}
+                    {r >= 14 && (
                       <text
                         x={cx}
                         y={cy + 3.5}
@@ -246,14 +306,26 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
                         {u.bustedCount}
                       </text>
                     )}
+                    {/* Team name label for top upsets */}
+                    {showLabel && (
+                      <text
+                        x={cx}
+                        y={cy - r - 4}
+                        textAnchor="middle"
+                        className="fill-on-surface-variant text-[9px] pointer-events-none"
+                        style={{ fontSize: "9px" }}
+                      >
+                        ({u.winnerSeed}) {u.winnerName}
+                      </text>
+                    )}
                   </g>
                 );
               })}
             </g>
           </svg>
 
-          {/* Tooltip */}
-          {hoveredData && (
+          {/* Hover tooltip */}
+          {hoveredData && !selectedUpset && (
             <div
               className="absolute pointer-events-none z-20 bg-surface-bright border border-outline-variant rounded-lg px-3 py-2 shadow-lg text-xs"
               style={{
@@ -270,6 +342,64 @@ export function UpsetImpactMap({ games, pickSplits, totalBrackets }: UpsetImpact
               <p className="text-error mt-0.5">
                 Busted {hoveredData.bustedCount} of {totalBrackets} brackets
               </p>
+              <p className="text-on-surface-variant/60 mt-1 text-[10px]">Click for details</p>
+            </div>
+          )}
+
+          {/* Click popover with bracket list */}
+          {selectedData && (
+            <div
+              ref={popoverRef}
+              className="absolute z-30 bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 shadow-xl text-xs w-64"
+              style={{
+                left: Math.min(
+                  Math.max(8, ((xScale(selectedData.roundIndex) + padding.left) / chartWidth) * 100 * 5.5 / 100),
+                  280
+                ),
+                top: Math.max(8, ((yScale(selectedData.seedDiff) + padding.top) / chartHeight) * 100 * 3.8 / 100 - 20),
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-semibold text-on-surface">
+                  ({selectedData.winnerSeed}) {selectedData.winnerName}
+                </p>
+                <button
+                  onClick={() => setSelectedUpset(null)}
+                  className="text-on-surface-variant hover:text-on-surface p-0.5"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <p className="text-on-surface-variant">
+                upset ({selectedData.loserSeed}) {selectedData.loserName}
+              </p>
+              <p className="text-on-surface-variant mt-1">
+                {ROUND_LABELS[selectedData.round]} &middot; Seed diff: {selectedData.seedDiff}
+              </p>
+              <p className="text-error mt-1 font-semibold">
+                Busted {selectedData.bustedCount} of {totalBrackets} brackets
+              </p>
+
+              {selectedBrackets && selectedBrackets.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-outline-variant/30">
+                  <p className="text-on-surface-variant text-[10px] font-label mb-1">Affected brackets:</p>
+                  <div className="max-h-32 overflow-y-auto space-y-0.5">
+                    {selectedBrackets.map((b, i) => (
+                      <div key={i} className="text-[11px] text-on-surface truncate">
+                        {b.name}
+                        {b.fullName && b.fullName !== b.name && (
+                          <span className="text-on-surface-variant ml-1">({b.fullName})</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {!selectedBrackets && (
+                <p className="text-on-surface-variant/50 text-[10px] mt-2 italic">
+                  Bracket details not available
+                </p>
+              )}
             </div>
           )}
         </div>

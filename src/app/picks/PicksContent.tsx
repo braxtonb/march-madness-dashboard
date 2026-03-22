@@ -179,6 +179,23 @@ export function PicksContent({
     ? champDistribution.find((e) => e.name === champDrawerTeam)
     : null;
 
+  // Build busted brackets map for upset impact map tooltips
+  const bustedBracketsMap = useMemo(() => {
+    const map: Record<string, { name: string; fullName: string }[]> = {};
+    for (const game of games) {
+      if (!game.completed || !game.winner) continue;
+      const loserIsTeam1 = game.winner !== game.team1;
+      const details = pickerDetailsMap[game.game_id];
+      if (!details) continue;
+      const bustedPickers = loserIsTeam1 ? details.team1Pickers : details.team2Pickers;
+      map[game.game_id] = bustedPickers.map((p) => ({
+        name: p.name,
+        fullName: p.full_name,
+      }));
+    }
+    return map;
+  }, [games, pickerDetailsMap]);
+
   // Drawer state — managed here for cross-game navigation
   const [drawerGameId, setDrawerGameId] = useState<string | null>(null);
 
@@ -293,6 +310,7 @@ export function PicksContent({
           games={games}
           pickSplits={pickSplits}
           totalBrackets={totalBrackets}
+          bustedBracketsMap={bustedBracketsMap}
         />
       )}
 

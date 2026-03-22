@@ -46,7 +46,7 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
           <button
             key={g.gameId}
             onClick={() => setSelectedGameIdx(idx)}
-            className="rounded-card bg-surface-bright p-4 text-left space-y-2 hover:bg-surface-bright/80 transition-colors cursor-pointer w-full"
+            className="group rounded-card bg-surface-bright p-4 text-left space-y-2 hover:bg-surface-bright/80 transition-colors cursor-pointer w-full"
           >
             <div className="flex items-center justify-between text-sm">
               <span className="text-on-surface flex items-center gap-1.5">
@@ -54,19 +54,22 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
                 <span className="text-[10px] text-on-surface-variant">vs</span>
                 <TeamPill name={g.team2} seed={g.seed2} logo={teamLogos[g.team2]} />
               </span>
-              <span className="shrink-0 ml-2 flex items-center gap-1.5">
-                <span className="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">
+              <span className="shrink-0 ml-2">
+                <span className="inline-block rounded-card px-2 py-0.5 font-label text-[10px] bg-tertiary/15 text-tertiary">
                   {ROUND_LABELS[g.round as Round] ?? g.round}
                 </span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M15 3v18" />
-                </svg>
               </span>
             </div>
             <p className="text-xs text-on-surface-variant">
               Affects {g.affectedCount} bracket{g.affectedCount !== 1 ? "s" : ""}&apos; champion hopes
             </p>
+            <span className="flex items-center gap-1 text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M15 3v18" />
+              </svg>
+              Show details
+            </span>
           </button>
         );
       })}

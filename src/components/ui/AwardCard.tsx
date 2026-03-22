@@ -83,14 +83,15 @@ export function AwardCard({
             {award.winners.length}-way tie &mdash; {firstWinner.stat}
           </p>
 
-          {/* Sidebar icon */}
+          {/* Show details link */}
           {onClick && (
             <div className="flex justify-end">
-              <span className="text-on-surface-variant">
+              <span className="flex items-center gap-1 text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <path d="M15 3v18" />
                 </svg>
+                Show details
               </span>
             </div>
           )}
@@ -105,21 +106,24 @@ export function AwardCard({
                 <p className="text-xs text-on-surface-variant">{firstWinner.fullName}</p>
               )}
             </div>
-            {/* Sidebar icon */}
-            {onClick && (
-              <span className="text-on-surface-variant shrink-0 mt-1">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M15 3v18" />
-                </svg>
-              </span>
-            )}
           </div>
           <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
           {firstWinner.championPick && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
               <span className="inline-flex items-center gap-1">{"\uD83C\uDFC6"} Champion</span>: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
             </p>
+          )}
+          {/* Show details link */}
+          {onClick && (
+            <div className="flex justify-end">
+              <span className="flex items-center gap-1 text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M15 3v18" />
+                </svg>
+                Show details
+              </span>
+            </div>
           )}
         </>
       )}

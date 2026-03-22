@@ -68,6 +68,10 @@ function teamSeed(teams: Team[], name: string) {
   return teams.find((t) => t.name === name)?.seed;
 }
 
+function teamEliminated(teams: Team[], name: string) {
+  return teams.find((t) => t.name === name)?.eliminated ?? false;
+}
+
 function roundGamesForRound(games: Game[], round: string): Game[] {
   if (round === "ALL") return games.filter((g) => g.completed);
   return games.filter((g) => g.round === round && g.completed);
@@ -133,13 +137,13 @@ function OracleContent({
         className="flex items-center justify-between rounded-lg bg-surface-bright/50 px-3 py-2"
       >
         <div className="flex items-center gap-1.5 flex-wrap">
-          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} />
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
           <span className="text-[10px] text-on-surface-variant">vs</span>
-          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} />
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">
           {pick && (
-            <span className="text-xs text-on-surface-variant">{pick.team_picked}</span>
+            <TeamPill name={pick.team_picked} seed={pick.seed_picked} logo={teamLogo(teams, pick.team_picked)} eliminated={teamEliminated(teams, pick.team_picked)} />
           )}
           <span className={isCorrect ? "text-secondary" : "text-error"}>
             {isCorrect ? "\u2713" : "\u00d7"}
@@ -244,7 +248,7 @@ function TrendsetterContent({
     return (
       <div key={p.game_id} className="space-y-1 rounded-lg bg-surface-bright/50 px-3 py-2">
         <div className="flex items-center gap-2">
-          <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} />
+          <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} eliminated={teamEliminated(teams, p.team_picked)} />
           <span className="text-[10px] text-on-surface-variant">Only {Math.round(rate * 100)}% picked this</span>
         </div>
         <PickRateBar rate={rate} />
@@ -432,9 +436,9 @@ function HotStreakContent({
         <span className="text-sm font-display font-bold text-secondary w-6 text-center shrink-0">{idx + 1}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} />
+            <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
             <span className="text-[10px] text-on-surface-variant">vs</span>
-            <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} />
+            <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
           </div>
           <p className="text-[10px] text-on-surface-variant mt-0.5">{ROUND_LABELS[g.round as Round]}</p>
         </div>
@@ -546,12 +550,14 @@ function DiamondContent({
               name={g.team1}
               seed={g.seed1}
               logo={teamLogo(teams, g.team1)}
+              eliminated={teamEliminated(teams, g.team1)}
             />
             <span className="text-[10px] text-on-surface-variant">vs</span>
             <TeamPill
               name={g.team2}
               seed={g.seed2}
               logo={teamLogo(teams, g.team2)}
+              eliminated={teamEliminated(teams, g.team2)}
             />
           </div>
         </div>
@@ -563,6 +569,7 @@ function DiamondContent({
           name={bestPick.team_picked}
           seed={bestPick.seed_picked}
           logo={teamLogo(teams, bestPick.team_picked)}
+          eliminated={teamEliminated(teams, bestPick.team_picked)}
         />
       </div>
 
@@ -636,9 +643,9 @@ function PeoplesChampionContent({
         }`}
       >
         <div className="flex items-center gap-1.5 flex-wrap">
-          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} />
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
           <span className="text-[10px] text-on-surface-variant">vs</span>
-          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} />
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
         </div>
         <div className="flex items-center justify-between mt-1 text-[10px]">
           <span className="text-on-surface-variant">Most popular: {plurality}</span>
