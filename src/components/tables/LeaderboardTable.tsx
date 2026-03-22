@@ -98,17 +98,13 @@ export function LeaderboardTable({
                   <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
                 </td>
                 <td className="px-2 py-2">
-                  <div className="flex items-center gap-1">
-                    <TeamPill
-                      name={b.champion_pick}
-                      seed={b.champion_seed}
-                      eliminated={champEliminated}
-                      logo={teamLogos[b.champion_pick]}
-                    />
-                    {!champEliminated && b.champion_pick && (
-                      <span className="inline-block h-1.5 w-1.5 rounded-full bg-secondary" />
-                    )}
-                  </div>
+                  <TeamPill
+                    name={b.champion_pick}
+                    seed={b.champion_seed}
+                    eliminated={champEliminated}
+                    logo={teamLogos[b.champion_pick]}
+                    showStatus
+                  />
                 </td>
                 <td className="px-2 py-2 font-label text-on-surface font-semibold">
                   {b.points}

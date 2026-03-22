@@ -4,13 +4,15 @@ export function TeamPill({
   seed,
   eliminated = false,
   logo,
+  showStatus = false,
 }: {
   name: string;
   seed?: number;
   eliminated?: boolean;
   logo?: string;
+  /** Show alive/eliminated indicator inside the pill */
+  showStatus?: boolean;
 }) {
-  // Empty/unsubmitted bracket — show N/A
   if (!name) {
     return (
       <span className="inline-flex items-center rounded-full bg-surface-bright px-2.5 py-1 text-xs font-label text-on-surface-variant/50 italic">
@@ -41,6 +43,12 @@ export function TeamPill({
         <span className="text-on-surface-variant">{seed}</span>
       )}
       <span>{name}</span>
+      {showStatus && !eliminated && (
+        <span className="inline-block h-2 w-2 rounded-full bg-secondary shrink-0" title="Still alive" />
+      )}
+      {showStatus && eliminated && (
+        <span className="inline-block h-2 w-2 rounded-full bg-on-surface-variant/30 shrink-0" title="Eliminated" />
+      )}
     </span>
   );
 }

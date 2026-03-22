@@ -74,6 +74,7 @@ export function DrilldownTable({
                       seed={b.champion_seed}
                       eliminated={eliminatedTeams.has(b.champion_pick)}
                       logo={teamLogos[b.champion_pick]}
+                      showStatus
                     />
                   </td>
                   <td className="px-3 py-2 font-label">{b.points}</td>
