@@ -35,6 +35,19 @@ export function PicksContent({
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  type PageTab = "results" | "champions";
+  const initialPageTab = (searchParams.get("view") as PageTab) || "results";
+  const [pageTab, setPageTab] = useState<PageTab>(
+    initialPageTab === "champions" ? "champions" : "results"
+  );
+
+  function changePageTab(t: PageTab) {
+    setPageTab(t);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", t);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+
   const VALID_ROUNDS: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
   const initialRound = (() => {
     const param = searchParams.get("round");
@@ -118,8 +131,23 @@ export function PicksContent({
     }
   }
 
+  const TAB_ACTIVE = "bg-primary/15 text-primary border border-primary/30 rounded-card px-3 py-1.5 text-sm font-label";
+  const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface rounded-card px-3 py-1.5 text-sm font-label";
+
   return (
     <div className="space-y-section">
+      {/* Page-level tabs */}
+      <div className="flex gap-2">
+        <button onClick={() => changePageTab("results")} className={pageTab === "results" ? TAB_ACTIVE : TAB_INACTIVE}>
+          Game Results
+        </button>
+        <button onClick={() => changePageTab("champions")} className={pageTab === "champions" ? TAB_ACTIVE : TAB_INACTIVE}>
+          Champion Distribution
+        </button>
+      </div>
+
+      {pageTab === "results" && (
+      <div className="space-y-section">
       <div className="flex flex-wrap items-center gap-3">
         <RoundSelector selected={round} onSelect={changeRound} />
         <div className="flex gap-1.5">
@@ -193,15 +221,31 @@ export function PicksContent({
         </p>
       )}
 
-      {/* Champion Distribution */}
-      {champDistribution.length > 0 && (
-        <div className="rounded-card bg-surface-container p-5 space-y-4">
-          <h3 className="font-display text-lg font-semibold">Champion Distribution</h3>
+      {/* Centralized drawer with prev/next navigation */}
+      {drawerGame && pickerDetailsMap[drawerGame.game_id] && (
+        <PicksDrawer
+          game={drawerGame}
+          pickerDetails={pickerDetailsMap[drawerGame.game_id]}
+          onClose={() => setDrawerGameId(null)}
+          teamLogos={teamLogos}
+          onPrev={drawerIdx > 0 ? () => navigateDrawer(-1) : undefined}
+          onNext={drawerIdx < filteredGames.length - 1 ? () => navigateDrawer(1) : undefined}
+        />
+      )}
+      </div>
+      )}
+
+      {/* Champion Distribution tab */}
+      {pageTab === "champions" && champDistribution.length > 0 && (
+        <div className="space-y-4">
+          <p className="text-xs text-on-surface-variant">
+            How many brackets picked each team to win the championship. Green dot = still alive.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {champDistribution.map((entry) => (
               <div
                 key={entry.name}
-                className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2"
+                className="flex items-center justify-between rounded-card bg-surface-container px-3 py-2.5"
               >
                 <TeamPill
                   name={entry.name}
@@ -216,18 +260,6 @@ export function PicksContent({
             ))}
           </div>
         </div>
-      )}
-
-      {/* Centralized drawer with prev/next navigation */}
-      {drawerGame && pickerDetailsMap[drawerGame.game_id] && (
-        <PicksDrawer
-          game={drawerGame}
-          pickerDetails={pickerDetailsMap[drawerGame.game_id]}
-          onClose={() => setDrawerGameId(null)}
-          teamLogos={teamLogos}
-          onPrev={drawerIdx > 0 ? () => navigateDrawer(-1) : undefined}
-          onNext={drawerIdx < filteredGames.length - 1 ? () => navigateDrawer(1) : undefined}
-        />
       )}
     </div>
   );
