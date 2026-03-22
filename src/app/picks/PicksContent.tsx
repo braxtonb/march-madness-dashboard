@@ -63,7 +63,22 @@ export function PicksContent({
   }, [searchParams, round]);
 
   type StatusFilter = "all" | "completed" | "scheduled";
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const initialStatus = (() => {
+    const param = searchParams.get("status");
+    if (param && ["all", "completed", "scheduled"].includes(param)) return param as StatusFilter;
+    return "all" as StatusFilter;
+  })();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
+
+  const changeStatusFilter = useCallback(
+    (v: StatusFilter) => {
+      setStatusFilter(v);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("status", v);
+      updateUrl(params);
+    },
+    [searchParams, updateUrl]
+  );
 
   const roundGames = games.filter((g) => g.round === round);
   const completedGames = roundGames.filter((g) => g.completed);
@@ -93,9 +108,6 @@ export function PicksContent({
     }
   }
 
-  // Group by status for display
-  const showGrouped = statusFilter === "all" && completedGames.length > 0 && scheduledGames.length > 0;
-
   return (
     <div className="space-y-section">
       <div className="flex flex-wrap items-center gap-3">
@@ -108,7 +120,7 @@ export function PicksContent({
           ]).map((opt) => (
             <button
               key={opt.value}
-              onClick={() => setStatusFilter(opt.value)}
+              onClick={() => changeStatusFilter(opt.value)}
               className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${
                 statusFilter === opt.value
                   ? "bg-primary/15 text-primary border border-primary/30"
@@ -122,64 +134,47 @@ export function PicksContent({
       </div>
 
       {/* Completed games */}
-      {showGrouped && completedGames.length > 0 && (
-        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-          Completed ({completedGames.length})
-        </p>
-      )}
-      {(statusFilter === "all" || statusFilter === "completed") && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(statusFilter === "completed" ? completedGames : showGrouped ? completedGames : []).map((game) => (
-            <GameCard
-              key={game.game_id}
-              game={game}
-              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-              totalBrackets={totalBrackets}
-              pickerDetails={pickerDetailsMap[game.game_id]}
-              teamLogos={teamLogos}
-              onOpenDrawer={() => openDrawer(game.game_id)}
-            />
-          ))}
-        </div>
+      {(statusFilter === "all" || statusFilter === "completed") && completedGames.length > 0 && (
+        <>
+          <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+            Completed ({completedGames.length})
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {completedGames.map((game) => (
+              <GameCard
+                key={game.game_id}
+                game={game}
+                pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                totalBrackets={totalBrackets}
+                pickerDetails={pickerDetailsMap[game.game_id]}
+                teamLogos={teamLogos}
+                onOpenDrawer={() => openDrawer(game.game_id)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {/* Scheduled games */}
-      {showGrouped && scheduledGames.length > 0 && (
-        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
-          Scheduled ({scheduledGames.length})
-        </p>
-      )}
-      {(statusFilter === "all" || statusFilter === "scheduled") && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(statusFilter === "scheduled" ? scheduledGames : showGrouped ? scheduledGames : []).map((game) => (
-            <GameCard
-              key={game.game_id}
-              game={game}
-              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-              totalBrackets={totalBrackets}
-              pickerDetails={pickerDetailsMap[game.game_id]}
-              teamLogos={teamLogos}
-              onOpenDrawer={() => openDrawer(game.game_id)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Non-grouped view (when not splitting by status) */}
-      {!showGrouped && statusFilter === "all" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {roundGames.map((game) => (
-            <GameCard
-              key={game.game_id}
-              game={game}
-              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-              totalBrackets={totalBrackets}
-              pickerDetails={pickerDetailsMap[game.game_id]}
-              teamLogos={teamLogos}
-              onOpenDrawer={() => openDrawer(game.game_id)}
-            />
-          ))}
-        </div>
+      {(statusFilter === "all" || statusFilter === "scheduled") && scheduledGames.length > 0 && (
+        <>
+          <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
+            Scheduled ({scheduledGames.length})
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {scheduledGames.map((game) => (
+              <GameCard
+                key={game.game_id}
+                game={game}
+                pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                totalBrackets={totalBrackets}
+                pickerDetails={pickerDetailsMap[game.game_id]}
+                teamLogos={teamLogos}
+                onOpenDrawer={() => openDrawer(game.game_id)}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {roundGames.length === 0 && (

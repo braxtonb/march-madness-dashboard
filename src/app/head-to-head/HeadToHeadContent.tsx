@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { Bracket, Pick, Game, BracketAnalytics, Round, Team } from "@/lib/types";
 import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { TeamPill } from "@/components/ui/TeamPill";
+import { GameHeader } from "@/components/ui/GameHeader";
 
 type DiffFilter = "all" | "differences" | "agreement";
 type StatusFilter = "all" | "completed" | "scheduled";
@@ -119,11 +121,48 @@ export function HeadToHeadContent({
   currentRound: Round;
   teams?: Team[];
 }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const initialDiffFilter = (searchParams.get("filter") as DiffFilter) || "all";
+  const initialStatusFilter = (searchParams.get("status") as StatusFilter) || "all";
+  const initialRound = (() => {
+    const param = searchParams.get("round") as Round | null;
+    if (param && ROUND_ORDER.includes(param)) return param;
+    return currentRound;
+  })();
+
   const [id1, setId1] = useState("");
   const [id2, setId2] = useState("");
-  const [diffFilter, setDiffFilter] = useState<DiffFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [selectedRound, setSelectedRound] = useState<Round>(currentRound);
+  const [diffFilter, setDiffFilter] = useState<DiffFilter>(
+    ["all", "differences", "agreement"].includes(initialDiffFilter) ? initialDiffFilter : "all"
+  );
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    ["all", "completed", "scheduled"].includes(initialStatusFilter) ? initialStatusFilter : "all"
+  );
+  const [selectedRound, setSelectedRound] = useState<Round>(initialRound);
+
+  const updateUrl = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(key, value);
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router]
+  );
+
+  function changeDiffFilter(v: DiffFilter) {
+    setDiffFilter(v);
+    updateUrl("filter", v);
+  }
+  function changeStatusFilter(v: StatusFilter) {
+    setStatusFilter(v);
+    updateUrl("status", v);
+  }
+  function changeRound(v: Round) {
+    setSelectedRound(v);
+    updateUrl("round", v);
+  }
 
   const b1 = brackets.find((b) => b.id === id1);
   const b2 = brackets.find((b) => b.id === id2);
@@ -301,7 +340,7 @@ export function HeadToHeadContent({
               return (
                 <button
                   key={round}
-                  onClick={() => setSelectedRound(round)}
+                  onClick={() => changeRound(round)}
                   className={`rounded-card px-2.5 py-1.5 font-label text-[10px] transition-colors ${
                     isActive
                       ? "bg-primary/15 text-primary border border-primary/30"
@@ -318,19 +357,19 @@ export function HeadToHeadContent({
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex gap-1.5">
               <button
-                onClick={() => setDiffFilter("all")}
+                onClick={() => changeDiffFilter("all")}
                 className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All ({currentRoundAgree + currentRoundDiff})
               </button>
               <button
-                onClick={() => setDiffFilter("agreement")}
+                onClick={() => changeDiffFilter("agreement")}
                 className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Agreement ({currentRoundAgree})
               </button>
               <button
-                onClick={() => setDiffFilter("differences")}
+                onClick={() => changeDiffFilter("differences")}
                 className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Differences ({currentRoundDiff})
@@ -339,20 +378,20 @@ export function HeadToHeadContent({
             <span className="text-on-surface-variant/30">|</span>
             <div className="flex gap-1.5">
               <button
-                onClick={() => setStatusFilter("all")}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "all" ? "bg-surface-bright text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
+                onClick={() => changeStatusFilter("all")}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All status
               </button>
               <button
-                onClick={() => setStatusFilter("completed")}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "completed" ? "bg-surface-bright text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
+                onClick={() => changeStatusFilter("completed")}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Completed
               </button>
               <button
-                onClick={() => setStatusFilter("scheduled")}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "scheduled" ? "bg-surface-bright text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
+                onClick={() => changeStatusFilter("scheduled")}
+                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Scheduled
               </button>
@@ -410,10 +449,6 @@ export function HeadToHeadContent({
     const isComplete = g?.completed ?? false;
     const pick1Correct = isComplete && !!pick1 && pick1 === g?.winner;
     const pick2Correct = isComplete && !!pick2 && pick2 === g?.winner;
-    const team1 = g?.team1 || "";
-    const team2 = g?.team2 || "";
-    const hasTeams = team1 && team2;
-
     return (
       <div
         key={gid}
@@ -421,24 +456,18 @@ export function HeadToHeadContent({
           same ? "border-l-teal-500/30 bg-surface-container" : "border-l-orange-400/30 bg-surface-container"
         }`}
       >
-        <div className="mb-2 flex items-center justify-between">
-          <div>
-            {hasTeams ? (
-              <div className="flex items-center gap-1.5">
-                <TeamPill name={team1} seed={g?.seed1} logo={teamLogos[team1]} />
-                <span className="text-[10px] text-on-surface-variant">vs</span>
-                <TeamPill name={team2} seed={g?.seed2} logo={teamLogos[team2]} />
-              </div>
-            ) : (
-              <p className="font-label text-xs text-on-surface-variant">Matchup TBD</p>
-            )}
-            {isComplete && g?.winner && (
-              <p className="text-[10px] text-secondary mt-0.5">Winner: {g.winner}</p>
-            )}
-          </div>
-          <span className={`text-[10px] font-label bg-surface-container rounded-full px-2 py-0.5 ${isComplete ? "text-secondary" : "text-on-surface-variant"}`}>
-            {isComplete ? "Final" : "Scheduled"}
-          </span>
+        <div className="mb-2">
+          <GameHeader
+            game={{
+              team1: g?.team1 || "",
+              seed1: g?.seed1 ?? 0,
+              team2: g?.team2 || "",
+              seed2: g?.seed2 ?? 0,
+              completed: isComplete,
+              winner: g?.winner || "",
+            }}
+            teamLogos={teamLogos}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-md px-2.5 py-2 ${pick1Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>

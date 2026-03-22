@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Game } from "@/lib/types";
 import { TeamPill } from "./TeamPill";
+import { GameHeader } from "./GameHeader";
 
 export interface PickerInfo {
   name: string;   // bracket name (primary)
@@ -219,11 +220,7 @@ export function GameCard({
   return (
     <>
       <div className="rounded-card bg-surface-container p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} />
-          <span className="text-xs text-on-surface-variant">vs</span>
-          <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} />
-        </div>
+        <GameHeader game={game} teamLogos={teamLogos} />
 
         <div className="flex h-3 rounded-full overflow-hidden bg-surface-bright">
           <div
