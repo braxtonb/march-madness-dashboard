@@ -7,6 +7,7 @@ import { fetchDashboardData } from "@/lib/sheets";
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
   description: "March Madness bracket analytics dashboard",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default async function RootLayout({

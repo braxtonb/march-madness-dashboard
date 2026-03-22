@@ -62,7 +62,18 @@ export function PicksContent({
     }
   }, [searchParams, round]);
 
-  const filteredGames = games.filter((g) => g.round === round);
+  type StatusFilter = "all" | "completed" | "scheduled";
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const roundGames = games.filter((g) => g.round === round);
+  const completedGames = roundGames.filter((g) => g.completed);
+  const scheduledGames = roundGames.filter((g) => !g.completed);
+
+  const filteredGames = statusFilter === "completed"
+    ? completedGames
+    : statusFilter === "scheduled"
+      ? scheduledGames
+      : roundGames;
 
   // Drawer state — managed here for cross-game navigation
   const [drawerGameId, setDrawerGameId] = useState<string | null>(null);
@@ -82,25 +93,96 @@ export function PicksContent({
     }
   }
 
+  // Group by status for display
+  const showGrouped = statusFilter === "all" && completedGames.length > 0 && scheduledGames.length > 0;
+
   return (
     <div className="space-y-section">
-      <RoundSelector selected={round} onSelect={changeRound} />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredGames.map((game) => (
-          <GameCard
-            key={game.game_id}
-            game={game}
-            pickSplit={
-              pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
-            }
-            totalBrackets={totalBrackets}
-            pickerDetails={pickerDetailsMap[game.game_id]}
-            teamLogos={teamLogos}
-            onOpenDrawer={() => openDrawer(game.game_id)}
-          />
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        <RoundSelector selected={round} onSelect={changeRound} />
+        <div className="flex gap-1.5">
+          {([
+            { label: `All (${roundGames.length})`, value: "all" as StatusFilter },
+            { label: `Completed (${completedGames.length})`, value: "completed" as StatusFilter },
+            { label: `Scheduled (${scheduledGames.length})`, value: "scheduled" as StatusFilter },
+          ]).map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+              className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${
+                statusFilter === opt.value
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
-      {filteredGames.length === 0 && (
+
+      {/* Completed games */}
+      {showGrouped && completedGames.length > 0 && (
+        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+          Completed ({completedGames.length})
+        </p>
+      )}
+      {(statusFilter === "all" || statusFilter === "completed") && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(statusFilter === "completed" ? completedGames : showGrouped ? completedGames : []).map((game) => (
+            <GameCard
+              key={game.game_id}
+              game={game}
+              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+              totalBrackets={totalBrackets}
+              pickerDetails={pickerDetailsMap[game.game_id]}
+              teamLogos={teamLogos}
+              onOpenDrawer={() => openDrawer(game.game_id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Scheduled games */}
+      {showGrouped && scheduledGames.length > 0 && (
+        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
+          Scheduled ({scheduledGames.length})
+        </p>
+      )}
+      {(statusFilter === "all" || statusFilter === "scheduled") && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(statusFilter === "scheduled" ? scheduledGames : showGrouped ? scheduledGames : []).map((game) => (
+            <GameCard
+              key={game.game_id}
+              game={game}
+              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+              totalBrackets={totalBrackets}
+              pickerDetails={pickerDetailsMap[game.game_id]}
+              teamLogos={teamLogos}
+              onOpenDrawer={() => openDrawer(game.game_id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Non-grouped view (when not splitting by status) */}
+      {!showGrouped && statusFilter === "all" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {roundGames.map((game) => (
+            <GameCard
+              key={game.game_id}
+              game={game}
+              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+              totalBrackets={totalBrackets}
+              pickerDetails={pickerDetailsMap[game.game_id]}
+              teamLogos={teamLogos}
+              onOpenDrawer={() => openDrawer(game.game_id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {roundGames.length === 0 && (
         <p className="text-on-surface-variant text-sm text-center py-8">
           No games scheduled for this round.
         </p>

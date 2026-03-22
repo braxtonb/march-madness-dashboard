@@ -209,67 +209,10 @@ function LeaderboardContentInner({
             teamLogos={teamLogos}
           />
 
-          {/* Rising Stars + Contention */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-card bg-surface-container p-5 space-y-3">
-              <h3 className="font-display text-lg font-semibold">
-                Rising Stars
-              </h3>
-              {risingStars.length === 0 && (
-                <p className="text-on-surface-variant text-sm">
-                  No rank changes yet this round.
-                </p>
-              )}
-              {risingStars.map(({ bracket, analytics: a }) => (
-                <div
-                  key={bracket.id}
-                  className="flex items-center justify-between rounded-card bg-surface-bright px-4 py-3"
-                >
-                  <div>
-                    <span className="font-body text-on-surface">
-                      {bracket.name}
-                    </span>
-                    <span className="text-xs text-on-surface-variant ml-2">
-                      {bracket.owner}
-                    </span>
-                  </div>
-                  <span className="font-label text-secondary font-semibold">
-                    +{a.rank_delta} ranks
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded-card bg-surface-container p-5 flex flex-col items-center justify-center">
-              <span className="font-display text-4xl font-bold text-secondary">
-                {inContention}
-              </span>
-              <span className="text-on-surface-variant text-sm mt-1">
-                brackets can still mathematically win
-              </span>
-            </div>
-          </div>
-
-          {/* Tournament Pulse */}
-          <div className="rounded-card bg-surface-container p-5 space-y-4">
-            <h3 className="font-display text-lg font-semibold">
-              Tournament Pulse
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <MadnessGauge value={madnessIndex} />
-              <div className="space-y-2">
-                <p className="font-label text-xs text-on-surface-variant uppercase tracking-wider">
-                  What the number means
-                </p>
-                <p className="text-sm text-on-surface-variant">
-                  {madnessIndex < 30
-                    ? "A calm tournament so far \u2014 chalk is holding."
-                    : madnessIndex < 60
-                      ? "Typical March Madness \u2014 some surprises keeping it exciting."
-                      : "Wild tournament \u2014 bold bracket pickers are being rewarded."}
-                </p>
-              </div>
-            </div>
+          {/* Contention counter */}
+          <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+            <span className="font-display text-lg font-bold text-secondary">{inContention}</span>
+            <span>brackets can still mathematically win</span>
           </div>
         </div>
       )}
