@@ -197,11 +197,11 @@ export function DrilldownTable({
           <thead className="sticky top-0 z-20 bg-surface-container">
             <tr className="border-b border-outline">
               <th className="w-8"></th>
-              <th className={`${hdr} relative`} onClick={() => toggleSort("rank")}><span className={`${hdrDotted} peer`}>Rank</span>{sortIcon("rank")}<span className="absolute left-0 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface w-max max-w-[200px] opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-30 shadow-lg border border-outline-variant">Current overall ranking</span></th>
-              <th className={hdrStatic}>Name</th>
-              <th className={hdrStatic}>Champion</th>
-              <th className={`${hdr} relative`} onClick={() => toggleSort("points")}><span className={`${hdrDotted} peer`}>Points</span>{sortIcon("points")}<span className="absolute left-0 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface w-max max-w-[200px] opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-30 shadow-lg border border-outline-variant">Total points earned so far</span></th>
-              <th className={`${hdr} relative`} onClick={() => toggleSort("max_remaining")}><span className={`${hdrDotted} peer`}>MAX</span>{sortIcon("max_remaining")}<span className="absolute left-0 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface w-max max-w-[200px] opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-30 shadow-lg border border-outline-variant">Maximum remaining points possible</span></th>
+              <th className={hdr} title="Current overall ranking" onClick={() => toggleSort("rank")}><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
+              <th className={hdrStatic} title="Bracket name">Name</th>
+              <th className={hdrStatic} title="Team selected to win the championship">Champion</th>
+              <th className={hdr} title="Total points earned so far" onClick={() => toggleSort("points")}><span className={hdrDotted}>Points</span>{sortIcon("points")}</th>
+              <th className={hdr} title="Maximum remaining points possible" onClick={() => toggleSort("max_remaining")}><span className={hdrDotted}>MAX</span>{sortIcon("max_remaining")}</th>
             </tr>
           </thead>
           <tbody>
