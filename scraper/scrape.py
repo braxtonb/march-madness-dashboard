@@ -1,7 +1,9 @@
 """Main scraper orchestrator. Fetch ESPN JSON API data -> parse -> write to Sheets."""
+import json
 import logging
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -65,6 +67,19 @@ def run():
     # Step 4: Parse entries into brackets + picks
     brackets, all_picks = parse_entries(group_data, outcome_map, proposition_map)
     logger.info(f"Parsed {len(brackets)} brackets, {len(all_picks)} picks")
+
+    # Load users lookup for full names
+    users_path = Path(__file__).resolve().parent / 'fixtures' / 'users.json'
+    users_lookup = {}
+    if users_path.exists():
+        with open(users_path) as f:
+            users_lookup = json.load(f)
+
+    # Merge full names from users.json (prefer over API since API may not return fullName without auth)
+    for bracket in brackets:
+        user = users_lookup.get(bracket['id'], {})
+        if user.get('fullName') and not bracket.get('full_name'):
+            bracket['full_name'] = user['fullName']
 
     # Apply prev_rank from stored state
     for b in brackets:
@@ -260,8 +275,6 @@ def _export_data_json(brackets, picks, games, teams, store, meta):
     The frontend reads this instead of hitting the Sheets API, avoiding
     rate limits entirely.
     """
-    import json
-    from pathlib import Path
 
     # Read snapshots from sheet (already written earlier)
     try:
@@ -318,9 +331,6 @@ def run_local():
 
     Usage: python -m scraper.scrape --local
     """
-    import json
-    from pathlib import Path
-
     fixtures_dir = Path(__file__).resolve().parent / 'fixtures'
     logger.info("Running in local mode — using fixtures only")
 
@@ -377,6 +387,16 @@ def run_local():
     games = parse_games(proposition_map)
     teams = parse_teams(outcome_map)
     logger.info(f"Parsed {len(brackets)} brackets, {len(all_picks)} picks, {len(games)} games, {len(teams)} teams")
+
+    # Load users lookup
+    users_path = fixtures_dir / 'users.json'
+    if users_path.exists():
+        with open(users_path) as f:
+            users_lookup = json.load(f)
+        for bracket in brackets:
+            user = users_lookup.get(bracket['id'], {})
+            if user.get('fullName'):
+                bracket['full_name'] = user['fullName']
 
     # Build game map with reconstruction (same logic as run())
     game_map: dict[str, dict] = {}
@@ -458,16 +478,12 @@ def run_local():
     }
 
     # Export data.json (no sheets needed)
-    from pathlib import Path as P
     _export_data_json_local(brackets, all_picks, merged_games, teams, meta)
     logger.info(f"Done (local). {games_completed}/63 games. Round: {current_round}")
 
 
 def _export_data_json_local(brackets, picks, games, teams, meta):
     """Export data.json without needing a Google Sheets store for snapshots."""
-    import json
-    from pathlib import Path
-
     def _normalize(rows, bool_fields=None):
         bool_fields = bool_fields or []
         result = []

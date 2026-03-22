@@ -7,6 +7,7 @@ import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { TeamPill } from "@/components/ui/TeamPill";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 interface SimResult {
@@ -117,6 +118,7 @@ export default function SimulatorPage() {
   const [simResults, setSimResults] = useState<SimResult[]>([]);
   const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(new Set());
   const [simSearch, setSimSearch] = useState<string[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/data")
@@ -237,6 +239,39 @@ export default function SimulatorPage() {
     const idSet = new Set(simSearch);
     return simResults.filter((r) => idSet.has(r.id));
   }, [simResults, simSearch]);
+
+  // Path to victory per bracket
+  const pathMap = useMemo(() => {
+    if (!data) return new Map<string, { remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }>();
+    const eliminatedTeams = new Set<string>();
+    for (const g of data.games) {
+      if (g.completed && g.winner) {
+        if (g.team1 && g.team1 !== g.winner) eliminatedTeams.add(g.team1);
+        if (g.team2 && g.team2 !== g.winner) eliminatedTeams.add(g.team2);
+      }
+    }
+    const completedGameIds = new Set(data.games.filter((g) => g.completed).map((g) => g.game_id));
+    const ROUND_PTS: Record<string, number> = { R64: 10, R32: 20, S16: 40, E8: 80, FF: 160, CHAMP: 320 };
+    const map = new Map<string, { remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }>();
+    const logos: Record<string, string> = Object.fromEntries(data.teams.map((t) => [t.name, t.logo || ""]));
+    for (const b of data.brackets) {
+      const bPicks = data.picks.filter((p) => p.bracket_id === b.id);
+      const remainingPicks = bPicks
+        .filter((p) => !completedGameIds.has(p.game_id) && p.team_picked && !eliminatedTeams.has(p.team_picked))
+        .map((p) => ({
+          round: p.round,
+          team: p.team_picked,
+          seed: p.seed_picked,
+          pts: ROUND_PTS[p.round] || 0,
+          logo: logos[p.team_picked] || "",
+        }));
+      const eliminatedPickCount = bPicks
+        .filter((p) => !completedGameIds.has(p.game_id) && p.team_picked && eliminatedTeams.has(p.team_picked))
+        .length;
+      map.set(b.id, { remainingPicks, eliminatedPickCount });
+    }
+    return map;
+  }, [data]);
 
   // Auto-simulate impact
   const runSimulate = useCallback(
@@ -686,22 +721,77 @@ export default function SimulatorPage() {
                 <tbody>
                   {filteredSimResults.map((r) => {
                     const delta = r.baseRank - r.simRank;
+                    const isExpanded = expandedId === r.id;
+                    const path = pathMap.get(r.id);
                     return (
-                      <tr key={r.id} className={`group border-b border-outline hover:bg-surface-bright transition-colors ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}>
-                        <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
-                        <td className="px-3 py-2 font-label">{r.simRank}</td>
-                        <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
-                          <div className="font-semibold text-on-surface text-xs">{r.name}</div>
-                          {r.full_name && r.full_name !== r.name && <div className="text-[10px] text-on-surface-variant">{r.full_name}</div>}
-                        </td>
-                        <td className="px-3 py-2 font-label">
-                          {delta > 0 && <span className="text-secondary">+{delta}</span>}
-                          {delta === 0 && <span className="text-on-surface-variant">&mdash;</span>}
-                          {delta < 0 && <span className="text-on-surface-variant">{delta}</span>}
-                        </td>
-                        <td className="px-3 py-2 font-label text-on-surface-variant">{r.basePoints}</td>
-                        <td className="px-3 py-2 font-label text-on-surface">{r.simPoints}</td>
-                      </tr>
+                      <>
+                        <tr
+                          key={r.id}
+                          className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                          onClick={() => setExpandedId(isExpanded ? null : r.id)}
+                        >
+                          <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
+                          <td className="px-3 py-2 font-label">{r.simRank}</td>
+                          <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "\u2212" : "+"}</span>
+                              <div>
+                                <div className="font-semibold text-on-surface text-xs">{r.name}</div>
+                                {r.full_name && r.full_name !== r.name && <div className="text-[10px] text-on-surface-variant">{r.full_name}</div>}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-2 font-label">
+                            {delta > 0 && <span className="text-secondary">+{delta}</span>}
+                            {delta === 0 && <span className="text-on-surface-variant">&mdash;</span>}
+                            {delta < 0 && <span className="text-on-surface-variant">{delta}</span>}
+                          </td>
+                          <td className="px-3 py-2 font-label text-on-surface-variant">{r.basePoints}</td>
+                          <td className="px-3 py-2 font-label text-on-surface">{r.simPoints}</td>
+                        </tr>
+                        {isExpanded && path && (
+                          <tr key={`${r.id}-path`}>
+                            <td colSpan={6} className="px-4 py-3 bg-surface-bright/50">
+                              <div className="space-y-2">
+                                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                                  Path to victory — {path.remainingPicks.length} alive picks remaining
+                                  {path.eliminatedPickCount > 0 && (
+                                    <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                                  )}
+                                </p>
+                                {path.remainingPicks.length === 0 ? (
+                                  <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
+                                ) : (
+                                  <div className="space-y-1.5">
+                                    {(["R32", "S16", "E8", "FF", "CHAMP"] as const).map((round) => {
+                                      const picks = path.remainingPicks.filter((p) => p.round === round);
+                                      if (picks.length === 0) return null;
+                                      return (
+                                        <div key={round} className="flex items-center gap-2">
+                                          <span className="font-label text-[10px] text-on-surface-variant w-28 shrink-0">
+                                            {ROUND_LABELS[round as Round] || round}
+                                            <span className="ml-1 text-secondary">+{picks.reduce((s, p) => s + p.pts, 0)}</span>
+                                          </span>
+                                          <div className="flex flex-wrap gap-1">
+                                            {picks.map((p) => (
+                                              <TeamPill
+                                                key={`${round}-${p.team}`}
+                                                name={p.team}
+                                                seed={p.seed}
+                                                logo={p.logo}
+                                              />
+                                            ))}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     );
                   })}
                 </tbody>
