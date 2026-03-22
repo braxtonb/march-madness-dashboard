@@ -174,7 +174,7 @@ export function DrilldownTable({
       {/* Desktop table */}
       <div className="hidden sm:block overflow-x-auto rounded-card bg-surface-container">
         <table className="w-full text-sm">
-          <thead>
+          <thead className="sticky top-0 z-20 bg-surface-container">
             <tr className="border-b border-outline">
               <th className="w-8"></th>
               <th className={`${hdr} relative`} onClick={() => toggleSort("rank")}><span className={`${hdrDotted} peer`}>Rank</span>{sortIcon("rank")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Current overall ranking</span></th>

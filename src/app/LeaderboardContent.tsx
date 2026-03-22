@@ -216,6 +216,49 @@ function LeaderboardContentInner({
             );
           })()}
 
+          {/* Horizontal Ribbon Podium (for comparison) */}
+          {(() => {
+            const sorted = [...brackets].sort((a, b) => {
+              const aA = analytics.get(a.id);
+              const bA = analytics.get(b.id);
+              if (!aA || !bA) return 0;
+              return aA.rank - bA.rank;
+            });
+            const top3 = sorted.slice(0, 3);
+            if (top3.length === 0) return null;
+
+            return (
+              <div className="rounded-card overflow-hidden" style={{ background: "linear-gradient(90deg, rgba(250,204,21,0.12) 0%, rgba(156,163,175,0.08) 50%, rgba(251,146,60,0.08) 100%)" }}>
+                <div className="flex items-center divide-x divide-outline-variant/20">
+                  {top3.map((b, idx) => {
+                    const accents = ["text-yellow-400", "text-on-surface-variant", "text-orange-400"];
+                    const emojis = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
+                    return (
+                      <div key={b.id} className="flex-1 px-4 py-3 flex items-center gap-3 min-w-0">
+                        <span className="text-xl shrink-0">{emojis[idx]}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-display font-bold text-on-surface text-sm truncate">{b.name}</p>
+                          {b.full_name && b.full_name !== b.name && (
+                            <p className="text-[10px] text-on-surface-variant truncate">{b.full_name}</p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className={`font-display font-black text-lg ${accents[idx]}`}>{b.points}</p>
+                          <p className="text-[10px] text-on-surface-variant">pts</p>
+                        </div>
+                        {b.champion_pick && (
+                          <div className="shrink-0 hidden sm:block">
+                            <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Leaderboard table */}
           <div>
             <p className="hidden sm:block text-xs text-on-surface-variant mb-2">

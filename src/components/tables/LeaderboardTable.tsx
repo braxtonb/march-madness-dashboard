@@ -146,20 +146,20 @@ export function LeaderboardTable({
       {/* Desktop table view */}
       <div className="hidden sm:block overflow-x-auto rounded-card bg-surface-container">
       <table className="w-full text-sm">
-        <thead>
+        <thead className="sticky top-0 z-20 bg-surface-container">
           <tr className="border-b border-outline">
             <th className="w-8"></th>
-            <th className={hdr} onClick={() => toggleSort("rank")}><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("rank")}><span className={`${hdrDotted} peer`}>Rank</span>{sortIcon("rank")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Current standing based on total points</span></th>
             <th className={hdrStatic}>Name</th>
             <th className={hdrStatic}>Champion</th>
-            <th className={hdr} onClick={() => toggleSort("points")}><span className={hdrDotted}>Pts</span>{sortIcon("points")}</th>
-            <th className={hdr} onClick={() => toggleSort("max")}><span className={hdrDotted}>Max</span>{sortIcon("max")}</th>
-            <th className={hdr} onClick={() => toggleSort("r64")}><span className={hdrDotted}>R64</span>{sortIcon("r64")}</th>
-            <th className={hdr} onClick={() => toggleSort("r32")}><span className={hdrDotted}>R32</span>{sortIcon("r32")}</th>
-            <th className={hdr} onClick={() => toggleSort("s16")}><span className={hdrDotted}>S16</span>{sortIcon("s16")}</th>
-            <th className={hdr} onClick={() => toggleSort("e8")}><span className={hdrDotted}>E8</span>{sortIcon("e8")}</th>
-            <th className={hdr} onClick={() => toggleSort("ff")}><span className={hdrDotted}>FF</span>{sortIcon("ff")}</th>
-            <th className={hdr} onClick={() => toggleSort("champ")}><span className={hdrDotted}>Champ</span>{sortIcon("champ")}</th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("points")}><span className={`${hdrDotted} peer`}>Pts</span>{sortIcon("points")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Total points earned from correct picks</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("max")}><span className={`${hdrDotted} peer`}>Max</span>{sortIcon("max")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Maximum possible points if all remaining picks are correct</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("r64")}><span className={`${hdrDotted} peer`}>R64</span>{sortIcon("r64")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Points earned in the Round of 64 (10 pts per correct pick)</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("r32")}><span className={`${hdrDotted} peer`}>R32</span>{sortIcon("r32")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Points earned in the Round of 32 (20 pts per correct pick)</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("s16")}><span className={`${hdrDotted} peer`}>S16</span>{sortIcon("s16")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Points earned in the Sweet 16 (40 pts per correct pick)</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("e8")}><span className={`${hdrDotted} peer`}>E8</span>{sortIcon("e8")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Points earned in the Elite 8 (80 pts per correct pick)</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("ff")}><span className={`${hdrDotted} peer`}>FF</span>{sortIcon("ff")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Points earned in the Final Four (160 pts per correct pick)</span></th>
+            <th className={`${hdr} relative`} onClick={() => toggleSort("champ")}><span className={`${hdrDotted} peer`}>Champ</span>{sortIcon("champ")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Points earned in the Championship (320 pts per correct pick)</span></th>
           </tr>
         </thead>
         <tbody>

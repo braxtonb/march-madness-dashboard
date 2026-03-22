@@ -137,14 +137,31 @@ export function computeAllAnalytics(data: DashboardData): Map<string, BracketAna
     teams.filter((t) => t.eliminated).map((t) => t.name)
   );
 
-  const sorted = [...brackets].sort((a, b) => b.points - a.points);
+  // Sort brackets: points DESC, max_remaining DESC, name ASC
+  const sorted = [...brackets].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.max_remaining !== a.max_remaining) return b.max_remaining - a.max_remaining;
+    return a.name.localeCompare(b.name);
+  });
   const leaderPoints = sorted[0]?.points || 0;
+
+  // Assign ranks with ties (RANK style, not DENSE_RANK)
+  const ranks: number[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i === 0) {
+      ranks.push(1);
+    } else if (sorted[i].points === sorted[i-1].points && sorted[i].max_remaining === sorted[i-1].max_remaining) {
+      ranks.push(ranks[i-1]); // same rank for ties
+    } else {
+      ranks.push(i + 1); // skip ranks (RANK style)
+    }
+  }
 
   const result = new Map<string, BracketAnalytics>();
 
   for (let i = 0; i < sorted.length; i++) {
     const b = sorted[i];
-    const rank = i + 1;
+    const rank = ranks[i];
     const rank_delta = b.prev_rank > 0 ? b.prev_rank - rank : 0;
     const bracketPicks = picksByBracket.get(b.id) || [];
     const uniqueness = computeUniqueness(bracketPicks, pickRates);

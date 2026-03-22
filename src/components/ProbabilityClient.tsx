@@ -425,10 +425,10 @@ export function ProbabilityClient({
           )}
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <table className="min-w-[850px] w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 z-20 bg-surface-container">
                 <tr className="border-b border-outline-variant">
                   <th className="w-8"></th>
-                  <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
+                  <th className="sticky left-0 bg-surface-container z-30 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Champion</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Tier</th>
                   <th className="group/hdr relative px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("probability")}><span className="border-b border-dotted border-on-surface-variant/40 peer">Win %</span>{fSortIcon("probability")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Chance of finishing 1st from 1,000 simulations</span></th>

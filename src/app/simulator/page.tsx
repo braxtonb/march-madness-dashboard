@@ -731,7 +731,7 @@ export default function SimulatorPage() {
           ) : (
             <div className="overflow-x-auto rounded-card bg-surface-container max-h-[calc(100vh-14rem)] overflow-y-auto">
               <table className="w-full min-w-[500px] text-sm">
-                <thead className="sticky top-0 bg-surface-container z-10">
+                <thead className="sticky top-0 z-20 bg-surface-container">
                   <tr className="border-b border-outline">
                     <th className="w-8"></th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Rank</th>
