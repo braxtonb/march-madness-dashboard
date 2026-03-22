@@ -4,9 +4,14 @@ import { useState, useEffect } from "react";
 import type { Game } from "@/lib/types";
 import { TeamPill } from "./TeamPill";
 
+export interface PickerInfo {
+  name: string;   // bracket name (primary)
+  owner: string;  // username (secondary)
+}
+
 export interface PickerDetails {
-  team1Pickers: string[];
-  team2Pickers: string[];
+  team1Pickers: PickerInfo[];
+  team2Pickers: PickerInfo[];
 }
 
 function PicksDrawer({
@@ -91,21 +96,21 @@ function PicksDrawer({
             {pickerDetails.team1Pickers.length === 0 ? (
               <p className="text-xs text-on-surface-variant italic">None</p>
             ) : (
-              pickerDetails.team1Pickers.map((name) => {
+              pickerDetails.team1Pickers.map((picker) => {
                 const isCorrect =
                   game.completed && game.winner === game.team1;
                 return (
-                  <p
-                    key={name}
-                    className={`text-sm ${
-                      isCorrect
-                        ? "text-secondary font-semibold"
-                        : "text-on-surface"
-                    }`}
+                  <div
+                    key={picker.name}
+                    className={`${isCorrect ? "text-secondary" : ""}`}
                   >
-                    {name}
-                    {isCorrect && " ✓"}
-                  </p>
+                    <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
+                      {picker.name}{isCorrect && " ✓"}
+                    </p>
+                    {picker.owner !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
+                    )}
+                  </div>
                 );
               })
             )}
@@ -121,21 +126,21 @@ function PicksDrawer({
             {pickerDetails.team2Pickers.length === 0 ? (
               <p className="text-xs text-on-surface-variant italic">None</p>
             ) : (
-              pickerDetails.team2Pickers.map((name) => {
+              pickerDetails.team2Pickers.map((picker) => {
                 const isCorrect =
                   game.completed && game.winner === game.team2;
                 return (
-                  <p
-                    key={name}
-                    className={`text-sm ${
-                      isCorrect
-                        ? "text-secondary font-semibold"
-                        : "text-on-surface"
-                    }`}
+                  <div
+                    key={picker.name}
+                    className={`${isCorrect ? "text-secondary" : ""}`}
                   >
-                    {name}
-                    {isCorrect && " ✓"}
-                  </p>
+                    <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
+                      {picker.name}{isCorrect && " ✓"}
+                    </p>
+                    {picker.owner !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
+                    )}
+                  </div>
                 );
               })
             )}

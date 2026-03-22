@@ -1,6 +1,5 @@
 import { fetchDashboardData } from "@/lib/sheets";
 import { computeGroupAccuracy } from "@/lib/analytics";
-import { StatCard } from "@/components/ui/StatCard";
 import { PicksContent } from "./PicksContent";
 import type { PickerDetails } from "@/components/ui/GameCard";
 
@@ -16,10 +15,10 @@ export default async function GroupPicksPage() {
   const pickSplits: Record<string, { team1Count: number; team2Count: number }> = {};
   const pickerDetailsMap: Record<string, PickerDetails> = {};
 
-  // Build a bracket_id -> owner name lookup
-  const ownerById = new Map<string, string>();
+  // Build bracket_id -> { name, owner } lookup
+  const bracketById = new Map<string, { name: string; owner: string }>();
   for (const b of data.brackets) {
-    ownerById.set(b.id, b.owner || b.name);
+    bracketById.set(b.id, { name: b.name, owner: b.owner });
   }
 
   for (const game of data.games) {
@@ -32,14 +31,14 @@ export default async function GroupPicksPage() {
     ).length;
     pickSplits[game.game_id] = { team1Count, team2Count };
 
-    const team1Pickers: string[] = [];
-    const team2Pickers: string[] = [];
+    const team1Pickers: { name: string; owner: string }[] = [];
+    const team2Pickers: { name: string; owner: string }[] = [];
     for (const p of gamePicks) {
-      const ownerName = ownerById.get(p.bracket_id) || p.bracket_id;
+      const bracket = bracketById.get(p.bracket_id) || { name: p.bracket_id, owner: "" };
       if (p.team_picked === game.team1) {
-        team1Pickers.push(ownerName);
+        team1Pickers.push(bracket);
       } else if (p.team_picked === game.team2) {
-        team2Pickers.push(ownerName);
+        team2Pickers.push(bracket);
       }
     }
     pickerDetailsMap[game.game_id] = { team1Pickers, team2Pickers };
@@ -72,20 +71,11 @@ export default async function GroupPicksPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          label="Group Accuracy (Current Round)"
-          value={`${accuracy.correct}/${accuracy.total}`}
-          subtitle={`National avg: ${accuracy.nationalCorrect}/${accuracy.total}`}
-        />
-        <StatCard
-          label="Total Brackets"
-          value={submittedBrackets.length}
-        />
-        <StatCard
-          label="Games Completed"
-          value={`${data.meta.games_completed}/63`}
-        />
+      <div className="flex items-center gap-4 text-sm text-on-surface-variant">
+        <span>
+          Group accuracy ({data.meta.current_round}): <span className="text-on-surface font-semibold">{accuracy.correct}/{accuracy.total}</span>
+          <span className="ml-1 text-xs">(national avg: {accuracy.nationalCorrect}/{accuracy.total})</span>
+        </span>
       </div>
 
       <PicksContent
