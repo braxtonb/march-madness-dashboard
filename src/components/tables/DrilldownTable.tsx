@@ -6,6 +6,25 @@ import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
+function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
+  if (direction === "asc") return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M5 2L8 6H2L5 2Z" fill="currentColor" />
+    </svg>
+  );
+  if (direction === "desc") return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M5 8L2 4H8L5 8Z" fill="currentColor" />
+    </svg>
+  );
+  return (
+    <svg width="10" height="14" viewBox="0 0 10 14" fill="none" className="inline-block ml-0.5 opacity-30">
+      <path d="M5 1L8 5H2L5 1Z" fill="currentColor" />
+      <path d="M5 13L2 9H8L5 13Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 interface PathPick {
   round: string;
   team: string;
@@ -78,11 +97,11 @@ export function DrilldownTable({
     if (sortKey === key) setSortAsc(!sortAsc);
     else { setSortKey(key); setSortAsc(key === "rank"); }
   }
-  const sortIcon = (key: SortKey) => (
-    <span className={`ml-0.5 text-[10px] transition-colors ${sortKey === key ? "text-on-surface-variant" : "text-on-surface-variant/40 group-hover/hdr:text-on-surface-variant/80"}`}>
-      {sortKey === key ? (sortAsc ? "▲" : "▼") : "↕"}
-    </span>
-  );
+  const sortIcon = (key: SortKey) => {
+    const active = sortKey === key;
+    const direction = active ? (sortAsc ? "asc" : "desc") : "neutral";
+    return <SortIcon direction={direction} active={active} />;
+  };
   const hdr = "group/hdr px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none";
   const hdrStatic = "px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default";
 

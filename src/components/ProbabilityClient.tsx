@@ -12,6 +12,25 @@ import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
+function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
+  if (direction === "asc") return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M5 2L8 6H2L5 2Z" fill="currentColor" />
+    </svg>
+  );
+  if (direction === "desc") return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M5 8L2 4H8L5 8Z" fill="currentColor" />
+    </svg>
+  );
+  return (
+    <svg width="10" height="14" viewBox="0 0 10 14" fill="none" className="inline-block ml-0.5 opacity-30">
+      <path d="M5 1L8 5H2L5 1Z" fill="currentColor" />
+      <path d="M5 13L2 9H8L5 13Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 interface ProbEntry {
   id: string;
   name: string;
@@ -174,11 +193,11 @@ export function ProbabilityClient({
     if (finishSortKey === key) setFinishSortAsc(!finishSortAsc);
     else { setFinishSortKey(key); setFinishSortAsc(false); }
   }
-  const fSortIcon = (key: FinishSort) => (
-    <span className={`ml-0.5 text-[10px] transition-colors ${finishSortKey === key ? "text-on-surface-variant" : "text-on-surface-variant/40 group-hover/hdr:text-on-surface-variant/80"}`}>
-      {finishSortKey === key ? (finishSortAsc ? "▲" : "▼") : "↕"}
-    </span>
-  );
+  const fSortIcon = (key: FinishSort) => {
+    const active = finishSortKey === key;
+    const direction = active ? (finishSortAsc ? "asc" : "desc") : "neutral";
+    return <SortIcon direction={direction} active={active} />;
+  };
 
   // Alive filter state
   const initialAliveFilter = (() => {

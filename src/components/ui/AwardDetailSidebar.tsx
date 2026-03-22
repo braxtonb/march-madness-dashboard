@@ -568,9 +568,8 @@ export default function AwardDetailSidebar({
   const hasPrev = winnerIdx > 0;
   const hasNext = winnerIdx < total - 1;
 
-  const titleSuffix = total > 1 ? ` (${winnerIdx + 1}/${total})` : "";
   const winnerDisplayName = getDisplayName({ full_name: winner.fullName, name: winner.name, owner: winner.bracketName });
-  const title = `${award.title} \u2014 ${winnerDisplayName}${titleSuffix}`;
+  const title = award.title;
 
   function renderContent() {
     switch (award.title) {
@@ -645,25 +644,42 @@ export default function AwardDetailSidebar({
       open={open}
       onClose={onClose}
       title={title}
-      onPrev={hasPrev ? () => setWinnerIdx((i) => i - 1) : undefined}
-      onNext={hasNext ? () => setWinnerIdx((i) => i + 1) : undefined}
     >
       <div className="space-y-4">
-        {/* Winner info header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-on-surface font-body font-medium">{winnerDisplayName}</p>
-            <p className="text-xs text-on-surface-variant">{winner.name}</p>
+        {/* Winner info header with inline prev/next navigation */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            {hasPrev && (
+              <button onClick={() => setWinnerIdx((i) => i - 1)} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            )}
+            <div>
+              <div className="text-on-surface font-semibold">{winnerDisplayName}</div>
+              <div className="text-xs text-on-surface-variant">{winner.name}</div>
+            </div>
+            {hasNext && (
+              <button onClick={() => setWinnerIdx((i) => i + 1)} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            )}
           </div>
-          {winner.championPick && (
-            <TeamPill
-              name={winner.championPick}
-              seed={winner.championSeed}
-              logo={teamLogo(teams, winner.championPick)}
-              eliminated={winner.championEliminated}
-              showStatus
-            />
-          )}
+          <div className="flex items-center gap-3">
+            {total > 1 && (
+              <span className="text-sm text-on-surface-variant">
+                {winnerIdx + 1} of {total}
+              </span>
+            )}
+            {winner.championPick && (
+              <TeamPill
+                name={winner.championPick}
+                seed={winner.championSeed}
+                logo={teamLogo(teams, winner.championPick)}
+                eliminated={winner.championEliminated}
+                showStatus
+              />
+            )}
+          </div>
         </div>
         <p className="text-sm text-on-surface-variant">{winner.stat}</p>
 

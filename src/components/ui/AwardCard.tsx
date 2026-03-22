@@ -60,11 +60,6 @@ export function AwardCard({
             <h4 className={`font-display font-semibold ${tierColors[award.tier]}`}>
               {award.title}
             </h4>
-            {isTie && (
-              <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-label whitespace-nowrap">
-                {award.winners.length}-way tie
-              </span>
-            )}
           </div>
           <p className="text-[10px] text-on-surface-variant">{description}</p>
         </div>
@@ -78,7 +73,7 @@ export function AwardCard({
         <>
           {/* Tied winners: show compact label only */}
           <p className="text-sm text-on-surface-variant">
-            {award.winners.length} brackets tied &mdash; {firstWinner.stat}
+            {award.winners.length}-way tie &mdash; {firstWinner.stat}
           </p>
 
           {/* Click hint */}
