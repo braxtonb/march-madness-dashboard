@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import type { DashboardData, Game, Round } from "@/lib/types";
+import type { DashboardData, Game, Pick, Round } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
-
-/* ── types ───────────────────────────────────────────────────────── */
 
 interface SimResult {
   id: string;
@@ -16,41 +14,195 @@ interface SimResult {
   simPoints: number;
 }
 
-/* ── component ───────────────────────────────────────────────────── */
+interface ResolvedGame {
+  game_id: string;
+  round: string;
+  region: string;
+  team1: string;
+  seed1: number;
+  team2: string;
+  seed2: number;
+  completed: boolean;
+  winner: string;
+  simulated: boolean; // true if teams were derived from user picks
+}
+
+/**
+ * Build a mapping of gameId → nextGameId by analyzing bracket picks.
+ * Each team appears in picks for consecutive rounds — tracing a team
+ * through rounds reveals which games feed into which.
+ */
+function buildGameChain(
+  picks: Pick[],
+  games: Game[]
+): Map<string, { nextGameId: string }> {
+  // Use the first bracket that has picks
+  const byBracket = new Map<string, Pick[]>();
+  for (const p of picks) {
+    if (!p.team_picked) continue;
+    if (!byBracket.has(p.bracket_id)) byBracket.set(p.bracket_id, []);
+    byBracket.get(p.bracket_id)!.push(p);
+  }
+
+  const samplePicks = [...byBracket.values()][0];
+  if (!samplePicks) return new Map();
+
+  const roundIdx: Record<string, number> = { R64: 0, R32: 1, S16: 2, E8: 3, FF: 4, CHAMP: 5 };
+
+  // Group picks by team
+  const teamGames = new Map<string, { gameId: string; round: string }[]>();
+  for (const p of samplePicks) {
+    if (!p.team_picked || !p.round) continue;
+    if (!teamGames.has(p.team_picked)) teamGames.set(p.team_picked, []);
+    teamGames.get(p.team_picked)!.push({ gameId: p.game_id, round: p.round });
+  }
+
+  // For each team, sort by round and create chain links
+  const chain = new Map<string, { nextGameId: string }>();
+  for (const [, tGames] of teamGames) {
+    tGames.sort((a, b) => (roundIdx[a.round] ?? 0) - (roundIdx[b.round] ?? 0));
+    for (let i = 0; i < tGames.length - 1; i++) {
+      const curr = tGames[i].gameId;
+      const next = tGames[i + 1].gameId;
+      if (!chain.has(curr)) {
+        chain.set(curr, { nextGameId: next });
+      }
+    }
+  }
+
+  return chain;
+}
+
+/**
+ * Build a mapping of nextGameId → [feederGameId1, feederGameId2]
+ */
+function buildFeeders(
+  chain: Map<string, { nextGameId: string }>
+): Map<string, string[]> {
+  const feeders = new Map<string, string[]>();
+  for (const [gameId, { nextGameId }] of chain) {
+    if (!feeders.has(nextGameId)) feeders.set(nextGameId, []);
+    const arr = feeders.get(nextGameId)!;
+    if (!arr.includes(gameId)) arr.push(gameId);
+  }
+  return feeders;
+}
+
+/**
+ * Get the seed for a team from picks data
+ */
+function getTeamSeed(picks: Pick[], team: string): number {
+  const pick = picks.find((p) => p.team_picked === team);
+  return pick?.seed_picked ?? 0;
+}
 
 export default function SimulatorPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [selections, setSelections] = useState<Map<string, string>>(new Map());
   const [simResults, setSimResults] = useState<SimResult[]>([]);
+  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/data")
       .then((r) => r.json())
-      .then(setData)
+      .then((d: DashboardData) => {
+        setData(d);
+        // Collapse completed rounds by default
+        const completed = new Set<string>();
+        const roundGameCounts: Record<string, { total: number; done: number }> = {};
+        for (const g of d.games) {
+          if (!roundGameCounts[g.round]) roundGameCounts[g.round] = { total: 0, done: 0 };
+          roundGameCounts[g.round].total++;
+          if (g.completed) roundGameCounts[g.round].done++;
+        }
+        for (const [round, counts] of Object.entries(roundGameCounts)) {
+          if (counts.done === counts.total && counts.total > 0) completed.add(round);
+        }
+        setCollapsedRounds(completed);
+      })
       .catch(() => {});
   }, []);
 
-  /* ── group games by round ──────────────────────────────────────── */
+  // Build bracket structure chain
+  const gameChain = useMemo(() => {
+    if (!data) return new Map<string, { nextGameId: string }>();
+    return buildGameChain(data.picks, data.games);
+  }, [data]);
 
-  const gamesByRound = useMemo(() => {
-    if (!data) return {} as Record<string, Game[]>;
-    const map: Record<string, Game[]> = {};
+  const feeders = useMemo(() => buildFeeders(gameChain), [gameChain]);
+
+  // Resolve games with cascading selections
+  const resolvedGames = useMemo((): ResolvedGame[] => {
+    if (!data) return [];
+
+    // Start with actual game data
+    const resolved = new Map<string, ResolvedGame>();
+    for (const g of data.games) {
+      resolved.set(g.game_id, {
+        game_id: g.game_id,
+        round: g.round,
+        region: g.region,
+        team1: g.team1,
+        seed1: g.seed1,
+        team2: g.team2,
+        seed2: g.seed2,
+        completed: g.completed,
+        winner: g.winner,
+        simulated: false,
+      });
+    }
+
+    // Process rounds in order — cascade selections forward
     for (const round of ROUND_ORDER) {
-      const games = data.games.filter((g) => g.round === round);
+      const roundGames = data.games.filter((g) => g.round === round);
+      for (const g of roundGames) {
+        const rg = resolved.get(g.game_id)!;
+        // Determine winner: actual result or user selection
+        const winner = rg.completed ? rg.winner : selections.get(g.game_id) || "";
+
+        if (winner) {
+          // Cascade to next game
+          const link = gameChain.get(g.game_id);
+          if (link) {
+            const nextGame = resolved.get(link.nextGameId);
+            if (nextGame && !nextGame.completed) {
+              // Determine which slot this winner goes into
+              const nextFeeders = feeders.get(link.nextGameId) || [];
+              const feederIdx = nextFeeders.indexOf(g.game_id);
+
+              if (feederIdx === 0 || (!nextGame.team1 && feederIdx !== 1)) {
+                if (!nextGame.team1 || nextGame.simulated) {
+                  nextGame.team1 = winner;
+                  nextGame.seed1 = getTeamSeed(data.picks, winner);
+                  nextGame.simulated = true;
+                }
+              } else {
+                if (!nextGame.team2 || nextGame.simulated) {
+                  nextGame.team2 = winner;
+                  nextGame.seed2 = getTeamSeed(data.picks, winner);
+                  nextGame.simulated = true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return [...resolved.values()];
+  }, [data, selections, gameChain, feeders]);
+
+  // Group resolved games by round
+  const gamesByRound = useMemo(() => {
+    const map: Record<string, ResolvedGame[]> = {};
+    for (const round of ROUND_ORDER) {
+      const games = resolvedGames.filter((g) => g.round === round);
       if (games.length > 0) map[round] = games;
     }
     return map;
-  }, [data]);
+  }, [resolvedGames]);
 
-  /* ── pending games with both teams known ───────────────────────── */
-
-  const pickableGames = useMemo(() => {
-    if (!data) return [] as Game[];
-    return data.games.filter((g) => !g.completed && g.team1 && g.team2);
-  }, [data]);
-
-  /* ── auto-simulate impact ──────────────────────────────────────── */
-
+  // Auto-simulate impact
   const runSimulate = useCallback(
     (d: DashboardData, sel: Map<string, string>) => {
       const picksByBracket = new Map<string, Map<string, string>>();
@@ -76,7 +228,6 @@ export default function SimulatorPage() {
 
       const baseRanked = [...d.brackets].sort((a, b) => b.points - a.points);
       const simRanked = [...scored].sort((a, b) => b.simPoints - a.simPoints);
-
       const baseRankMap = new Map<string, number>();
       baseRanked.forEach((b, i) => baseRankMap.set(b.id, i + 1));
 
@@ -85,10 +236,10 @@ export default function SimulatorPage() {
           ...s,
           baseRank: baseRankMap.get(s.id) || 0,
           simRank: i + 1,
-        })),
+        }))
       );
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -96,43 +247,96 @@ export default function SimulatorPage() {
     runSimulate(data, selections);
   }, [selections, data, runSimulate]);
 
-  /* ── event handlers ────────────────────────────────────────────── */
-
+  // Toggle a winner selection
   function toggleWinner(gameId: string, team: string) {
     setSelections((prev) => {
       const next = new Map(prev);
       if (next.get(gameId) === team) {
+        // Deselect — also clear any downstream selections that depended on this
         next.delete(gameId);
+        clearDownstream(gameId, next);
       } else {
+        // If switching teams, clear downstream first
+        if (next.has(gameId)) {
+          clearDownstream(gameId, next);
+        }
         next.set(gameId, team);
       }
       return next;
     });
   }
 
-  /** Pick the lower seed (favorite) for all known-team pending games */
+  function clearDownstream(gameId: string, sel: Map<string, string>) {
+    const link = gameChain.get(gameId);
+    if (!link) return;
+    if (sel.has(link.nextGameId)) {
+      sel.delete(link.nextGameId);
+      clearDownstream(link.nextGameId, sel);
+    }
+  }
+
+  // All favorites: cascade through all rounds
   function setAllFavorites() {
     if (!data) return;
     const next = new Map<string, string>();
-    for (const g of pickableGames) {
-      next.set(g.game_id, g.seed1 <= g.seed2 ? g.team1 : g.team2);
+    // Process round by round, using resolved data
+    for (const round of ROUND_ORDER) {
+      const roundGames = resolvedGames.filter((g) => g.round === round);
+      for (const g of roundGames) {
+        if (g.completed) continue;
+        const t1 = g.team1 || resolveTeamFromSelection(g.game_id, next, 1);
+        const t2 = g.team2 || resolveTeamFromSelection(g.game_id, next, 2);
+        const s1 = g.seed1 || (t1 ? getTeamSeed(data.picks, t1) : 99);
+        const s2 = g.seed2 || (t2 ? getTeamSeed(data.picks, t2) : 99);
+        if (t1 && t2) {
+          next.set(g.game_id, s1 <= s2 ? t1 : t2);
+        }
+      }
     }
     setSelections(next);
   }
 
-  /** Pick the higher seed (underdog) for all known-team pending games */
   function setAllUnderdogs() {
     if (!data) return;
     const next = new Map<string, string>();
-    for (const g of pickableGames) {
-      next.set(g.game_id, g.seed1 > g.seed2 ? g.team1 : g.team2);
+    for (const round of ROUND_ORDER) {
+      const roundGames = resolvedGames.filter((g) => g.round === round);
+      for (const g of roundGames) {
+        if (g.completed) continue;
+        const t1 = g.team1 || resolveTeamFromSelection(g.game_id, next, 1);
+        const t2 = g.team2 || resolveTeamFromSelection(g.game_id, next, 2);
+        const s1 = g.seed1 || (t1 ? getTeamSeed(data.picks, t1) : 0);
+        const s2 = g.seed2 || (t2 ? getTeamSeed(data.picks, t2) : 0);
+        if (t1 && t2) {
+          next.set(g.game_id, s1 > s2 ? t1 : t2);
+        }
+      }
     }
     setSelections(next);
   }
 
-  const totalPickable = pickableGames.length;
+  function resolveTeamFromSelection(
+    gameId: string,
+    sel: Map<string, string>,
+    slot: 1 | 2
+  ): string {
+    const gameFeeders = feeders.get(gameId) || [];
+    const feeder = gameFeeders[slot - 1];
+    if (!feeder) return "";
+    // Check if feeder game has a completed result
+    const feederGame = data?.games.find((g) => g.game_id === feeder);
+    if (feederGame?.completed) return feederGame.winner;
+    return sel.get(feeder) || "";
+  }
 
-  /* ── loading state ─────────────────────────────────────────────── */
+  function toggleRoundCollapse(round: string) {
+    setCollapsedRounds((prev) => {
+      const next = new Set(prev);
+      if (next.has(round)) next.delete(round);
+      else next.add(round);
+      return next;
+    });
+  }
 
   if (!data) {
     return (
@@ -145,18 +349,17 @@ export default function SimulatorPage() {
     );
   }
 
-  /* ── render ─────────────────────────────────────────────────────── */
+  const totalPending = resolvedGames.filter((g) => !g.completed).length;
 
   return (
     <div className="space-y-section">
       <div>
         <h2 className="font-display text-2xl font-bold">Scenario Simulator</h2>
         <p className="text-on-surface-variant text-sm mt-1">
-          Toggle game outcomes and see how the standings shift
+          Pick winners round by round — your selections cascade into later rounds
         </p>
       </div>
 
-      {/* Quick-fill buttons — z-50 ensures they stay above sticky round headers (z-10/z-20) */}
       <div className="relative z-50 flex gap-2 flex-wrap">
         <button
           onClick={setAllFavorites}
@@ -178,167 +381,149 @@ export default function SimulatorPage() {
         </button>
       </div>
 
-      {/* Sticky split layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-section lg:items-start">
-        {/* Left: game picker (scrolls independently) */}
-        <div className="lg:col-span-2 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto lg:pr-2 space-y-4">
-          <h3 className="font-display text-lg font-semibold sticky top-0 bg-surface z-20 py-1">
-            All Games
-          </h3>
+        {/* Left: game picker */}
+        <div className="lg:col-span-2 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto lg:pr-2 space-y-2">
+          {Object.entries(gamesByRound).map(([round, games]) => {
+            const isCollapsed = collapsedRounds.has(round);
+            const completedCount = games.filter((g) => g.completed).length;
+            const selectedCount = games.filter((g) => !g.completed && selections.has(g.game_id)).length;
+            const pendingCount = games.length - completedCount;
 
-          {Object.entries(gamesByRound).map(([round, games]) => (
-            <div key={round} className="space-y-2">
-              <h4 className="font-label text-xs uppercase tracking-wider text-on-surface-variant sticky top-8 bg-surface z-10 py-1">
-                {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
-              </h4>
+            return (
+              <div key={round}>
+                <button
+                  onClick={() => toggleRoundCollapse(round)}
+                  className="w-full flex items-center justify-between sticky top-0 bg-surface z-10 py-2 px-1"
+                >
+                  <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant">
+                    {isCollapsed ? "▶" : "▼"} {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
+                  </span>
+                  <span className="font-label text-[10px] text-on-surface-variant">
+                    {completedCount === games.length
+                      ? "Complete"
+                      : `${selectedCount}/${pendingCount} picked`}
+                  </span>
+                </button>
 
-              {games.map((g) => {
-                const hasBothTeams = Boolean(g.team1 && g.team2);
-                const isCompleted = g.completed;
+                {!isCollapsed && (
+                  <div className="space-y-1.5 pb-2">
+                    {games.map((g) => {
+                      const hasBothTeams = Boolean(g.team1 && g.team2);
 
-                /* ── Completed game (locked) ── */
-                if (isCompleted) {
-                  return (
-                    <div
-                      key={g.game_id}
-                      className="rounded-card bg-surface-container/50 p-3 opacity-60"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`flex-1 rounded-card px-3 py-2 text-xs font-label ${
-                            g.winner === g.team1
-                              ? "bg-secondary/10 text-secondary"
-                              : "text-on-surface-variant"
-                          }`}
-                        >
-                          {g.seed1} {g.team1}
-                          {g.winner === g.team1 && " \u2713"}
-                        </span>
-                        <span className="text-xs text-on-surface-variant">vs</span>
-                        <span
-                          className={`flex-1 rounded-card px-3 py-2 text-xs font-label ${
-                            g.winner === g.team2
-                              ? "bg-secondary/10 text-secondary"
-                              : "text-on-surface-variant"
-                          }`}
-                        >
-                          {g.seed2} {g.team2}
-                          {g.winner === g.team2 && " \u2713"}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                }
+                      if (g.completed) {
+                        return (
+                          <div key={g.game_id} className="rounded-card bg-surface-container/50 p-2.5 opacity-50">
+                            <div className="flex items-center gap-2">
+                              <span className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label ${g.winner === g.team1 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
+                                {g.seed1} {g.team1}{g.winner === g.team1 && " ✓"}
+                              </span>
+                              <span className="text-[10px] text-on-surface-variant">vs</span>
+                              <span className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label ${g.winner === g.team2 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
+                                {g.seed2} {g.team2}{g.winner === g.team2 && " ✓"}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
 
-                /* ── Known pending game (toggleable) ── */
-                if (hasBothTeams) {
-                  return (
-                    <div
-                      key={g.game_id}
-                      className="rounded-card bg-surface-container p-3"
-                    >
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => toggleWinner(g.game_id, g.team1)}
-                          className={`flex-1 rounded-card px-3 py-2 text-xs font-label transition-colors ${
-                            selections.get(g.game_id) === g.team1
-                              ? "bg-secondary/20 text-secondary glow-primary"
-                              : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
-                          }`}
-                        >
-                          {g.seed1} {g.team1}
-                        </button>
-                        <span className="text-xs text-on-surface-variant">vs</span>
-                        <button
-                          onClick={() => toggleWinner(g.game_id, g.team2)}
-                          className={`flex-1 rounded-card px-3 py-2 text-xs font-label transition-colors ${
-                            selections.get(g.game_id) === g.team2
-                              ? "bg-secondary/20 text-secondary glow-primary"
-                              : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
-                          }`}
-                        >
-                          {g.seed2} {g.team2}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
+                      if (hasBothTeams) {
+                        return (
+                          <div
+                            key={g.game_id}
+                            className={`rounded-card p-2.5 ${g.simulated ? "border border-dashed border-tertiary/30 bg-surface-container/70" : "bg-surface-container"}`}
+                          >
+                            {g.simulated && (
+                              <span className="inline-block mb-1 rounded-full bg-tertiary/15 text-tertiary px-2 py-0.5 text-[9px] font-label">
+                                Simulated matchup
+                              </span>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => toggleWinner(g.game_id, g.team1)}
+                                className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label transition-colors ${
+                                  selections.get(g.game_id) === g.team1
+                                    ? "bg-secondary/20 text-secondary"
+                                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
+                                }`}
+                              >
+                                {g.seed1} {g.team1}
+                              </button>
+                              <span className="text-[10px] text-on-surface-variant">vs</span>
+                              <button
+                                onClick={() => toggleWinner(g.game_id, g.team2)}
+                                className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label transition-colors ${
+                                  selections.get(g.game_id) === g.team2
+                                    ? "bg-secondary/20 text-secondary"
+                                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
+                                }`}
+                              >
+                                {g.seed2} {g.team2}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
 
-                /* ── TBD game ── */
-                return (
-                  <div
-                    key={g.game_id}
-                    className="rounded-card border border-dashed border-outline/40 bg-surface-container/40 p-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="flex-1 rounded-card px-3 py-2 text-xs font-label text-on-surface-variant/50 text-center">
-                        {g.team1 ? `${g.seed1} ${g.team1}` : "TBD"}
-                      </span>
-                      <span className="text-xs text-on-surface-variant/50">vs</span>
-                      <span className="flex-1 rounded-card px-3 py-2 text-xs font-label text-on-surface-variant/50 text-center">
-                        {g.team2 ? `${g.seed2} ${g.team2}` : "TBD"}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-on-surface-variant/40 italic text-center mt-1">
-                      TBD — pick earlier rounds first
-                    </p>
+                      return (
+                        <div key={g.game_id} className="rounded-card border border-dashed border-outline/30 bg-surface-container/30 p-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="flex-1 text-center text-xs font-label text-on-surface-variant/40">
+                              {g.team1 ? `${g.seed1} ${g.team1}` : "TBD"}
+                            </span>
+                            <span className="text-[10px] text-on-surface-variant/40">vs</span>
+                            <span className="flex-1 text-center text-xs font-label text-on-surface-variant/40">
+                              {g.team2 ? `${g.seed2} ${g.team2}` : "TBD"}
+                            </span>
+                          </div>
+                          <p className="text-[9px] text-on-surface-variant/30 italic text-center mt-1">
+                            Pick earlier rounds to unlock
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
 
           <p className="text-xs text-on-surface-variant pb-4">
-            {selections.size} of {totalPickable} available matchups selected
+            {selections.size} of {totalPending} pending games predicted
           </p>
         </div>
 
-        {/* Right: impact table (sticky) */}
+        {/* Right: impact table */}
         <div className="lg:col-span-3 lg:sticky lg:top-4 space-y-4">
           <h3 className="font-display text-lg font-semibold">Impact</h3>
 
-          {simResults.length === 0 && (
+          {simResults.length === 0 ? (
             <div className="rounded-card bg-surface-container p-8 text-center">
               <p className="text-on-surface-variant text-sm">
                 Select game winners to see the projected standings impact.
               </p>
             </div>
-          )}
-
-          {simResults.length > 0 && (
+          ) : (
             <div className="overflow-x-auto rounded-card bg-surface-container max-h-[calc(100vh-14rem)] overflow-y-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                      Sim Rank
-                    </th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                      Bracket
-                    </th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                      Change
-                    </th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                      Pts
-                    </th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">
-                      Sim Pts
-                    </th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Rank</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Bracket</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Change</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant">Sim Pts</th>
                   </tr>
                 </thead>
                 <tbody>
                   {simResults.map((r) => {
                     const delta = r.baseRank - r.simRank;
                     return (
-                      <tr
-                        key={r.id}
-                        className="border-b border-outline hover:bg-surface-bright transition-colors"
-                      >
+                      <tr key={r.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
                         <td className="px-3 py-2">
-                          <div className="text-on-surface">{r.name}</div>
-                          <div className="text-xs text-on-surface-variant">{r.owner}</div>
+                          <div className="text-on-surface text-xs">{r.name}</div>
+                          <div className="text-[10px] text-on-surface-variant">{r.owner}</div>
                         </td>
                         <td className="px-3 py-2 font-label">
                           {delta > 0 && <span className="text-secondary">+{delta}</span>}
