@@ -13,13 +13,13 @@ interface GameHeatmapProps {
 }
 
 function accuracyColor(pctCorrect: number): string {
-  // Cyan gradient for majority correct, orange gradient for majority wrong
-  if (pctCorrect >= 0.8) return "bg-[#00f4fe]/40";
-  if (pctCorrect >= 0.65) return "bg-[#00f4fe]/25";
-  if (pctCorrect >= 0.5) return "bg-[#00f4fe]/12";
-  if (pctCorrect >= 0.4) return "bg-[#ff8c42]/12";
-  if (pctCorrect >= 0.25) return "bg-[#ff8c42]/25";
-  return "bg-[#ff8c42]/40";
+  // Cyan for majority correct, orange for majority wrong — higher min opacity for dark bg contrast
+  if (pctCorrect >= 0.8) return "bg-[#00f4fe]/50";
+  if (pctCorrect >= 0.65) return "bg-[#00f4fe]/35";
+  if (pctCorrect >= 0.5) return "bg-[#00f4fe]/20";
+  if (pctCorrect >= 0.4) return "bg-[#ff8c42]/20";
+  if (pctCorrect >= 0.25) return "bg-[#ff8c42]/35";
+  return "bg-[#ff8c42]/50";
 }
 
 /** Abbreviate long team names for compact display */
@@ -216,12 +216,12 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs text-on-surface-variant font-label" title="Percentage of completed games where the group's most popular pick was correct">Group Accuracy:</span>
         <div className="flex items-center gap-0.5">
-          <div className="w-5 h-3 rounded-sm bg-[#ff8c42]/40" />
-          <div className="w-5 h-3 rounded-sm bg-[#ff8c42]/25" />
-          <div className="w-5 h-3 rounded-sm bg-[#ff8c42]/12" />
-          <div className="w-5 h-3 rounded-sm bg-[#00f4fe]/12" />
-          <div className="w-5 h-3 rounded-sm bg-[#00f4fe]/25" />
-          <div className="w-5 h-3 rounded-sm bg-[#00f4fe]/40" />
+          <div className="w-5 h-3 rounded-sm bg-[#ff8c42]/50" />
+          <div className="w-5 h-3 rounded-sm bg-[#ff8c42]/35" />
+          <div className="w-5 h-3 rounded-sm bg-[#ff8c42]/20" />
+          <div className="w-5 h-3 rounded-sm bg-[#00f4fe]/20" />
+          <div className="w-5 h-3 rounded-sm bg-[#00f4fe]/35" />
+          <div className="w-5 h-3 rounded-sm bg-[#00f4fe]/50" />
         </div>
         <span className="text-xs text-on-surface-variant">
           Wrong &larr; &rarr; Correct
