@@ -290,10 +290,57 @@ export default function SimulatorPage() {
   }
 
   /**
+   * Fill remaining unselected games with favorites or underdogs,
+   * preserving any existing user selections.
+   */
+  function fillRemaining(mode: "favorites" | "underdogs") {
+    if (!data) return;
+    const next = new Map(selections); // start from current selections
+
+    const gMap = new Map(data.games.map((g) => [g.game_id, g]));
+
+    for (const round of ROUND_ORDER) {
+      const roundGames = data.games.filter((g) => g.round === round);
+      for (const g of roundGames) {
+        if (g.completed) continue;
+        if (next.has(g.game_id)) continue; // preserve existing selection
+
+        let t1 = g.team1;
+        let s1 = g.seed1;
+        let t2 = g.team2;
+        let s2 = g.seed2;
+
+        if (!t1 || !t2) {
+          const gameFeeders = feeders.get(g.game_id) || [];
+          if (!t1 && gameFeeders[0]) {
+            const feeder = gMap.get(gameFeeders[0]);
+            t1 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[0]) || "");
+            if (t1) s1 = getTeamSeed(data.picks, t1);
+          }
+          if (!t2 && gameFeeders[1]) {
+            const feeder = gMap.get(gameFeeders[1]);
+            t2 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[1]) || "");
+            if (t2) s2 = getTeamSeed(data.picks, t2);
+          }
+        }
+
+        if (t1 && t2) {
+          let winner: string;
+          if (s1 === s2) {
+            winner = mode === "favorites" ? (t1 < t2 ? t1 : t2) : (t1 > t2 ? t1 : t2);
+          } else {
+            winner = mode === "favorites" ? (s1 <= s2 ? t1 : t2) : (s1 > s2 ? t1 : t2);
+          }
+          next.set(g.game_id, winner);
+        }
+      }
+    }
+    setSelections(next);
+  }
+
+  /**
    * Deterministically fill all rounds with favorites or underdogs.
-   * Processes round by round: for each pending game, resolve teams from
-   * completed results or prior selections in this batch, then pick by seed.
-   * Same seed tiebreak: alphabetical by team name (deterministic).
+   * Replaces all selections.
    */
   function fillAllRounds(mode: "favorites" | "underdogs") {
     if (!data) return;
@@ -377,28 +424,47 @@ export default function SimulatorPage() {
         </p>
       </div>
 
-      <div className="relative z-50 flex gap-2 flex-wrap items-center">
-        <button
-          onClick={() => fillAllRounds("favorites")}
-          className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          All favorites
-        </button>
-        <button
-          onClick={() => fillAllRounds("underdogs")}
-          className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          All underdogs
-        </button>
-        <button
-          onClick={() => setSelections(new Map())}
-          className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
-        >
-          Clear
-        </button>
-        <span className="text-[10px] text-on-surface-variant">
+      <div className="relative z-50 space-y-2">
+        <div className="flex gap-2 flex-wrap items-center">
+          <button
+            onClick={() => fillAllRounds("favorites")}
+            className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            All favorites
+          </button>
+          <button
+            onClick={() => fillAllRounds("underdogs")}
+            className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            All underdogs
+          </button>
+          <button
+            onClick={() => setSelections(new Map())}
+            className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            Clear
+          </button>
+        </div>
+        {selections.size > 0 && (
+          <div className="flex gap-2 flex-wrap items-center">
+            <span className="text-[10px] text-on-surface-variant">Fill remaining:</span>
+            <button
+              onClick={() => fillRemaining("favorites")}
+              className="rounded-card bg-surface-bright px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors border border-outline"
+            >
+              + Chalk the rest
+            </button>
+            <button
+              onClick={() => fillRemaining("underdogs")}
+              className="rounded-card bg-surface-bright px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors border border-outline"
+            >
+              + Upset the rest
+            </button>
+          </div>
+        )}
+        <p className="text-[10px] text-on-surface-variant">
           Favorites = lower seed wins. Same seed tiebreak: alphabetical.
-        </span>
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-section lg:items-start">
