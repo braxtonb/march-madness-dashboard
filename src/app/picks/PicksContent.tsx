@@ -11,7 +11,6 @@ import BottomSheet from "@/components/ui/BottomSheet";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { UpsetImpactMap } from "@/components/charts/UpsetImpactMap";
 import { GameHeatmap } from "@/components/charts/GameHeatmap";
-import { ChampionSankey } from "@/components/charts/ChampionSankey";
 import type { PickerDetails } from "@/components/ui/GameCard";
 
 interface ChampBracketInfo {
@@ -491,18 +490,6 @@ export function PicksContent({
           <p className="text-xs text-on-surface-variant">
             How many brackets picked each team to win the championship. Click to see who picked each team.
           </p>
-
-          {/* Champion Flow Diagram */}
-          <ChampionSankey
-            distribution={champDistribution.map((e) => ({
-              team: e.name,
-              seed: e.seed,
-              count: e.count,
-              logo: e.logo,
-              alive: e.alive,
-            }))}
-            totalBrackets={totalBrackets}
-          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {champDistribution.map((entry) => (
