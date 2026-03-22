@@ -165,7 +165,7 @@ function LeaderboardContentInner({
       {/* ===== Tab 1: Standings ===== */}
       {tab === "standings" && (
         <div className="space-y-section">
-          {/* Top-3 Stepped Podium */}
+          {/* Top-3 Ribbon */}
           {(() => {
             const sorted = [...brackets].sort((a, b) => {
               const aA = analytics.get(a.id);
@@ -176,84 +176,55 @@ function LeaderboardContentInner({
             const top3 = sorted.slice(0, 3);
             if (top3.length === 0) return null;
 
-            const podium = [
-              { idx: 1, height: "h-32 sm:h-36", color: "bg-on-surface-variant/8", border: "border-on-surface-variant/20", accent: "text-on-surface-variant", label: "2nd", emoji: "🥈" },
-              { idx: 0, height: "h-40 sm:h-48", color: "bg-yellow-400/10", border: "border-yellow-400/40", accent: "text-yellow-400", label: "1st", emoji: "🥇" },
-              { idx: 2, height: "h-28 sm:h-32", color: "bg-orange-400/8", border: "border-orange-400/30", accent: "text-orange-400", label: "3rd", emoji: "🥉" },
-            ];
-
-            return (
-              <div className="flex items-end justify-center gap-2 sm:gap-3 max-w-2xl mx-auto">
-                {podium.map((p) => {
-                  const b = top3[p.idx];
-                  if (!b) return <div key={p.idx} className="flex-1" />;
-                  return (
-                    <div key={b.id} className="flex-1 flex flex-col items-center">
-                      {/* Bracket info above the podium block */}
-                      <div className="text-center mb-2 space-y-1 min-w-0 w-full px-1">
-                        <div className="text-2xl">{p.emoji}</div>
-                        <p className="font-display text-sm sm:text-base font-bold text-on-surface leading-tight truncate">{b.name}</p>
-                        {b.full_name && b.full_name !== b.name && (
-                          <p className="text-[10px] text-on-surface-variant truncate">{b.full_name}</p>
-                        )}
-                        <p className={`font-display text-lg sm:text-2xl font-black ${p.accent}`}>
-                          {b.points}<span className="text-[10px] font-label ml-0.5">pts</span>
-                        </p>
-                        {b.champion_pick && (
-                          <div className="flex items-center justify-center">
-                            <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
-                          </div>
-                        )}
-                      </div>
-                      {/* Podium block */}
-                      <div className={`w-full ${p.height} rounded-t-xl border-t-2 border-x ${p.color} ${p.border} flex items-start justify-center pt-3`}>
-                        <span className={`font-display text-xl sm:text-2xl font-black ${p.accent} opacity-30`}>{p.label}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-
-          {/* Horizontal Ribbon Podium (for comparison) */}
-          {(() => {
-            const sorted = [...brackets].sort((a, b) => {
-              const aA = analytics.get(a.id);
-              const bA = analytics.get(b.id);
-              if (!aA || !bA) return 0;
-              return aA.rank - bA.rank;
-            });
-            const top3 = sorted.slice(0, 3);
-            if (top3.length === 0) return null;
+            const accents = ["text-yellow-400", "text-on-surface-variant", "text-orange-400"];
+            const emojis = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
 
             return (
               <div className="rounded-card overflow-hidden" style={{ background: "linear-gradient(90deg, rgba(250,204,21,0.12) 0%, rgba(156,163,175,0.08) 50%, rgba(251,146,60,0.08) 100%)" }}>
-                <div className="flex items-center divide-x divide-outline-variant/20">
-                  {top3.map((b, idx) => {
-                    const accents = ["text-yellow-400", "text-on-surface-variant", "text-orange-400"];
-                    const emojis = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
-                    return (
-                      <div key={b.id} className="flex-1 px-4 py-3 flex items-center gap-3 min-w-0">
-                        <span className="text-xl shrink-0">{emojis[idx]}</span>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-display font-bold text-on-surface text-sm truncate">{b.name}</p>
-                          {b.full_name && b.full_name !== b.name && (
-                            <p className="text-[10px] text-on-surface-variant truncate">{b.full_name}</p>
-                          )}
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className={`font-display font-black text-lg ${accents[idx]}`}>{b.points}</p>
-                          <p className="text-[10px] text-on-surface-variant">pts</p>
-                        </div>
-                        {b.champion_pick && (
-                          <div className="shrink-0 hidden sm:block">
-                            <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
-                          </div>
+                {/* Desktop: horizontal */}
+                <div className="hidden sm:flex items-center divide-x divide-outline-variant/20">
+                  {top3.map((b, idx) => (
+                    <div key={b.id} className="flex-1 px-4 py-3 flex items-center gap-3 min-w-0">
+                      <span className="text-xl shrink-0">{emojis[idx]}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display font-bold text-on-surface text-sm truncate">{b.name}</p>
+                        {b.full_name && b.full_name !== b.name && (
+                          <p className="text-[10px] text-on-surface-variant truncate">{b.full_name}</p>
                         )}
                       </div>
-                    );
-                  })}
+                      <div className="text-right shrink-0">
+                        <p className={`font-display font-black text-lg ${accents[idx]}`}>{b.points}</p>
+                        <p className="text-[10px] text-on-surface-variant">pts</p>
+                      </div>
+                      {b.champion_pick && (
+                        <div className="shrink-0">
+                          <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {/* Mobile: stacked */}
+                <div className="sm:hidden divide-y divide-outline-variant/20">
+                  {top3.map((b, idx) => (
+                    <div key={b.id} className="px-3 py-2.5 flex items-center gap-2.5">
+                      <span className="text-lg shrink-0">{emojis[idx]}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display font-bold text-on-surface text-sm truncate">{b.name}</p>
+                        {b.full_name && b.full_name !== b.name && (
+                          <p className="text-[10px] text-on-surface-variant truncate">{b.full_name}</p>
+                        )}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`font-display font-black text-base ${accents[idx]}`}>{b.points}</p>
+                      </div>
+                      {b.champion_pick && (
+                        <div className="shrink-0">
+                          <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             );
@@ -291,11 +262,6 @@ function LeaderboardContentInner({
             pathEntries={pathEntries}
           />
 
-          {/* Contention counter */}
-          <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-            <span className="font-display text-lg font-bold text-secondary">{inContention}</span>
-            <span>brackets can still mathematically win</span>
-          </div>
         </div>
       )}
 
