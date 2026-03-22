@@ -23,9 +23,10 @@ interface BracketViewProps {
 
 const GAME_H = 56;
 const GAME_W = 140;
-const BASE_GAP = 32; // enough gap so next round's game fits between each pair
-const CONNECTOR_W = 16;
-const REGION_GAP = 48; // vertical gap between regions on the same side
+const BASE_GAP = 12; // base gap between R64 games — later rounds use exponential spacing
+const CONNECTOR_W = 8; // minimal connector width — rounds nest/overlap
+const ROUND_OFFSET = 80; // horizontal offset per round (less than GAME_W = overlapping effect)
+const REGION_GAP = 48;
 
 /** Region codes to display labels */
 const REGION_NAMES: Record<string, string> = {
@@ -371,27 +372,32 @@ function RegionBracket({
         {REGION_NAMES[region] || region}
       </div>
 
-      <div className={`flex ${isMirror ? "flex-row-reverse" : ""} items-stretch`}>
-        {activeRounds.map((round, ri) => (
-          <div key={round} className="flex items-stretch shrink-0">
-            {/* Connector BEFORE game column (only for RTL, rounds after the first) */}
-            {isMirror && ri > 0 && (
-              <ConnectorColumn
-                gameCount={roundGameMap[activeRounds[ri - 1]]?.length || 0}
-                regionHeight={regionHeight}
-                mirror
-              />
-            )}
+      <div
+        className="relative"
+        style={{
+          height: regionHeight,
+          width: GAME_W + (activeRounds.length - 1) * ROUND_OFFSET,
+        }}
+      >
+        {activeRounds.map((round, ri) => {
+          const games = roundGameMap[round];
+          // Position: each round offset by ROUND_OFFSET from the previous
+          const xOffset = isMirror
+            ? (activeRounds.length - 1 - ri) * ROUND_OFFSET
+            : ri * ROUND_OFFSET;
 
-            {/* Games column */}
+          return (
             <div
-              className="flex flex-col justify-evenly shrink-0"
+              key={round}
+              className="absolute top-0 flex flex-col justify-evenly"
               style={{
+                left: xOffset,
+                width: GAME_W,
                 height: regionHeight,
-                minHeight: regionHeight,
+                zIndex: ri + 1, // later rounds render on top
               }}
             >
-              {roundGameMap[round].map((game) => (
+              {games.map((game) => (
                 <GameCell
                   key={game.game_id}
                   game={game}
@@ -412,16 +418,8 @@ function RegionBracket({
                 />
               ))}
             </div>
-
-            {/* Connector AFTER game column (only for LTR, not after last round) */}
-            {!isMirror && ri < activeRounds.length - 1 && (
-              <ConnectorColumn
-                gameCount={roundGameMap[round]?.length || 0}
-                regionHeight={regionHeight}
-              />
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -529,52 +527,44 @@ export function BracketView({
       {/* Horizontally scrollable bracket — no inner vertical scroll */}
       <div ref={scrollRef} className="overflow-x-auto pb-4">
         {/* Column Headers — sticky to page top (52px navbar) */}
-        <div className="flex items-end sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-1 border-b border-on-surface-variant/10 mb-2">
-          {/* Left side headers: R64 → R32 → S16 → E8 */}
-          <div className="flex items-end">
-            {leftRounds.map((round, i) => (
-              <div key={`lh-${round}`} className="flex items-end">
-                <ColumnHeader round={round} />
-                {i < leftRounds.length - 1 && <ConnectorHeaderSpacer />}
-              </div>
-            ))}
-          </div>
+        {/* Column Headers — uses same ROUND_OFFSET spacing as bracket body */}
+        {(() => {
+          // Build header positions: left rounds + center + right rounds
+          const leftWidth = GAME_W + (leftRounds.length - 1) * ROUND_OFFSET;
+          const centerCols: Round[] = [];
+          if (ffLeft) centerCols.push("FF");
+          if (champGames.length > 0) centerCols.push("CHAMP");
+          if (ffRight) centerCols.push("FF");
+          const centerWidth = centerCols.length > 0 ? GAME_W + (centerCols.length - 1) * ROUND_OFFSET : 0;
+          const rightWidth = GAME_W + (rightRounds.length - 1) * ROUND_OFFSET;
+          const centerGap = CONNECTOR_W * 2;
+          const totalHeaderWidth = leftWidth + centerGap + centerWidth + centerGap + rightWidth;
 
-          {/* Center headers: FF → CHAMP → FF */}
-          {hasFinalRounds && (
-            <div className="flex items-end">
-              {ffLeft && (
-                <>
-                  <ConnectorHeaderSpacer />
-                  <ColumnHeader round="FF" />
-                </>
-              )}
-              {champGames.length > 0 && (
-                <>
-                  <ConnectorHeaderSpacer />
-                  <ColumnHeader round="CHAMP" />
-                </>
-              )}
-              {ffRight && (
-                <>
-                  <ConnectorHeaderSpacer />
-                  <ColumnHeader round="FF" />
-                </>
-              )}
+          return (
+            <div className="sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-1 border-b border-on-surface-variant/10 mb-2" style={{ width: totalHeaderWidth }}>
+              <div className="relative" style={{ height: 36 }}>
+                {/* Left headers */}
+                {leftRounds.map((round, i) => (
+                  <div key={`lh-${round}`} className="absolute" style={{ left: i * ROUND_OFFSET, width: GAME_W, top: 0 }}>
+                    <ColumnHeader round={round} />
+                  </div>
+                ))}
+                {/* Center headers */}
+                {centerCols.map((round, i) => (
+                  <div key={`ch-${i}-${round}`} className="absolute" style={{ left: leftWidth + centerGap + i * ROUND_OFFSET, width: GAME_W, top: 0 }}>
+                    <ColumnHeader round={round} />
+                  </div>
+                ))}
+                {/* Right headers */}
+                {rightRounds.map((round, i) => (
+                  <div key={`rh-${i}-${round}`} className="absolute" style={{ left: leftWidth + centerGap + centerWidth + centerGap + i * ROUND_OFFSET, width: GAME_W, top: 0 }}>
+                    <ColumnHeader round={round} />
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-
-          {/* Right side headers: E8 → S16 → R32 → R64 */}
-          <div className="flex items-end">
-            {rightRounds.map((round, i) => (
-              <div key={`rh-${i}-${round}`} className="flex items-end">
-                {i === 0 && <ConnectorHeaderSpacer />}
-                <ColumnHeader round={round} />
-                {i < rightRounds.length - 1 && <ConnectorHeaderSpacer />}
-              </div>
-            ))}
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Bracket body */}
         <div className="flex items-stretch">
