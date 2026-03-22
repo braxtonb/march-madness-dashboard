@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 interface MyBracketContextType {
   myBracketId: string | null;
@@ -34,8 +34,13 @@ export default function MyBracketProvider({ children }: { children: ReactNode })
 
   const isMyBracket = useCallback((id: string) => id === myBracketId, [myBracketId]);
 
+  const value = useMemo(
+    () => ({ myBracketId, setMyBracket, isMyBracket }),
+    [myBracketId, setMyBracket, isMyBracket]
+  );
+
   return (
-    <MyBracketContext.Provider value={{ myBracketId, setMyBracket, isMyBracket }}>
+    <MyBracketContext.Provider value={value}>
       {children}
     </MyBracketContext.Provider>
   );

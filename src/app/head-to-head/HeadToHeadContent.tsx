@@ -6,7 +6,8 @@ import type { Bracket, Pick, Game, BracketAnalytics, Round, AwardRound, Team } f
 import { ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { GameHeader } from "@/components/ui/GameHeader";
-import BracketSearch from "@/components/ui/BracketSearch";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 
 type DiffFilter = "all" | "differences" | "agreement";
 type StatusFilter = "all" | "completed" | "scheduled";
@@ -73,6 +74,15 @@ export function HeadToHeadContent({
     setSelectedRound(v);
     updateUrl("round", v);
   }
+
+  // Build bracket options for MultiSelectSearch
+  const bracketOptions: MultiSelectOption[] = useMemo(
+    () => brackets.map((b) => {
+      const primary = displayName(b);
+      return { value: b.id, label: primary, sublabel: b.name !== primary ? b.name : undefined };
+    }),
+    [brackets]
+  );
 
   const b1 = brackets.find((b) => b.id === id1);
   const b2 = brackets.find((b) => b.id === id2);
@@ -224,8 +234,8 @@ export function HeadToHeadContent({
     <div className="space-y-4">
       {/* Bracket selectors */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <BracketSearch brackets={brackets} mode="select" selectedId={id1} onSelect={setId1} onClear={() => setId1("")} label="Bracket 1" excludeId={id2} placeholder="Search brackets..." />
-        <BracketSearch brackets={brackets} mode="select" selectedId={id2} onSelect={setId2} onClear={() => setId2("")} label="Bracket 2" excludeId={id1} placeholder="Search brackets..." />
+        <MultiSelectSearch mode="single" label="Brackets" options={bracketOptions} selectedId={id1} onSelect={setId1} onClear={() => setId1("")} inputLabel="Bracket 1" excludeValue={id2} placeholder="Search brackets..." />
+        <MultiSelectSearch mode="single" label="Brackets" options={bracketOptions} selectedId={id2} onSelect={setId2} onClear={() => setId2("")} inputLabel="Bracket 2" excludeValue={id1} placeholder="Search brackets..." />
       </div>
 
       {b1 && b2 && a1 && a2 ? (

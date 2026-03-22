@@ -1,4 +1,5 @@
 "use client";
+import { useMemo } from "react";
 import { useCompare } from "./CompareProvider";
 import { useRouter } from "next/navigation";
 import type { Bracket } from "@/lib/types";
@@ -12,9 +13,19 @@ export default function CompareBar({ brackets }: CompareBarProps) {
   const { selected, toggle, clear } = useCompare();
   const router = useRouter();
 
-  if (selected.length === 0) return null;
+  // Memoize bracket lookup map to avoid filtering 75 brackets on every render
+  const bracketMap = useMemo(() => {
+    const map = new Map<string, Bracket>();
+    for (const b of brackets) map.set(b.id, b);
+    return map;
+  }, [brackets]);
 
-  const selectedBrackets = selected.map((id) => brackets.find((b) => b.id === id)).filter(Boolean);
+  const selectedBrackets = useMemo(
+    () => selected.map((id) => bracketMap.get(id)).filter(Boolean),
+    [selected, bracketMap]
+  );
+
+  if (selected.length === 0) return null;
 
   const handleCompare = () => {
     if (selected.length === 2) {

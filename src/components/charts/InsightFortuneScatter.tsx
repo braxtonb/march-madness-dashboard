@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { displayName } from "@/lib/constants";
-import FilterDropdown from "@/components/ui/FilterDropdown";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 
 interface ScatterPoint {
   name: string;
@@ -135,21 +135,23 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
     <div className="space-y-4">
       {/* Filters — fixed-height row, no layout shift */}
       <div className="flex flex-wrap items-center gap-2">
-        <FilterDropdown
+        <MultiSelectSearch
+          mode="multi"
           label="Brackets"
           options={sheetOptions}
           selected={nameFilter}
-          onChange={changeNameFilter}
+          onSelectedChange={changeNameFilter}
           searchable
         />
-        <FilterDropdown
+        <MultiSelectSearch
+          mode="multi"
           label="Champions"
           options={championOptions}
           selected={championFilter}
-          onChange={changeChampionFilter}
+          onSelectedChange={changeChampionFilter}
         />
         <div className="flex gap-1 items-center">
-          <div className="flex rounded-lg bg-surface-bright border border-outline-variant overflow-hidden min-h-[36px]">
+          <div className="flex rounded-lg bg-surface-container border border-outline overflow-hidden min-h-[36px]">
             {([["gte", "\u2265"], ["lte", "\u2264"], ["eq", "="]] as const).map(([op, symbol]) => (
               <button
                 key={op}
@@ -172,7 +174,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
             value={pointsFilter}
             onChange={(e) => changePointsFilter(e.target.value.replace(/\D/g, ""))}
             placeholder="Pts"
-            className="rounded-lg bg-surface-bright border border-outline-variant px-3 py-1.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors w-16 min-h-[36px]"
+            className="rounded-lg bg-surface-container border border-outline px-3 py-1.5 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors w-16 min-h-[36px]"
           />
         </div>
         {hasFilters && (

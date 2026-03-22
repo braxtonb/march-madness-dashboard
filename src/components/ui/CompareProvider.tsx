@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 
 interface CompareContextType {
   selected: string[];           // bracket IDs, max 2
@@ -31,10 +31,18 @@ export default function CompareProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clear = useCallback(() => setSelected([]), []);
-  const isSelected = useCallback((id: string) => selected.includes(id), [selected]);
+
+  // Stable Set for O(1) lookups — only recreated when `selected` changes
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const isSelected = useCallback((id: string) => selectedSet.has(id), [selectedSet]);
+
+  const value = useMemo(
+    () => ({ selected, toggle, clear, isSelected }),
+    [selected, toggle, clear, isSelected]
+  );
 
   return (
-    <CompareContext.Provider value={{ selected, toggle, clear, isSelected }}>
+    <CompareContext.Provider value={value}>
       {children}
     </CompareContext.Provider>
   );

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { useCompare } from "./CompareProvider";
 
 interface CompareCheckboxProps {
@@ -6,7 +7,7 @@ interface CompareCheckboxProps {
   className?: string;
 }
 
-export default function CompareCheckbox({ bracketId, className = "" }: CompareCheckboxProps) {
+function CompareCheckboxInner({ bracketId, className = "" }: CompareCheckboxProps) {
   const { toggle, isSelected } = useCompare();
   const checked = isSelected(bracketId);
 
@@ -32,3 +33,6 @@ export default function CompareCheckbox({ bracketId, className = "" }: CompareCh
     </button>
   );
 }
+
+const CompareCheckbox = React.memo(CompareCheckboxInner);
+export default CompareCheckbox;

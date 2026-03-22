@@ -235,18 +235,31 @@ export function ProbabilityClient({
     return map;
   }, [pathData]);
 
-  // Group brackets by tier
-  const tierGroups = new Map<TierKey, ProbEntry[]>();
-  for (const tier of TIERS) {
-    tierGroups.set(tier.key, []);
-  }
-  for (const entry of probData) {
-    const tierKey = getTierKey(entry.probability);
-    tierGroups.get(tierKey)!.push(entry);
-  }
+  // Group brackets by tier (memoized to avoid recalc on every render)
+  const tierGroups = useMemo(() => {
+    const groups = new Map<TierKey, ProbEntry[]>();
+    for (const tier of TIERS) {
+      groups.set(tier.key, []);
+    }
+    for (const entry of probData) {
+      const tierKey = getTierKey(entry.probability);
+      groups.get(tierKey)!.push(entry);
+    }
+    return groups;
+  }, [probData]);
 
-  // Alive tab: filter brackets
-  const aliveFiltered = (() => {
+  // Memoize analytics map and eliminated set to avoid new object creation each render
+  const aliveAnalyticsMap = useMemo(
+    () => aliveData ? new Map(Object.entries(aliveData.analyticsObj)) : new Map<string, BracketAnalytics>(),
+    [aliveData]
+  );
+  const aliveEliminatedSet = useMemo(
+    () => aliveData ? new Set(aliveData.eliminatedArr) : new Set<string>(),
+    [aliveData]
+  );
+
+  // Alive tab: filter brackets (memoized)
+  const aliveFiltered = useMemo(() => {
     if (!aliveData) return [];
     const { brackets, eliminatedArr, bracketFFTeamsMap } = aliveData;
     const eliminatedTeams = new Set(eliminatedArr);
@@ -277,7 +290,7 @@ export function ProbabilityClient({
       default:
         return [...brackets].sort((a, b) => b.points - a.points);
     }
-  })();
+  }, [aliveData, aliveFilter]);
 
   return (
     <div className="space-y-section">
@@ -625,8 +638,8 @@ export function ProbabilityClient({
             </div>
             <DrilldownTable
               brackets={aliveFiltered}
-              analytics={new Map(Object.entries(aliveData.analyticsObj))}
-              eliminatedTeams={new Set(aliveData.eliminatedArr)}
+              analytics={aliveAnalyticsMap}
+              eliminatedTeams={aliveEliminatedSet}
               teamLogos={teamLogos}
               pathData={pathData}
             />

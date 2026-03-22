@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
-import BracketSearch from "@/components/ui/BracketSearch";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { displayName } from "@/lib/constants";
 import type { Bracket } from "@/lib/types";
 
@@ -42,6 +43,15 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
     sorted.forEach((b, i) => map.set(b.id, i + 1));
     return map;
   }, [brackets]);
+
+  // Build bracket options for MultiSelectSearch
+  const bracketOptions: MultiSelectOption[] = useMemo(
+    () => brackets.map((b) => {
+      const primary = displayName(b);
+      return { value: b.id, label: primary, sublabel: b.name !== primary ? b.name : undefined };
+    }),
+    [brackets]
+  );
 
   const pinned = brackets.find((b) => b.id === myBracketId);
   const pinnedRank = pinned ? rankMap.get(pinned.id) : null;
@@ -98,9 +108,10 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
 
       {open && (
         <div className="absolute top-full right-0 mt-1 w-72 z-50">
-          <BracketSearch
-            brackets={brackets}
-            mode="select"
+          <MultiSelectSearch
+            mode="single"
+            label="Brackets"
+            options={bracketOptions}
             selectedId={myBracketId ?? undefined}
             onSelect={handleSelect}
             onClear={handleClear}

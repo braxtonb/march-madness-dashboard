@@ -7,7 +7,8 @@ import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
 import { TeamPill } from "@/components/ui/TeamPill";
-import BracketSearch from "@/components/ui/BracketSearch";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
@@ -99,6 +100,12 @@ function LeaderboardContentInner({
 
   const [tab, setTab] = useState<LeaderboardTab>(initialTab);
   const [selectedSearchIds, setSelectedSearchIds] = useState<string[]>([]);
+
+  // Build options for MultiSelectSearch
+  const bracketOptions: MultiSelectOption[] = useMemo(
+    () => brackets.map((b) => ({ value: b.id, label: displayName(b), sublabel: b.name !== displayName(b) ? b.name : undefined })),
+    [brackets]
+  );
 
   const filteredBrackets = useMemo(() => {
     if (selectedSearchIds.length === 0) return brackets;
@@ -228,11 +235,12 @@ function LeaderboardContentInner({
             </p>
           </div>
           <div className="w-full sm:w-72 mb-3">
-            <BracketSearch
-              brackets={brackets}
-              mode="filter-multi"
-              selectedIds={selectedSearchIds}
-              onSelectedIdsChange={setSelectedSearchIds}
+            <MultiSelectSearch
+              mode="multi"
+              label="Brackets"
+              options={bracketOptions}
+              selected={selectedSearchIds}
+              onSelectedChange={setSelectedSearchIds}
               placeholder="Search brackets..."
             />
           </div>
