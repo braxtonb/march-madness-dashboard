@@ -149,7 +149,7 @@ export function LeaderboardTable({
               <>
                 <tr
                   key={b.id}
-                  className={`border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
                   onClick={() => setExpandedIds((prev) => {
                     const next = new Set(prev);
                     if (next.has(b.id)) next.delete(b.id);

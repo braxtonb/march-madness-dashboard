@@ -112,6 +112,7 @@ export default async function LeaderboardPage() {
     .sort((a, b) => a.rate - b.rate)
     .slice(0, 15)
     .map((gc) => ({
+      bracketId: gc.bracket!.id,
       bracketName: gc.bracket!.name,
       bracketOwner: gc.bracket!.owner,
       bracketFullName: gc.bracket!.full_name,

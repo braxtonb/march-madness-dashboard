@@ -68,7 +68,7 @@ export function PicksDrawer({
               return (
                 <div
                   key={picker.name}
-                  className={`flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
+                  className={`group flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
                 >
                   <CompareCheckbox bracketId={picker.bracketId} />
                   <div>
@@ -101,7 +101,7 @@ export function PicksDrawer({
               return (
                 <div
                   key={picker.name}
-                  className={`flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
+                  className={`group flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
                 >
                   <CompareCheckbox bracketId={picker.bracketId} />
                   <div>

@@ -36,7 +36,7 @@ export default function MobileCard({
 
   return (
     <div
-      className="rounded-card bg-surface-container border border-outline-variant p-3 space-y-2"
+      className="group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2"
       onClick={() => setExpanded((prev) => !prev)}
     >
       {/* Top row: rank, name, points */}

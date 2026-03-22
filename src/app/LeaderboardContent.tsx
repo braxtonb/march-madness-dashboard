@@ -7,6 +7,7 @@ import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
 import { TeamPill } from "@/components/ui/TeamPill";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
@@ -33,6 +34,7 @@ interface ScatterPoint {
 }
 
 interface GreatestCall {
+  bracketId: string;
   bracketName: string;
   bracketOwner: string;
   bracketFullName: string;
@@ -180,8 +182,9 @@ function LeaderboardContentInner({
                   return (
                     <div
                       key={b.id}
-                      className={`rounded-card border p-4 text-center space-y-2 ${m.bgClass} ${m.borderClass} ${idx === 0 ? "pb-6 pt-6" : ""}`}
+                      className={`group rounded-card border p-4 text-center space-y-2 ${m.bgClass} ${m.borderClass} ${idx === 0 ? "pb-6 pt-6" : ""}`}
                     >
+                      <div className="flex justify-end"><CompareCheckbox bracketId={b.id} /></div>
                       <div className="text-3xl">{m.emoji}</div>
                       <p className={`font-label text-xs uppercase tracking-wider ${m.textClass}`}>
                         {m.label}
@@ -207,7 +210,15 @@ function LeaderboardContentInner({
           })()}
 
           {/* Leaderboard table */}
-          <p className="text-xs text-on-surface-variant">Click any row to see their path to victory</p>
+          <div>
+            <p className="text-xs text-on-surface-variant">Click any row to see their path to victory</p>
+            <p className="hidden sm:block text-xs text-on-surface-variant/60 mb-2">
+              Hover any row to compare brackets
+            </p>
+            <p className="sm:hidden text-xs text-on-surface-variant/60 mb-2">
+              Tap &#9675; to compare brackets
+            </p>
+          </div>
           <LeaderboardTable
             brackets={brackets}
             analytics={analytics}
@@ -238,9 +249,10 @@ function LeaderboardContentInner({
             {greatestCalls.slice(0, 15).map((gc, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between rounded-card bg-surface-bright px-3 py-2.5"
+                className="group flex items-center justify-between rounded-card bg-surface-bright px-3 py-2.5"
               >
                 <div className="flex items-center gap-3">
+                  <CompareCheckbox bracketId={gc.bracketId} />
                   <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center">
                     {i + 1}
                   </span>
