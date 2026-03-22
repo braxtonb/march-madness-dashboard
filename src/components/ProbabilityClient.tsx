@@ -424,7 +424,7 @@ export function ProbabilityClient({
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <table className="min-w-[850px] w-full text-sm">
               <thead>
-                <tr className="border-b border-outline">
+                <tr className="border-b border-outline-variant">
                   <th className="w-8"></th>
                   <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Tier</th>
@@ -446,7 +446,7 @@ export function ProbabilityClient({
                   return (
                     <React.Fragment key={d.id}>
                     <tr
-                      className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(d.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                      className={`group border-b border-outline-variant transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(d.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
                       onClick={() => setExpandedFinishIds((prev) => {
                         const next = new Set(prev);
                         if (next.has(d.id)) next.delete(d.id);

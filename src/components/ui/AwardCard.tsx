@@ -83,33 +83,42 @@ export function AwardCard({
             {award.winners.length}-way tie &mdash; {firstWinner.stat}
           </p>
 
-          {/* Click hint */}
+          {/* Sidebar icon */}
           {onClick && (
-            <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" /></svg>
-            </p>
+            <div className="flex justify-end">
+              <span className="text-on-surface-variant">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M15 3v18" />
+                </svg>
+              </span>
+            </div>
           )}
         </>
       ) : (
         <>
           {/* Single winner */}
-          <div>
-            <p className="font-body text-on-surface font-semibold">{firstWinner.name}</p>
-            {firstWinner.fullName && firstWinner.fullName !== firstWinner.name && (
-              <p className="text-xs text-on-surface-variant">{firstWinner.fullName}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="font-body text-on-surface font-semibold">{firstWinner.name}</p>
+              {firstWinner.fullName && firstWinner.fullName !== firstWinner.name && (
+                <p className="text-xs text-on-surface-variant">{firstWinner.fullName}</p>
+              )}
+            </div>
+            {/* Sidebar icon */}
+            {onClick && (
+              <span className="text-on-surface-variant shrink-0 mt-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M15 3v18" />
+                </svg>
+              </span>
             )}
           </div>
           <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
           {firstWinner.championPick && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
               Champion: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
-            </p>
-          )}
-
-          {/* Click hint */}
-          {onClick && (
-            <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              Click for details <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M18 12H6" /><path d="m18 12-4-4" /><path d="m18 12-4 4" /></svg>
             </p>
           )}
         </>

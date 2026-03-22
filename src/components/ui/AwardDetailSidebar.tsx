@@ -1,10 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import BottomSheet from "./BottomSheet";
 import { TeamPill } from "./TeamPill";
 import type { Award, AwardWinner, Pick, Game, Team, Bracket, Round } from "@/lib/types";
 import { ROUND_ORDER, ROUND_LABELS, ROUND_POINTS } from "@/lib/constants";
+
+/* ── Collapsible Round Section ───────────────────── */
+
+function CollapsibleRound({
+  round,
+  label,
+  defaultCollapsed,
+  children,
+  gameCount,
+}: {
+  round: string;
+  label: string;
+  defaultCollapsed: boolean;
+  children: React.ReactNode;
+  gameCount?: number;
+}) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="w-full flex items-center gap-2 pt-2 border-t border-surface-bright cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+      >
+        <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">
+          {collapsed ? "+" : "\u2212"}
+        </span>
+        <p className="font-label text-xs font-semibold text-on-surface">{label}</p>
+        {collapsed && gameCount !== undefined && (
+          <span className="text-[10px] text-on-surface-variant/50 ml-auto">
+            {gameCount} game{gameCount !== 1 ? "s" : ""}
+          </span>
+        )}
+      </button>
+      {!collapsed && children}
+    </div>
+  );
+}
 
 interface AwardDetailSidebarProps {
   award: Award;
@@ -64,12 +102,14 @@ function OracleContent({
   games,
   teams,
   selectedRound,
+  completedRounds,
 }: {
   winner: AwardWinner;
   picks: Pick[];
   games: Game[];
   teams: Team[];
   selectedRound: string;
+  completedRounds: Set<string>;
 }) {
   const rGames = roundGamesForRound(games, selectedRound);
   const gameIds = new Set(rGames.map((g) => g.game_id));
@@ -77,47 +117,65 @@ function OracleContent({
   const pickMap = new Map(wPicks.map((p) => [p.game_id, p]));
   const correct = wPicks.filter((p) => p.correct).length;
 
+  const groupByRound = selectedRound === "ALL";
+  const rounds = groupByRound
+    ? ROUND_ORDER.filter((r) => rGames.some((g) => g.round === r))
+    : [selectedRound];
+
+  function renderGame(g: Game) {
+    const pick = pickMap.get(g.game_id);
+    const isCorrect = pick?.correct ?? false;
+    return (
+      <div
+        key={g.game_id}
+        className="flex items-center justify-between rounded-lg bg-surface-bright/50 px-3 py-2"
+      >
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} />
+          <span className="text-[10px] text-on-surface-variant">vs</span>
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} />
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          {pick && (
+            <span className="text-xs text-on-surface-variant">{pick.team_picked}</span>
+          )}
+          <span className={isCorrect ? "text-secondary" : "text-error"}>
+            {isCorrect ? "\u2713" : "\u00d7"}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <p className="text-sm font-label text-secondary">
         {correct} of {rGames.length} correct
       </p>
-      <div className="space-y-2">
-        {rGames.map((g) => {
-          const pick = pickMap.get(g.game_id);
-          const isCorrect = pick?.correct ?? false;
-          return (
-            <div
-              key={g.game_id}
-              className="flex items-center justify-between rounded-lg bg-surface-bright/50 px-3 py-2"
-            >
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <TeamPill
-                  name={g.team1}
-                  seed={g.seed1}
-                  logo={teamLogo(teams, g.team1)}
-                />
-                <span className="text-[10px] text-on-surface-variant">vs</span>
-                <TeamPill
-                  name={g.team2}
-                  seed={g.seed2}
-                  logo={teamLogo(teams, g.team2)}
-                />
-              </div>
-              <div className="flex items-center gap-2 shrink-0 ml-2">
-                {pick && (
-                  <span className="text-xs text-on-surface-variant">
-                    {pick.team_picked}
-                  </span>
-                )}
-                <span className={isCorrect ? "text-secondary" : "text-error"}>
-                  {isCorrect ? "\u2713" : "\u00d7"}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {groupByRound ? (
+        <div className="space-y-2">
+          {rounds.map((round) => {
+            const roundFilteredGames = rGames.filter((g) => g.round === round);
+            return (
+              <CollapsibleRound
+                key={round}
+                round={round}
+                label={ROUND_LABELS[round as Round]}
+                defaultCollapsed={completedRounds.has(round)}
+                gameCount={roundFilteredGames.length}
+              >
+                <div className="space-y-2">
+                  {roundFilteredGames.map(renderGame)}
+                </div>
+              </CollapsibleRound>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {rGames.map(renderGame)}
+        </div>
+      )}
     </div>
   );
 }
@@ -131,6 +189,7 @@ function TrendsetterContent({
   teams,
   pickRates,
   selectedRound,
+  completedRounds,
 }: {
   winner: AwardWinner;
   picks: Pick[];
@@ -138,6 +197,7 @@ function TrendsetterContent({
   teams: Team[];
   pickRates: Record<string, Record<string, number>>;
   selectedRound: string;
+  completedRounds: Set<string>;
 }) {
   const rGames = roundGamesForRound(games, selectedRound);
   const gameIds = new Set(rGames.map((g) => g.game_id));
@@ -163,27 +223,47 @@ function TrendsetterContent({
     );
   }
 
+  const groupByRound = selectedRound === "ALL";
+  const rounds = groupByRound
+    ? ROUND_ORDER.filter((r) => uniquePicks.some((p) => p.round === r))
+    : null;
+
+  function renderPick(p: Pick) {
+    const rate = pickRates[p.game_id]?.[p.team_picked] ?? 0;
+    return (
+      <div key={p.game_id} className="space-y-1 rounded-lg bg-surface-bright/50 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} />
+          <span className="text-[10px] text-on-surface-variant">Only {Math.round(rate * 100)}% picked this</span>
+        </div>
+        <PickRateBar rate={rate} />
+      </div>
+    );
+  }
+
+  if (groupByRound && rounds) {
+    return (
+      <div className="space-y-2">
+        {rounds.map((round) => {
+          const roundPicks = uniquePicks.filter((p) => p.round === round);
+          return (
+            <CollapsibleRound
+              key={round}
+              round={round}
+              label={ROUND_LABELS[round as Round]}
+              defaultCollapsed={completedRounds.has(round)}
+              gameCount={roundPicks.length}
+            >
+              <div className="space-y-3">{roundPicks.map(renderPick)}</div>
+            </CollapsibleRound>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-3">
-      {uniquePicks.map((p) => {
-        const rate = pickRates[p.game_id]?.[p.team_picked] ?? 0;
-        return (
-          <div key={p.game_id} className="space-y-1 rounded-lg bg-surface-bright/50 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <TeamPill
-                name={p.team_picked}
-                seed={p.seed_picked}
-                logo={teamLogo(teams, p.team_picked)}
-              />
-              <span className="text-[10px] text-on-surface-variant">
-                Only {Math.round(rate * 100)}% picked this
-              </span>
-            </div>
-            <PickRateBar rate={rate} />
-          </div>
-        );
-      })}
-    </div>
+    <div className="space-y-3">{uniquePicks.map(renderPick)}</div>
   );
 }
 
@@ -276,12 +356,14 @@ function HotStreakContent({
   games,
   selectedRound,
   teams,
+  completedRounds,
 }: {
   winner: AwardWinner;
   picks: Pick[];
   games: Game[];
   selectedRound: string;
   teams: Team[];
+  completedRounds: Set<string>;
 }) {
   const rGames = roundGamesForRound(games, selectedRound);
   const gameIds = new Set(rGames.map((g) => g.game_id));
@@ -313,41 +395,61 @@ function HotStreakContent({
     );
   }
 
+  const groupByRound = selectedRound === "ALL";
+  const rounds = groupByRound
+    ? ROUND_ORDER.filter((r) => best.some((p) => { const g = gameMap.get(p.game_id); return g?.round === r; }))
+    : null;
+
+  // Track global streak index across rounds
+  let globalIdx = 0;
+
+  function renderStreakItem(p: Pick, idx: number) {
+    const g = gameMap.get(p.game_id);
+    if (!g) return null;
+    return (
+      <div key={p.game_id} className="flex items-center gap-3 rounded-lg bg-surface-bright/50 px-3 py-2">
+        <span className="text-sm font-display font-bold text-secondary w-6 text-center shrink-0">{idx + 1}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} />
+            <span className="text-[10px] text-on-surface-variant">vs</span>
+            <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} />
+          </div>
+          <p className="text-[10px] text-on-surface-variant mt-0.5">{ROUND_LABELS[g.round as Round]}</p>
+        </div>
+        <span className="text-secondary shrink-0">{"\u2713"}</span>
+      </div>
+    );
+  }
+
+  if (groupByRound && rounds) {
+    return (
+      <div className="space-y-2">
+        {rounds.map((round) => {
+          const roundPicks = best.filter((p) => { const g = gameMap.get(p.game_id); return g?.round === round; });
+          const startIdx = globalIdx;
+          globalIdx += roundPicks.length;
+          return (
+            <CollapsibleRound
+              key={round}
+              round={round}
+              label={ROUND_LABELS[round as Round]}
+              defaultCollapsed={completedRounds.has(round)}
+              gameCount={roundPicks.length}
+            >
+              <div className="space-y-2">
+                {roundPicks.map((p, i) => renderStreakItem(p, startIdx + i))}
+              </div>
+            </CollapsibleRound>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
-      {best.map((p, i) => {
-        const g = gameMap.get(p.game_id);
-        if (!g) return null;
-        return (
-          <div
-            key={p.game_id}
-            className="flex items-center gap-3 rounded-lg bg-surface-bright/50 px-3 py-2"
-          >
-            <span className="text-sm font-display font-bold text-secondary w-6 text-center shrink-0">
-              {i + 1}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <TeamPill
-                  name={g.team1}
-                  seed={g.seed1}
-                  logo={teamLogo(teams, g.team1)}
-                />
-                <span className="text-[10px] text-on-surface-variant">vs</span>
-                <TeamPill
-                  name={g.team2}
-                  seed={g.seed2}
-                  logo={teamLogo(teams, g.team2)}
-                />
-              </div>
-              <p className="text-[10px] text-on-surface-variant mt-0.5">
-                {ROUND_LABELS[g.round as Round]}
-              </p>
-            </div>
-            <span className="text-secondary shrink-0">{"\u2713"}</span>
-          </div>
-        );
-      })}
+      {best.map((p, i) => renderStreakItem(p, i))}
     </div>
   );
 }
@@ -442,6 +544,7 @@ function PeoplesChampionContent({
   teams,
   pickRates,
   selectedRound,
+  completedRounds,
 }: {
   winner: AwardWinner;
   picks: Pick[];
@@ -449,10 +552,10 @@ function PeoplesChampionContent({
   teams: Team[];
   pickRates: Record<string, Record<string, number>>;
   selectedRound: string;
+  completedRounds: Set<string>;
 }) {
   const rGames = roundGamesForRound(games, selectedRound);
   const gameIds = new Set(rGames.map((g) => g.game_id));
-  const gameMap = new Map(rGames.map((g) => [g.game_id, g]));
   const wPicks = winnerPicks(picks, winner.bracketId, gameIds);
   const pickMap = new Map(wPicks.map((p) => [p.game_id, p]));
 
@@ -482,65 +585,67 @@ function PeoplesChampionContent({
     ? ROUND_ORDER.filter((r) => rGames.some((g) => g.round === r))
     : [selectedRound];
 
+  function renderGameCard(g: Game) {
+    const pick = pickMap.get(g.game_id);
+    const plurality = pluralityPick.get(g.game_id) ?? "";
+    const matchedPlurality = pick?.team_picked === plurality;
+    return (
+      <div
+        key={g.game_id}
+        className={`rounded-lg px-3 py-2 ${
+          matchedPlurality ? "bg-secondary/10" : "bg-surface-bright/50"
+        }`}
+      >
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} />
+          <span className="text-[10px] text-on-surface-variant">vs</span>
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} />
+        </div>
+        <div className="flex items-center justify-between mt-1 text-[10px]">
+          <span className="text-on-surface-variant">Most popular: {plurality}</span>
+          {matchedPlurality && (
+            <span className="text-secondary font-label">Matched</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <p className="text-sm font-label text-secondary">
         Matched {matched} of {rGames.length} plurality picks
       </p>
 
-      {rounds.map((round) => {
-        const roundFilteredGames = rGames.filter((g) =>
-          groupByRound ? g.round === round : true
-        );
-
-        return (
-          <div key={round} className="space-y-2">
-            {groupByRound && (
-              <p className="text-xs font-label text-on-surface-variant pt-2 border-t border-surface-bright">
-                {ROUND_LABELS[round as Round]}
-              </p>
-            )}
-            {roundFilteredGames.map((g) => {
-              const pick = pickMap.get(g.game_id);
-              const plurality = pluralityPick.get(g.game_id) ?? "";
-              const matchedPlurality = pick?.team_picked === plurality;
-
-              return (
-                <div
-                  key={g.game_id}
-                  className={`rounded-lg px-3 py-2 ${
-                    matchedPlurality ? "bg-secondary/10" : "bg-surface-bright/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <TeamPill
-                      name={g.team1}
-                      seed={g.seed1}
-                      logo={teamLogo(teams, g.team1)}
-                    />
-                    <span className="text-[10px] text-on-surface-variant">vs</span>
-                    <TeamPill
-                      name={g.team2}
-                      seed={g.seed2}
-                      logo={teamLogo(teams, g.team2)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between mt-1 text-[10px]">
-                    <span className="text-on-surface-variant">
-                      Most popular: {plurality}
-                    </span>
-                    {matchedPlurality && (
-                      <span className="text-secondary font-label">
-                        Matched
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+      {groupByRound ? (
+        rounds.map((round) => {
+          const roundFilteredGames = rGames.filter((g) => g.round === round);
+          return (
+            <CollapsibleRound
+              key={round}
+              round={round}
+              label={ROUND_LABELS[round as Round]}
+              defaultCollapsed={completedRounds.has(round)}
+              gameCount={roundFilteredGames.length}
+            >
+              <div className="space-y-2">
+                {roundFilteredGames.map(renderGameCard)}
+              </div>
+            </CollapsibleRound>
+          );
+        })
+      ) : (
+        rounds.map((round) => {
+          const roundFilteredGames = rGames.filter((g) =>
+            groupByRound ? g.round === round : true
+          );
+          return (
+            <div key={round} className="space-y-2">
+              {roundFilteredGames.map(renderGameCard)}
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }
@@ -559,6 +664,18 @@ export default function AwardDetailSidebar({
   selectedRound,
 }: AwardDetailSidebarProps) {
   const [winnerIdx, setWinnerIdx] = useState(0);
+
+  // Compute which rounds are fully completed (for default collapse state)
+  const completedRounds = useMemo(() => {
+    const set = new Set<string>();
+    for (const round of ROUND_ORDER) {
+      const roundGames = games.filter((g) => g.round === round);
+      if (roundGames.length > 0 && roundGames.every((g) => g.completed)) {
+        set.add(round);
+      }
+    }
+    return set;
+  }, [games]);
 
   // Reset index when award changes
   const winner = award.winners[winnerIdx] ?? award.winners[0];
@@ -580,6 +697,7 @@ export default function AwardDetailSidebar({
             games={games}
             teams={teams}
             selectedRound={selectedRound}
+            completedRounds={completedRounds}
           />
         );
       case "The Trendsetter":
@@ -591,6 +709,7 @@ export default function AwardDetailSidebar({
             teams={teams}
             pickRates={pickRates}
             selectedRound={selectedRound}
+            completedRounds={completedRounds}
           />
         );
       case "The Faithful":
@@ -605,6 +724,7 @@ export default function AwardDetailSidebar({
             games={games}
             selectedRound={selectedRound}
             teams={teams}
+            completedRounds={completedRounds}
           />
         );
       case "Diamond in the Rough":
@@ -627,6 +747,7 @@ export default function AwardDetailSidebar({
             teams={teams}
             pickRates={pickRates}
             selectedRound={selectedRound}
+            completedRounds={completedRounds}
           />
         );
       default:

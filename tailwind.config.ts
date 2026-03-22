@@ -29,6 +29,7 @@ const config: Config = {
         "on-surface-variant": "#a7abb2",
         "on-primary": "#080c10",
         outline: "rgba(67, 72, 78, 0.15)",
+        "outline-variant": "rgba(67, 72, 78, 0.25)",
       },
       fontFamily: {
         display: ["Plus Jakarta Sans", "sans-serif"],
