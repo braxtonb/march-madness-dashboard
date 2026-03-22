@@ -6,7 +6,7 @@ import { RoundSelector } from "@/components/ui/RoundSelector";
 import { AwardCard } from "@/components/ui/AwardCard";
 import AwardDetailSidebar from "@/components/ui/AwardDetailSidebar";
 import type { Award, Round, Bracket, Pick, Game, Team } from "@/lib/types";
-import { ROUND_ORDER } from "@/lib/constants";
+import { ROUND_ORDER, AWARD_ROUND_LABELS } from "@/lib/constants";
 
 interface AwardsClientProps {
   awardsByRound: Record<string, Award[]>;
@@ -34,7 +34,7 @@ export function AwardsClient({
   const validRounds = [...ROUND_ORDER, "ALL"];
   const paramRound = searchParams.get("round");
   const [selectedRound, setSelectedRound] = useState<string>(
-    paramRound && validRounds.includes(paramRound) ? paramRound : currentRound
+    paramRound && validRounds.includes(paramRound) ? paramRound : "ALL"
   );
   const [selectedAward, setSelectedAward] = useState<Award | null>(null);
 
@@ -51,6 +51,7 @@ export function AwardsClient({
   }
 
   const awards = awardsByRound[selectedRound] ?? [];
+  const roundLabel = AWARD_ROUND_LABELS[selectedRound] || selectedRound;
 
   return (
     <>
@@ -73,6 +74,7 @@ export function AwardsClient({
             award={award}
             onClick={() => setSelectedAward(award)}
             teamLogos={teamLogos}
+            roundLabel={roundLabel}
           />
         ))}
       </div>

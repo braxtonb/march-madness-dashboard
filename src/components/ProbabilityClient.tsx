@@ -9,6 +9,8 @@ import { GamesToWatch } from "@/components/GamesToWatch";
 import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
@@ -182,14 +184,29 @@ export function ProbabilityClient({
   const [finishSortKey, setFinishSortKey] = useState<FinishSort>("probability");
   const [finishSortAsc, setFinishSortAsc] = useState(false);
   const [expandedFinishIds, setExpandedFinishIds] = useState<Set<string>>(new Set());
+  const [finishSearch, setFinishSearch] = useState<string[]>([]);
+
+  // Build bracket options for MultiSelectSearch
+  const finishBracketOptions: MultiSelectOption[] = useMemo(() => {
+    return probData.map((d) => ({
+      value: d.id,
+      label: d.name,
+      sublabel: d.full_name && d.full_name !== d.name ? d.full_name : undefined,
+    }));
+  }, [probData]);
 
   const sortedProbData = useMemo(() => {
-    return [...probData].sort((a, b) => {
+    let data = [...probData];
+    if (finishSearch.length > 0) {
+      const idSet = new Set(finishSearch);
+      data = data.filter((d) => idSet.has(d.id));
+    }
+    return data.sort((a, b) => {
       const aVal = a[finishSortKey] ?? 0;
       const bVal = b[finishSortKey] ?? 0;
       return finishSortAsc ? aVal - bVal : bVal - aVal;
     });
-  }, [probData, finishSortKey, finishSortAsc]);
+  }, [probData, finishSortKey, finishSortAsc, finishSearch]);
 
   function toggleFinishSort(key: FinishSort) {
     if (finishSortKey === key) setFinishSortAsc(!finishSortAsc);
@@ -390,6 +407,21 @@ export function ProbabilityClient({
               Tap any row for details &middot; Tap &#9675; to compare brackets
             </p>
           </div>
+          <div className="mb-4 w-full sm:w-72">
+            <MultiSelectSearch
+              mode="multi"
+              label="Brackets"
+              options={finishBracketOptions}
+              selected={finishSearch}
+              onSelectedChange={setFinishSearch}
+              placeholder="Filter brackets..."
+            />
+          </div>
+          {finishSearch.length > 0 && (
+            <p className="text-xs text-on-surface-variant mb-3">
+              Showing {sortedProbData.length} of {probData.length} brackets
+            </p>
+          )}
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <table className="min-w-[850px] w-full text-sm">
               <thead>
@@ -397,12 +429,12 @@ export function ProbabilityClient({
                   <th className="w-8"></th>
                   <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Bracket name and username">Bracket</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Championship chances tier">Tier</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}>Win %{fSortIcon("probability")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 2nd" onClick={() => toggleFinishSort("pct_second")}>2nd %{fSortIcon("pct_second")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 3rd" onClick={() => toggleFinishSort("pct_third")}>3rd %{fSortIcon("pct_third")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 10" onClick={() => toggleFinishSort("pct_top10")}>Top 10{fSortIcon("pct_top10")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 25" onClick={() => toggleFinishSort("pct_top25")}>Top 25{fSortIcon("pct_top25")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Median finish position across simulations" onClick={() => toggleFinishSort("median_rank")}>Median{fSortIcon("median_rank")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}><span className="border-b border-dotted border-on-surface-variant/40">Win %</span>{fSortIcon("probability")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 2nd" onClick={() => toggleFinishSort("pct_second")}><span className="border-b border-dotted border-on-surface-variant/40">2nd %</span>{fSortIcon("pct_second")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 3rd" onClick={() => toggleFinishSort("pct_third")}><span className="border-b border-dotted border-on-surface-variant/40">3rd %</span>{fSortIcon("pct_third")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 10" onClick={() => toggleFinishSort("pct_top10")}><span className="border-b border-dotted border-on-surface-variant/40">Top 10</span>{fSortIcon("pct_top10")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 25" onClick={() => toggleFinishSort("pct_top25")}><span className="border-b border-dotted border-on-surface-variant/40">Top 25</span>{fSortIcon("pct_top25")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Median finish position across simulations" onClick={() => toggleFinishSort("median_rank")}><span className="border-b border-dotted border-on-surface-variant/40">Median</span>{fSortIcon("median_rank")}</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Championship pick">Champion</th>
                 </tr>
               </thead>
@@ -610,7 +642,7 @@ export function ProbabilityClient({
                   <button
                     key={key}
                     onClick={() => changeAliveFilter(key)}
-                    className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
+                    className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${
                       aliveFilter === key
                         ? "bg-primary/15 text-primary border border-primary/30"
                         : "text-on-surface-variant hover:text-on-surface"

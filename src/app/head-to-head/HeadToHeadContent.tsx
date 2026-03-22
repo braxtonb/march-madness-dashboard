@@ -37,7 +37,7 @@ export function HeadToHeadContent({
     const param = searchParams.get("round");
     if (param === "ALL") return "ALL" as AwardRound;
     if (param && ROUND_ORDER.includes(param as Round)) return param as Round;
-    return currentRound;
+    return "ALL" as AwardRound;
   })();
 
   const paramB1 = searchParams.get("b1") ?? "";
@@ -313,30 +313,9 @@ export function HeadToHeadContent({
 
           {/* Round selector with counts */}
           <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1 overflow-x-auto no-scrollbar">
-            {ROUND_ORDER.map((round) => {
-              const stats = roundStats[round];
-              const isActive = selectedRound === round;
-              return (
-                <button
-                  key={round}
-                  onClick={() => changeRound(round)}
-                  className={`rounded-card px-3 py-1.5 font-label text-xs transition-colors ${
-                    isActive
-                      ? "bg-primary/15 text-primary border border-primary/30"
-                      : "text-on-surface-variant hover:text-on-surface"
-                  }`}
-                >
-                  <span>{ROUND_LABELS[round]}</span>
-                  {stats && id1 && id2 && stats.total > 0 && (
-                    <span className="ml-1.5 text-[10px] opacity-70">{stats.agree}-{stats.diff}</span>
-                  )}
-                </button>
-              );
-            })}
-            <div className="w-px bg-on-surface-variant/20 my-1 mx-1" />
             <button
               onClick={() => changeRound("ALL")}
-              className={`rounded-card px-3 py-1.5 font-label text-xs transition-colors ${
+              className={`rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors ${
                 isAllRounds
                   ? "bg-primary/15 text-primary border border-primary/30"
                   : "text-on-surface-variant hover:text-on-surface"
@@ -351,6 +330,27 @@ export function HeadToHeadContent({
                 ) : null;
               })()}
             </button>
+            <div className="w-px bg-on-surface-variant/20 my-1 mx-1" />
+            {ROUND_ORDER.map((round) => {
+              const stats = roundStats[round];
+              const isActive = selectedRound === round;
+              return (
+                <button
+                  key={round}
+                  onClick={() => changeRound(round)}
+                  className={`rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors ${
+                    isActive
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  <span>{ROUND_LABELS[round]}</span>
+                  {stats && id1 && id2 && stats.total > 0 && (
+                    <span className="ml-1.5 text-[10px] opacity-70">{stats.agree}-{stats.diff}</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Filter pills with counts + status filter */}
@@ -358,19 +358,19 @@ export function HeadToHeadContent({
             <div className="flex gap-1.5 min-w-max">
               <button
                 onClick={() => changeDiffFilter("all")}
-                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All ({currentRoundAgree + currentRoundDiff})
               </button>
               <button
                 onClick={() => changeDiffFilter("agreement")}
-                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Agreement ({currentRoundAgree})
               </button>
               <button
                 onClick={() => changeDiffFilter("differences")}
-                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Differences ({currentRoundDiff})
               </button>
@@ -379,19 +379,19 @@ export function HeadToHeadContent({
             <div className="flex gap-1.5">
               <button
                 onClick={() => changeStatusFilter("all")}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All ({currentRoundCompleted + currentRoundScheduled})
               </button>
               <button
                 onClick={() => changeStatusFilter("completed")}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Completed ({currentRoundCompleted})
               </button>
               <button
                 onClick={() => changeStatusFilter("scheduled")}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Scheduled ({currentRoundScheduled})
               </button>

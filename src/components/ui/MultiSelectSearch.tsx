@@ -80,6 +80,7 @@ function MultiSelectSearchInner({
 }: MultiSelectSearchProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -111,6 +112,11 @@ function MultiSelectSearchInner({
     );
   }, [available, query]);
 
+  // Reset highlighted index when search query changes
+  useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [query]);
+
   // Close on outside click
   useEffect(() => {
     if (!open) return;
@@ -131,6 +137,15 @@ function MultiSelectSearchInner({
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [open]);
+
+  // Scroll highlighted item into view
+  useEffect(() => {
+    if (highlightedIndex < 0 || !listRef.current) return;
+    const items = listRef.current.querySelectorAll("[data-dropdown-item]");
+    if (items[highlightedIndex]) {
+      items[highlightedIndex].scrollIntoView({ block: "nearest" });
+    }
+  }, [highlightedIndex]);
 
   // Compact display text when dropdown is closed
   const displayText = useMemo(() => {
@@ -169,12 +184,14 @@ function MultiSelectSearchInner({
   const handleFocus = useCallback(() => {
     setOpen(true);
     setQuery("");
+    setHighlightedIndex(-1);
   }, []);
 
   const handleClick = useCallback(() => {
     if (!open) {
       setOpen(true);
       setQuery("");
+      setHighlightedIndex(-1);
     }
   }, [open]);
 
@@ -190,14 +207,13 @@ function MultiSelectSearchInner({
   const handleItemClick = useCallback(
     (value: string) => {
       if (isMulti) {
-        // Toggle selection -- do NOT reset scroll
+        // Toggle selection -- do NOT reset scroll or query
         if (selectedSet.has(value)) {
           onSelectedChange?.(selected.filter((v) => v !== value));
         } else {
           onSelectedChange?.([...selected, value]);
         }
-        // Keep dropdown open, clear query
-        setQuery("");
+        // Keep dropdown open, keep query intact (Fix 3)
         inputRef.current?.focus();
       } else {
         // Single select
@@ -208,6 +224,33 @@ function MultiSelectSearchInner({
       }
     },
     [isMulti, selected, selectedSet, onSelectedChange, onSelect]
+  );
+
+  // Keyboard navigation handler
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!open) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => {
+          const next = prev + 1;
+          return next >= filtered.length ? 0 : next;
+        });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => {
+          const next = prev - 1;
+          return next < 0 ? filtered.length - 1 : next;
+        });
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (highlightedIndex >= 0 && highlightedIndex < filtered.length) {
+          handleItemClick(filtered[highlightedIndex].value);
+        }
+      }
+    },
+    [open, filtered, highlightedIndex, handleItemClick]
   );
 
   const handleClear = useCallback(() => {
@@ -255,6 +298,7 @@ function MultiSelectSearchInner({
             onFocus={handleFocus}
             onClick={handleClick}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className={`w-full rounded-card bg-surface-container border px-3 py-2.5 pl-9 pr-8 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all cursor-pointer min-w-[200px] min-h-[36px] ${
               hasSelections
                 ? "text-on-surface border-primary/30"
@@ -306,20 +350,22 @@ function MultiSelectSearchInner({
 
             {/* Scrollable list -- scroll position preserved on item toggle */}
             <div ref={listRef} className="overflow-y-auto flex-1">
-              {filtered.map((o) => {
+              {filtered.map((o, idx) => {
                 const isItemSelected = isMulti
                   ? selectedSet.has(o.value)
                   : o.value === selectedId;
+                const isHighlighted = idx === highlightedIndex;
                 return (
                   <button
                     key={o.value}
                     type="button"
+                    data-dropdown-item
                     onClick={() => handleItemClick(o.value)}
                     className={`w-full text-left px-3 py-2.5 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors border-l-2 ${
                       isItemSelected
                         ? "bg-surface-bright border-l-primary"
                         : "border-l-transparent"
-                    }`}
+                    } ${isHighlighted && !isItemSelected ? "bg-surface-bright" : ""}`}
                   >
                     {/* Checkbox: orange for multi-select filtering */}
                     {isMulti && (

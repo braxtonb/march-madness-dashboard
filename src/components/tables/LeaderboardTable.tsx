@@ -102,6 +102,7 @@ export function LeaderboardTable({
   ];
 
   const hdr = "group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
+  const hdrDotted = "border-b border-dotted border-on-surface-variant/40";
   const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default whitespace-nowrap";
   const sortIcon = (key: SortKey) => {
     const active = sortKey === key;
@@ -148,17 +149,17 @@ export function LeaderboardTable({
         <thead>
           <tr className="border-b border-outline">
             <th className="w-8"></th>
-            <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{sortIcon("rank")}</th>
+            <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points"><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
             <th className={hdrStatic} title="Bracket name and username. Click any row to see path to victory.">Name</th>
             <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
-            <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Pts{sortIcon("points")}</th>
-            <th className={hdr} onClick={() => toggleSort("max")} title="Maximum possible points if all remaining picks are correct">Max{sortIcon("max")}</th>
-            <th className={hdr} onClick={() => toggleSort("r64")} title="Points earned in Round of 64">R64{sortIcon("r64")}</th>
-            <th className={hdr} onClick={() => toggleSort("r32")} title="Points earned in Round of 32">R32{sortIcon("r32")}</th>
-            <th className={hdr} onClick={() => toggleSort("s16")} title="Points earned in Sweet 16">S16{sortIcon("s16")}</th>
-            <th className={hdr} onClick={() => toggleSort("e8")} title="Points earned in Elite 8">E8{sortIcon("e8")}</th>
-            <th className={hdr} onClick={() => toggleSort("ff")} title="Points earned in Final Four">FF{sortIcon("ff")}</th>
-            <th className={hdr} onClick={() => toggleSort("champ")} title="Points earned in Championship">Champ{sortIcon("champ")}</th>
+            <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far"><span className={hdrDotted}>Pts</span>{sortIcon("points")}</th>
+            <th className={hdr} onClick={() => toggleSort("max")} title="Maximum possible points if all remaining picks are correct"><span className={hdrDotted}>Max</span>{sortIcon("max")}</th>
+            <th className={hdr} onClick={() => toggleSort("r64")} title="Points earned in Round of 64"><span className={hdrDotted}>R64</span>{sortIcon("r64")}</th>
+            <th className={hdr} onClick={() => toggleSort("r32")} title="Points earned in Round of 32"><span className={hdrDotted}>R32</span>{sortIcon("r32")}</th>
+            <th className={hdr} onClick={() => toggleSort("s16")} title="Points earned in Sweet 16"><span className={hdrDotted}>S16</span>{sortIcon("s16")}</th>
+            <th className={hdr} onClick={() => toggleSort("e8")} title="Points earned in Elite 8"><span className={hdrDotted}>E8</span>{sortIcon("e8")}</th>
+            <th className={hdr} onClick={() => toggleSort("ff")} title="Points earned in Final Four"><span className={hdrDotted}>FF</span>{sortIcon("ff")}</th>
+            <th className={hdr} onClick={() => toggleSort("champ")} title="Points earned in Championship"><span className={hdrDotted}>Champ</span>{sortIcon("champ")}</th>
           </tr>
         </thead>
         <tbody>

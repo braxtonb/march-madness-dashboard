@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
+import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { GameCard, PicksDrawer } from "@/components/ui/GameCard";
 import { TeamPill } from "@/components/ui/TeamPill";
+import BottomSheet from "@/components/ui/BottomSheet";
 import type { PickerDetails } from "@/components/ui/GameCard";
 
 interface ChampBracketInfo {
@@ -66,13 +68,15 @@ export function PicksContent({
     router.replace(`?${params.toString()}`, { scroll: false });
   }
 
-  const VALID_ROUNDS: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
+  const VALID_ROUNDS: string[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP", "ALL"];
   const initialRound = (() => {
     const param = searchParams.get("round");
-    if (param && VALID_ROUNDS.includes(param as Round)) return param as Round;
-    return currentRound;
+    if (param && VALID_ROUNDS.includes(param)) return param;
+    return "ALL";
   })();
-  const [round, setRound] = useState<Round>(initialRound);
+  const [round, setRound] = useState<string>(initialRound);
+
+  const isAllRounds = round === "ALL";
 
   const updateUrl = useCallback(
     (params: URLSearchParams) => {
@@ -83,7 +87,7 @@ export function PicksContent({
 
   const changeRound = useCallback(
     (newRound: string) => {
-      setRound(newRound as Round);
+      setRound(newRound);
       const params = new URLSearchParams(searchParams.toString());
       params.set("round", newRound);
       updateUrl(params);
@@ -96,10 +100,10 @@ export function PicksContent({
     const paramRound = searchParams.get("round");
     if (
       paramRound &&
-      VALID_ROUNDS.includes(paramRound as Round) &&
+      VALID_ROUNDS.includes(paramRound) &&
       paramRound !== round
     ) {
-      setRound(paramRound as Round);
+      setRound(paramRound);
     }
   }, [searchParams, round]);
 
@@ -121,7 +125,8 @@ export function PicksContent({
     [searchParams, updateUrl]
   );
 
-  const roundGames = games.filter((g) => g.round === round);
+  // Games for single-round view
+  const roundGames = isAllRounds ? games : games.filter((g) => g.round === round);
   const completedGames = roundGames.filter((g) => g.completed);
   const scheduledGames = roundGames.filter((g) => !g.completed);
 
@@ -131,8 +136,34 @@ export function PicksContent({
       ? scheduledGames
       : roundGames;
 
-  // Champion distribution expansion state
-  const [expandedChamps, setExpandedChamps] = useState<Set<string>>(new Set());
+  // Collapsible rounds for All Rounds view
+  const fullyCompletedRounds = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of ROUND_ORDER) {
+      const rGames = games.filter((g) => g.round === r);
+      if (rGames.length > 0 && rGames.every((g) => g.completed)) {
+        set.add(r);
+      }
+    }
+    return set;
+  }, [games]);
+
+  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => new Set(fullyCompletedRounds));
+
+  const toggleRoundCollapse = useCallback((r: string) => {
+    setCollapsedRounds((prev) => {
+      const next = new Set(prev);
+      if (next.has(r)) next.delete(r);
+      else next.add(r);
+      return next;
+    });
+  }, []);
+
+  // Champion distribution drawer state (Fix 8)
+  const [champDrawerTeam, setChampDrawerTeam] = useState<string | null>(null);
+  const champDrawerEntry = champDrawerTeam
+    ? champDistribution.find((e) => e.name === champDrawerTeam)
+    : null;
 
   // Drawer state — managed here for cross-game navigation
   const [drawerGameId, setDrawerGameId] = useState<string | null>(null);
@@ -155,6 +186,14 @@ export function PicksContent({
   const TAB_ACTIVE = "bg-primary/15 text-primary border border-primary/30 rounded-card px-3 py-1.5 text-sm font-label";
   const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface rounded-card px-3 py-1.5 text-sm font-label";
 
+  // Panel icon for sidebar/drawer triggers (Fix 9)
+  const panelIcon = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M15 3v18" />
+    </svg>
+  );
+
   return (
     <div className="space-y-section">
       {/* Page-level tabs */}
@@ -172,7 +211,11 @@ export function PicksContent({
       {pageTab === "results" && (
       <div className="space-y-section">
       <div className="flex flex-wrap items-center gap-3">
-        <RoundSelector selected={round} onSelect={changeRound} />
+        <RoundSelector
+          selected={round}
+          onSelect={changeRound}
+          extraOptions={[{ value: "ALL", label: "All Rounds" }]}
+        />
         <div className="overflow-x-auto no-scrollbar">
           <div className="flex gap-1.5 min-w-max">
             {([
@@ -183,7 +226,7 @@ export function PicksContent({
               <button
                 key={opt.value}
                 onClick={() => changeStatusFilter(opt.value)}
-                className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${
+                className={`rounded-card px-3 py-1.5 text-sm font-label h-8 transition-colors ${
                   statusFilter === opt.value
                     ? "bg-primary/15 text-primary border border-primary/30"
                     : "text-on-surface-variant hover:text-on-surface"
@@ -196,56 +239,148 @@ export function PicksContent({
         </div>
       </div>
 
-      {/* Completed games */}
-      {(statusFilter === "all" || statusFilter === "completed") && completedGames.length > 0 && (
-        <>
-          <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-            Completed ({completedGames.length})
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {completedGames.map((game) => (
-              <GameCard
-                key={game.game_id}
-                game={game}
-                pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                totalBrackets={totalBrackets}
-                pickerDetails={pickerDetailsMap[game.game_id]}
-                teamLogos={teamLogos}
-                onOpenDrawer={() => openDrawer(game.game_id)}
-                eliminatedTeams={eliminatedTeams}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {/* All Rounds view: grouped by round with collapsible sections */}
+      {isAllRounds ? (
+        <div className="space-y-3">
+          {ROUND_ORDER.map((r) => {
+            const rGames = games.filter((g) => g.round === r);
+            if (rGames.length === 0) return null;
+            const rCompleted = rGames.filter((g) => g.completed);
+            const rScheduled = rGames.filter((g) => !g.completed);
+            const isCollapsed = collapsedRounds.has(r);
 
-      {/* Scheduled games */}
-      {(statusFilter === "all" || statusFilter === "scheduled") && scheduledGames.length > 0 && (
-        <>
-          <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
-            Scheduled ({scheduledGames.length})
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {scheduledGames.map((game) => (
-              <GameCard
-                key={game.game_id}
-                game={game}
-                pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                totalBrackets={totalBrackets}
-                pickerDetails={pickerDetailsMap[game.game_id]}
-                teamLogos={teamLogos}
-                onOpenDrawer={() => openDrawer(game.game_id)}
-                eliminatedTeams={eliminatedTeams}
-              />
-            ))}
-          </div>
-        </>
-      )}
+            // Apply status filter
+            const rFiltered = statusFilter === "completed"
+              ? rCompleted
+              : statusFilter === "scheduled"
+                ? rScheduled
+                : rGames;
+            if (rFiltered.length === 0 && statusFilter !== "all") return null;
 
-      {roundGames.length === 0 && (
-        <p className="text-on-surface-variant text-sm text-center py-8">
-          No games scheduled for this round.
-        </p>
+            return (
+              <div key={r} className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => toggleRoundCollapse(r)}
+                  className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+                >
+                  <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
+                  <p className="font-label text-xs font-semibold text-on-surface">
+                    {ROUND_LABELS[r]}
+                  </p>
+                  <span className="text-[10px] text-on-surface-variant">
+                    {rCompleted.length} completed / {rScheduled.length} scheduled
+                  </span>
+                  {isCollapsed && (
+                    <span className="text-[10px] text-on-surface-variant/50 ml-auto">
+                      {rGames.length} game{rGames.length !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                </button>
+                {!isCollapsed && (
+                  <>
+                    {(statusFilter === "all" || statusFilter === "completed") && rCompleted.length > 0 && (
+                      <>
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                          Completed ({rCompleted.length})
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {rCompleted.map((game) => (
+                            <GameCard
+                              key={game.game_id}
+                              game={game}
+                              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                              totalBrackets={totalBrackets}
+                              pickerDetails={pickerDetailsMap[game.game_id]}
+                              teamLogos={teamLogos}
+                              onOpenDrawer={() => openDrawer(game.game_id)}
+                              eliminatedTeams={eliminatedTeams}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {(statusFilter === "all" || statusFilter === "scheduled") && rScheduled.length > 0 && (
+                      <>
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
+                          Scheduled ({rScheduled.length})
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {rScheduled.map((game) => (
+                            <GameCard
+                              key={game.game_id}
+                              game={game}
+                              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                              totalBrackets={totalBrackets}
+                              pickerDetails={pickerDetailsMap[game.game_id]}
+                              teamLogos={teamLogos}
+                              onOpenDrawer={() => openDrawer(game.game_id)}
+                              eliminatedTeams={eliminatedTeams}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <>
+          {/* Single round: Completed games */}
+          {(statusFilter === "all" || statusFilter === "completed") && completedGames.length > 0 && (
+            <>
+              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                Completed ({completedGames.length})
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {completedGames.map((game) => (
+                  <GameCard
+                    key={game.game_id}
+                    game={game}
+                    pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                    totalBrackets={totalBrackets}
+                    pickerDetails={pickerDetailsMap[game.game_id]}
+                    teamLogos={teamLogos}
+                    onOpenDrawer={() => openDrawer(game.game_id)}
+                    eliminatedTeams={eliminatedTeams}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Scheduled games */}
+          {(statusFilter === "all" || statusFilter === "scheduled") && scheduledGames.length > 0 && (
+            <>
+              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
+                Scheduled ({scheduledGames.length})
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {scheduledGames.map((game) => (
+                  <GameCard
+                    key={game.game_id}
+                    game={game}
+                    pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                    totalBrackets={totalBrackets}
+                    pickerDetails={pickerDetailsMap[game.game_id]}
+                    teamLogos={teamLogos}
+                    onOpenDrawer={() => openDrawer(game.game_id)}
+                    eliminatedTeams={eliminatedTeams}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {roundGames.length === 0 && (
+            <p className="text-on-surface-variant text-sm text-center py-8">
+              No games scheduled for this round.
+            </p>
+          )}
+        </>
       )}
 
       {/* Centralized drawer with prev/next navigation */}
@@ -270,57 +405,69 @@ export function PicksContent({
             How many brackets picked each team to win the championship. Click to see who picked each team.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {champDistribution.map((entry) => {
-              const isExpanded = expandedChamps.has(entry.name);
-              return (
-                <div
-                  key={entry.name}
-                  className="rounded-card bg-surface-container overflow-hidden"
+            {champDistribution.map((entry) => (
+              <div
+                key={entry.name}
+                className="rounded-card bg-surface-container overflow-hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => setChampDrawerTeam(entry.name)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-bright transition-colors"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setExpandedChamps((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(entry.name)) next.delete(entry.name);
-                      else next.add(entry.name);
-                      return next;
-                    })}
-                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-bright transition-colors"
-                  >
-                    <TeamPill
-                      name={entry.name}
-                      seed={entry.seed}
-                      logo={entry.logo}
-                      eliminated={!entry.alive}
-                      showStatus
-                    />
-                    <div className="flex items-center gap-2 ml-2 shrink-0">
-                      <span className="font-label text-xs text-on-surface-variant">
-                        {entry.count} bracket{entry.count !== 1 ? "s" : ""}
-                      </span>
-                      <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">
-                        {isExpanded ? "\u2212" : "+"}
-                      </span>
-                    </div>
-                  </button>
-                  {isExpanded && entry.brackets && entry.brackets.length > 0 && (
-                    <div className="border-t border-outline/20 px-3 py-2 space-y-1.5">
-                      {entry.brackets.map((b) => (
-                        <div key={b.bracketName} className="flex items-center gap-2">
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-on-surface truncate">{b.bracketName}</p>
-                            {b.fullName && b.fullName !== b.bracketName && (
-                              <p className="text-[10px] text-on-surface-variant truncate">{b.fullName}</p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                  <TeamPill
+                    name={entry.name}
+                    seed={entry.seed}
+                    logo={entry.logo}
+                    eliminated={!entry.alive}
+                    showStatus
+                  />
+                  <div className="flex items-center gap-2 ml-2 shrink-0">
+                    <span className="font-label text-xs text-on-surface-variant">
+                      {entry.count} bracket{entry.count !== 1 ? "s" : ""}
+                    </span>
+                    <span className="text-on-surface-variant/60">
+                      {panelIcon}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            ))}
           </div>
+
+          {/* Champion distribution drawer (Fix 8) */}
+          {champDrawerEntry && champDrawerEntry.brackets && (
+            <BottomSheet
+              open={true}
+              onClose={() => setChampDrawerTeam(null)}
+              title={`Picked ${champDrawerEntry.name}`}
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 mb-4">
+                  <TeamPill
+                    name={champDrawerEntry.name}
+                    seed={champDrawerEntry.seed}
+                    logo={champDrawerEntry.logo}
+                    eliminated={!champDrawerEntry.alive}
+                    showStatus
+                  />
+                  <span className="text-xs text-on-surface-variant">
+                    {champDrawerEntry.count} bracket{champDrawerEntry.count !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                {champDrawerEntry.brackets.map((b) => (
+                  <div key={b.bracketName} className="flex items-center gap-2 py-1.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-on-surface truncate">{b.bracketName}</p>
+                      {b.fullName && b.fullName !== b.bracketName && (
+                        <p className="text-[10px] text-on-surface-variant truncate">{b.fullName}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </BottomSheet>
+          )}
         </div>
       )}
     </div>

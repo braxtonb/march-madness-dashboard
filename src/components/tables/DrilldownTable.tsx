@@ -5,6 +5,8 @@ import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
@@ -63,10 +65,18 @@ export function DrilldownTable({
   pathData?: PathEntry[];
 }) {
   const { isMyBracket } = useMyBracket();
-  const [search, setSearch] = useState("");
+  const [searchIds, setSearchIds] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const bracketOptions: MultiSelectOption[] = useMemo(() => {
+    return brackets.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined,
+    }));
+  }, [brackets]);
 
   const pathByName = useMemo(() => {
     const map = new Map<string, PathEntry>();
@@ -77,11 +87,12 @@ export function DrilldownTable({
   }, [pathData]);
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    const list = brackets.filter(
-      (b) => b.owner.toLowerCase().includes(q) || b.name.toLowerCase().includes(q) || (b.full_name || "").toLowerCase().includes(q)
-    );
-    return list.sort((a, b) => {
+    let list = brackets;
+    if (searchIds.length > 0) {
+      const idSet = new Set(searchIds);
+      list = brackets.filter((b) => idSet.has(b.id));
+    }
+    return [...list].sort((a, b) => {
       const aA = analytics.get(a.id);
       const bA = analytics.get(b.id);
       let aVal: number, bVal: number;
@@ -93,7 +104,7 @@ export function DrilldownTable({
       }
       return sortAsc ? aVal - bVal : bVal - aVal;
     });
-  }, [brackets, search, sortKey, sortAsc, analytics]);
+  }, [brackets, searchIds, sortKey, sortAsc, analytics]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortAsc(!sortAsc);
@@ -105,32 +116,26 @@ export function DrilldownTable({
     return <SortIcon direction={direction} active={active} />;
   };
   const hdr = "group/hdr px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none";
+  const hdrDotted = "border-b border-dotted border-on-surface-variant/40";
   const hdrStatic = "px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default";
 
   return (
     <div className="space-y-3">
-      <div className="relative w-full sm:w-72">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
-        <input
-          type="text"
-          placeholder="Search brackets..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-card bg-surface-container border border-outline px-3 py-2.5 pl-9 text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all min-h-[36px]"
+      <div className="w-full sm:w-72">
+        <MultiSelectSearch
+          mode="multi"
+          label="Brackets"
+          options={bracketOptions}
+          selected={searchIds}
+          onSelectedChange={setSearchIds}
+          placeholder="Filter brackets..."
         />
       </div>
+      {searchIds.length > 0 && (
+        <p className="text-xs text-on-surface-variant">
+          Showing {filtered.length} of {brackets.length} brackets
+        </p>
+      )}
 
       {/* Mobile card stack */}
       <div className="sm:hidden space-y-2">
@@ -172,11 +177,11 @@ export function DrilldownTable({
           <thead>
             <tr className="border-b border-outline">
               <th className="w-8"></th>
-              <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{sortIcon("rank")}</th>
+              <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points"><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
               <th className={hdrStatic} title="Bracket name and username">Name</th>
               <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
-              <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Points{sortIcon("points")}</th>
-              <th className={hdr} onClick={() => toggleSort("max_remaining")} title="Maximum possible points remaining">MAX{sortIcon("max_remaining")}</th>
+              <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far"><span className={hdrDotted}>Points</span>{sortIcon("points")}</th>
+              <th className={hdr} onClick={() => toggleSort("max_remaining")} title="Maximum possible points remaining"><span className={hdrDotted}>MAX</span>{sortIcon("max_remaining")}</th>
             </tr>
           </thead>
           <tbody>

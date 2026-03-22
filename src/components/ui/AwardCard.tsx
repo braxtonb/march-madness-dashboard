@@ -3,14 +3,18 @@
 import { TeamPill } from "@/components/ui/TeamPill";
 import type { Award } from "@/lib/types";
 
-const AWARD_DESCRIPTIONS: Record<string, string> = {
-  "The Oracle": "Most correct picks this round — seeing the future clearly",
-  "The Trendsetter": "Most unique correct picks — called winners nobody else had",
-  "The Faithful": "Highest scorer whose champion is still alive — loyalty rewarded",
-  "Hot Streak": "Most consecutive correct picks — on a roll",
-  "Diamond in the Rough": "Single best pick almost nobody else made — hidden gem",
-  "The People's Champion": "Most aligned with group consensus — the voice of the people",
-};
+function getAwardDescription(title: string, roundLabel?: string): string {
+  const scope = roundLabel || "this round";
+  const descriptions: Record<string, string> = {
+    "The Oracle": `Most correct picks — ${scope}`,
+    "The Trendsetter": `Most unique correct picks — ${scope}`,
+    "The Faithful": `Highest scorer whose champion is still alive — ${scope}`,
+    "Hot Streak": `Most consecutive correct picks — ${scope}`,
+    "Diamond in the Rough": `Single best pick almost nobody else made — ${scope}`,
+    "The People's Champion": `Most aligned with group consensus — ${scope}`,
+  };
+  return descriptions[title] || "";
+}
 
 const AWARD_ICONS: Record<string, string> = {
   "The Oracle": String.fromCodePoint(0x1F52E),
@@ -25,10 +29,12 @@ export function AwardCard({
   award,
   onClick,
   teamLogos = {},
+  roundLabel,
 }: {
   award: Award;
   onClick?: () => void;
   teamLogos?: Record<string, string>;
+  roundLabel?: string;
 }) {
   const tierColors = {
     gold: "text-achievement",
@@ -42,7 +48,7 @@ export function AwardCard({
   };
 
   const icon = AWARD_ICONS[award.title] || tierFallback[award.tier];
-  const description = AWARD_DESCRIPTIONS[award.title] || award.description;
+  const description = getAwardDescription(award.title, roundLabel) || award.description;
   const hasWinners = award.winners.length > 0;
   const isTie = award.winners.length > 1;
   const firstWinner = award.winners[0];

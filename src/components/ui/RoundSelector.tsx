@@ -21,31 +21,14 @@ export function RoundSelector({
   return (
     <div className="overflow-x-auto no-scrollbar">
       <div className="flex gap-1 rounded-card bg-surface-container p-1 min-w-max">
-        {ROUND_ORDER.map((round) => (
-          <button
-            key={round}
-            onClick={() => onSelect(round)}
-            className={`
-              rounded-card px-3 py-1.5 font-label text-sm transition-colors
-              ${
-                selected === round
-                  ? "bg-primary/15 text-primary border border-primary/30"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }
-            `}
-          >
-            {roundLabels[round] ?? round}
-          </button>
-        ))}
         {extraOptions && extraOptions.length > 0 && (
           <>
-            <div className="w-px bg-on-surface-variant/20 my-1 mx-1" />
             {extraOptions.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => onSelect(opt.value)}
                 className={`
-                  rounded-card px-3 py-1.5 font-label text-sm transition-colors
+                  rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors
                   ${
                     selected === opt.value
                       ? "bg-primary/15 text-primary border border-primary/30"
@@ -56,8 +39,25 @@ export function RoundSelector({
                 {opt.label}
               </button>
             ))}
+            <div className="w-px bg-on-surface-variant/20 my-1 mx-1" />
           </>
         )}
+        {ROUND_ORDER.map((round) => (
+          <button
+            key={round}
+            onClick={() => onSelect(round)}
+            className={`
+              rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors
+              ${
+                selected === round
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }
+            `}
+          >
+            {roundLabels[round] ?? round}
+          </button>
+        ))}
       </div>
     </div>
   );
