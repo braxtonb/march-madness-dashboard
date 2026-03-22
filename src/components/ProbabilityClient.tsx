@@ -26,15 +26,36 @@ interface JourneyPoint {
   [bracketName: string]: string | number;
 }
 
+interface PathPick {
+  round: string;
+  team: string;
+  seed: number;
+  pts: number;
+  logo: string;
+}
+
+interface PathEntry {
+  name: string;
+  owner: string;
+  points: number;
+  maxRemaining: number;
+  champion: string;
+  championLogo: string;
+  championAlive: boolean;
+  remainingPicks: PathPick[];
+  eliminatedPickCount: number;
+}
+
 interface ProbabilityClientProps {
   probData: ProbEntry[];
   journeyData: JourneyPoint[];
   journeyBracketNames: string[];
   allSnapshotProbsZero: boolean;
   teamLogos?: Record<string, string>;
+  pathData?: PathEntry[];
 }
 
-type ProbTab = "chances" | "finishes" | "journey";
+type ProbTab = "chances" | "finishes" | "path";
 
 type TierKey = "strong" | "hunt" | "fighting" | "longshot" | "miracle";
 
@@ -70,6 +91,7 @@ export function ProbabilityClient({
   journeyBracketNames,
   allSnapshotProbsZero,
   teamLogos = {},
+  pathData = [],
 }: ProbabilityClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -111,7 +133,9 @@ export function ProbabilityClient({
         <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
           Simulated Finishes
         </button>
-        {/* Probability Journey tab hidden until snapshot data is meaningful */}
+        <button onClick={() => changeTab("path")} className={tab === "path" ? TAB_ACTIVE : TAB_INACTIVE}>
+          Path to Victory
+        </button>
       </div>
 
       {/* Championship Chances tab */}
@@ -239,20 +263,69 @@ export function ProbabilityClient({
         </div>
       )}
 
-      {/* Probability Journey tab */}
-      {tab === "journey" && (
-        <div className="rounded-card bg-surface-container p-5">
-          <h3 className="font-display text-lg font-semibold mb-4">Probability Journey</h3>
-          {allSnapshotProbsZero ? (
-            <p className="text-sm text-on-surface-variant">
-              Probability journey tracking starts after the next round completes. The scraper captures
-              win probability snapshots at the end of each round, building a picture of how chances
-              shift throughout the tournament.
+      {/* Path to Victory tab */}
+      {tab === "path" && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-display text-lg font-semibold">Path to Victory</h3>
+            <p className="text-xs text-on-surface-variant mt-1">
+              What needs to happen for each bracket to maximize their score. Shows remaining picks where the picked team is still alive.
             </p>
-          ) : journeyData.length > 0 ? (
-            <ProbabilityJourney data={journeyData} bracketNames={journeyBracketNames} />
+          </div>
+          {pathData.length === 0 ? (
+            <p className="text-on-surface-variant text-sm text-center py-8">No path data available.</p>
           ) : (
-            <p className="text-sm text-on-surface-variant">No journey data available yet.</p>
+            <div className="space-y-3">
+              {pathData.slice(0, 30).map((entry) => {
+                const roundGroups = new Map<string, PathPick[]>();
+                for (const p of entry.remainingPicks) {
+                  if (!roundGroups.has(p.round)) roundGroups.set(p.round, []);
+                  roundGroups.get(p.round)!.push(p);
+                }
+                const totalPossible = entry.remainingPicks.reduce((s, p) => s + p.pts, 0);
+                return (
+                  <div key={entry.name} className="rounded-card bg-surface-container p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-display text-sm font-semibold text-on-surface">{entry.name}</p>
+                        <p className="text-[10px] text-on-surface-variant">{entry.owner}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-label text-xs text-on-surface">{entry.points} pts <span className="text-on-surface-variant">+ {totalPossible} possible</span></p>
+                        <div className="flex items-center gap-1 justify-end">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {entry.championLogo && <img src={entry.championLogo} alt="" className="w-4 h-4 rounded-full bg-on-surface/10 p-[1px]" />}
+                          <span className={`text-[10px] ${entry.championAlive ? "text-secondary" : "text-on-surface-variant line-through"}`}>
+                            {entry.champion}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {entry.remainingPicks.length === 0 ? (
+                      <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {["R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
+                          const picks = roundGroups.get(round);
+                          if (!picks) return null;
+                          return picks.map((p) => (
+                            <span key={`${round}-${p.team}`} className="inline-flex items-center gap-1 rounded-full bg-surface-bright px-2 py-0.5 text-[10px] font-label text-on-surface">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {p.logo && <img src={p.logo} alt="" className="w-3.5 h-3.5 rounded-full" />}
+                              {p.team}
+                              <span className="text-on-surface-variant">+{p.pts}</span>
+                            </span>
+                          ));
+                        })}
+                      </div>
+                    )}
+                    {entry.eliminatedPickCount > 0 && (
+                      <p className="text-[10px] text-on-surface-variant">{entry.eliminatedPickCount} picks eliminated</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}

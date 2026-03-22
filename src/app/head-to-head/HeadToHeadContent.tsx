@@ -413,7 +413,7 @@ export function HeadToHeadContent({
                 <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
                   Completed ({completedFilteredIds.length})
                 </p>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   {completedFilteredIds.map((gid) => renderGameCard(gid))}
                 </div>
               </>
@@ -423,7 +423,7 @@ export function HeadToHeadContent({
                 <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
                   Scheduled ({scheduledFilteredIds.length})
                 </p>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   {scheduledFilteredIds.map((gid) => renderGameCard(gid))}
                 </div>
               </>

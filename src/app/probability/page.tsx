@@ -61,6 +61,49 @@ export default async function ProbabilityPage() {
     data.teams.map((t) => [t.name, t.logo])
   );
 
+  // Build eliminated teams set
+  const eliminatedTeams = new Set<string>();
+  for (const g of data.games) {
+    if (g.completed && g.winner) {
+      if (g.team1 && g.team1 !== g.winner) eliminatedTeams.add(g.team1);
+      if (g.team2 && g.team2 !== g.winner) eliminatedTeams.add(g.team2);
+    }
+  }
+
+  // Path to victory: for each bracket, list their remaining picks that are still alive
+  const ROUND_PTS: Record<string, number> = { R64: 10, R32: 20, S16: 40, E8: 80, FF: 160, CHAMP: 320 };
+  const completedGameIds = new Set(data.games.filter((g) => g.completed).map((g) => g.game_id));
+
+  const pathData = data.brackets
+    .filter((b) => b.champion_pick)
+    .map((b) => {
+      const bPicks = data.picks.filter((p) => p.bracket_id === b.id);
+      const remainingPicks = bPicks
+        .filter((p) => !completedGameIds.has(p.game_id) && p.team_picked && !eliminatedTeams.has(p.team_picked))
+        .map((p) => ({
+          round: p.round,
+          team: p.team_picked,
+          seed: p.seed_picked,
+          pts: ROUND_PTS[p.round] || 0,
+          logo: teamLogos[p.team_picked] || "",
+        }));
+      const eliminatedPicks = bPicks
+        .filter((p) => !completedGameIds.has(p.game_id) && p.team_picked && eliminatedTeams.has(p.team_picked))
+        .length;
+      return {
+        name: b.name,
+        owner: b.owner,
+        points: b.points,
+        maxRemaining: b.max_remaining,
+        champion: b.champion_pick,
+        championLogo: teamLogos[b.champion_pick] || "",
+        championAlive: !eliminatedTeams.has(b.champion_pick),
+        remainingPicks,
+        eliminatedPickCount: eliminatedPicks,
+      };
+    })
+    .sort((a, b) => (b.points + b.maxRemaining) - (a.points + a.maxRemaining));
+
   return (
     <ProbabilityClient
       probData={probData}
@@ -68,6 +111,7 @@ export default async function ProbabilityPage() {
       journeyBracketNames={journeyBracketNames}
       allSnapshotProbsZero={allSnapshotProbsZero}
       teamLogos={teamLogos}
+      pathData={pathData}
     />
   );
 }
