@@ -137,13 +137,13 @@ function OracleContent({
         className="flex items-center justify-between rounded-lg bg-surface-bright/50 px-3 py-2"
       >
         <div className="flex items-center gap-1.5 flex-wrap">
-          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} showStatus />
           <span className="text-[10px] text-on-surface-variant">vs</span>
-          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} showStatus />
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">
           {pick && (
-            <TeamPill name={pick.team_picked} seed={pick.seed_picked} logo={teamLogo(teams, pick.team_picked)} eliminated={teamEliminated(teams, pick.team_picked)} />
+            <TeamPill name={pick.team_picked} seed={pick.seed_picked} logo={teamLogo(teams, pick.team_picked)} eliminated={teamEliminated(teams, pick.team_picked)} showStatus />
           )}
           <span className={isCorrect ? "text-secondary" : "text-error"}>
             {isCorrect ? "\u2713" : "\u00d7"}
@@ -248,7 +248,7 @@ function TrendsetterContent({
     return (
       <div key={p.game_id} className="space-y-1 rounded-lg bg-surface-bright/50 px-3 py-2">
         <div className="flex items-center gap-2">
-          <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} eliminated={teamEliminated(teams, p.team_picked)} />
+          <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} eliminated={teamEliminated(teams, p.team_picked)} showStatus />
           <span className="text-[10px] text-on-surface-variant">Only {Math.round(rate * 100)}% picked this</span>
         </div>
         <PickRateBar rate={rate} />
@@ -440,13 +440,13 @@ function ContrarianContent({
     return (
       <div key={p.game_id} className="space-y-1 rounded-lg bg-surface-bright/50 px-3 py-2">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} showStatus />
           <span className="text-[10px] text-on-surface-variant">vs</span>
-          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} showStatus />
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} eliminated={teamEliminated(teams, p.team_picked)} />
+            <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} eliminated={teamEliminated(teams, p.team_picked)} showStatus />
             <span className="text-secondary shrink-0">{"\u2713"}</span>
           </div>
           <span className="text-[10px] text-on-surface-variant">Only {nationalPctDisplay}% picked this nationally</span>

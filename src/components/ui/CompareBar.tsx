@@ -30,14 +30,17 @@ export default function CompareBar({ brackets }: CompareBarProps) {
 
   const handleCompare = () => {
     if (selected.length === 2) {
-      const url = `/head-to-head?b1=${selected[0]}&b2=${selected[1]}`;
+      const b1 = selected[0];
+      const b2 = selected[1];
+      const url = `/head-to-head?b1=${b1}&b2=${b2}`;
+      clear();
       if (pathname === "/head-to-head") {
-        // Already on head-to-head — use window.location to force a full param reload
-        window.location.href = url;
+        // Already on head-to-head — dispatch custom event so HeadToHeadContent picks up the IDs
+        window.history.replaceState(null, "", url);
+        window.dispatchEvent(new CustomEvent("compare-navigate", { detail: { b1, b2 } }));
       } else {
         router.push(url);
       }
-      clear();
     }
   };
 

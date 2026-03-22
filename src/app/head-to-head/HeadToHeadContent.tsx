@@ -53,6 +53,17 @@ export function HeadToHeadContent({
     if (b2) setId2(b1 && b1 === b2 ? "" : b2);
   }, [searchParams]);
 
+  // Listen for compare-navigate events when CompareBar navigates while already on this page
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { b1, b2 } = (e as CustomEvent).detail;
+      if (b1) setId1(b1);
+      if (b2) setId2(b1 === b2 ? "" : b2);
+    };
+    window.addEventListener("compare-navigate", handler);
+    return () => window.removeEventListener("compare-navigate", handler);
+  }, []);
+
   // Fix 3: Deep-link bracket selections to URL for shareability
   const updateBracketUrl = useCallback((newId1: string, newId2: string) => {
     const params = new URLSearchParams(window.location.search);
