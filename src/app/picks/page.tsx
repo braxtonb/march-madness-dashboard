@@ -49,6 +49,34 @@ export default async function GroupPicksPage() {
     data.teams.map((t) => [t.name, t.logo])
   );
 
+  // Derive eliminated teams from game results
+  const eliminatedTeams = new Set<string>();
+  for (const g of data.games) {
+    if (g.completed && g.winner) {
+      if (g.team1 && g.team1 !== g.winner) eliminatedTeams.add(g.team1);
+      if (g.team2 && g.team2 !== g.winner) eliminatedTeams.add(g.team2);
+    }
+  }
+
+  // Champion distribution
+  const champCounts = new Map<string, number>();
+  for (const b of submittedBrackets) {
+    if (b.champion_pick) {
+      champCounts.set(
+        b.champion_pick,
+        (champCounts.get(b.champion_pick) || 0) + 1
+      );
+    }
+  }
+  const champDistribution = [...champCounts.entries()]
+    .map(([name, count]) => ({
+      name,
+      count,
+      alive: !eliminatedTeams.has(name),
+      logo: teamLogos[name] || "",
+    }))
+    .sort((a, b) => b.count - a.count);
+
   // Compute per-round accuracy for report card
   const roundAccuracy = ["R64", "R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
     const acc = computeGroupAccuracy(data.picks, data.games, round, submittedBrackets.length);
@@ -101,6 +129,7 @@ export default async function GroupPicksPage() {
         totalBrackets={submittedBrackets.length}
         currentRound={data.meta.current_round}
         teamLogos={teamLogos}
+        champDistribution={champDistribution}
       />
     </div>
   );

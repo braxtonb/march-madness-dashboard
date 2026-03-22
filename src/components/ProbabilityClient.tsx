@@ -1,9 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
+import { DrilldownTable } from "@/components/tables/DrilldownTable";
+import { GamesToWatch } from "@/components/GamesToWatch";
+import { StatCard } from "@/components/ui/StatCard";
+import type { Bracket, BracketAnalytics } from "@/lib/types";
 
 interface ProbEntry {
   name: string;
@@ -46,6 +50,35 @@ interface PathEntry {
   eliminatedPickCount: number;
 }
 
+interface AffectedBracket {
+  name: string;
+  owner: string;
+  champion: string;
+}
+
+interface GameToWatch {
+  gameId: string;
+  seed1: number;
+  team1: string;
+  seed2: number;
+  team2: string;
+  round: string;
+  affectedCount: number;
+  affectedBrackets: AffectedBracket[];
+}
+
+interface AliveData {
+  champAlive: number;
+  ff3Plus: number;
+  ff2Plus: number;
+  gamesRemaining: number;
+  gamesToWatch: GameToWatch[];
+  brackets: Bracket[];
+  analyticsObj: Record<string, BracketAnalytics>;
+  eliminatedArr: string[];
+  bracketFFTeamsMap: Record<string, string[]>;
+}
+
 interface ProbabilityClientProps {
   probData: ProbEntry[];
   journeyData: JourneyPoint[];
@@ -53,9 +86,10 @@ interface ProbabilityClientProps {
   allSnapshotProbsZero: boolean;
   teamLogos?: Record<string, string>;
   pathData?: PathEntry[];
+  aliveData?: AliveData;
 }
 
-type ProbTab = "chances" | "finishes" | "path";
+type ProbTab = "chances" | "finishes" | "path" | "alive";
 
 type TierKey = "strong" | "hunt" | "fighting" | "longshot" | "miracle";
 
@@ -85,6 +119,9 @@ function getTierKey(probability: number): TierKey {
 const TAB_ACTIVE = "bg-primary/15 text-primary border border-primary/30 rounded-card px-3 py-1.5 text-sm font-label";
 const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface rounded-card px-3 py-1.5 text-sm font-label";
 
+type AliveFilter = "champion" | "ff3" | "ff2" | "all";
+const VALID_ALIVE_FILTERS: AliveFilter[] = ["champion", "ff3", "ff2", "all"];
+
 export function ProbabilityClient({
   probData,
   journeyData,
@@ -92,12 +129,28 @@ export function ProbabilityClient({
   allSnapshotProbsZero,
   teamLogos = {},
   pathData = [],
+  aliveData,
 }: ProbabilityClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialTab = (searchParams.get("tab") as ProbTab) || "chances";
+
+  const VALID_TABS: ProbTab[] = ["chances", "finishes", "path", "alive"];
+  const initialTab = (() => {
+    const param = searchParams.get("tab") as ProbTab;
+    if (param && VALID_TABS.includes(param)) return param;
+    return "chances" as ProbTab;
+  })();
+
   const [tab, setTab] = useState<ProbTab>(initialTab);
   const [showExact, setShowExact] = useState(false);
+
+  // Alive filter state
+  const initialAliveFilter = (() => {
+    const param = searchParams.get("filter") as AliveFilter | null;
+    if (param && VALID_ALIVE_FILTERS.includes(param)) return param;
+    return "champion" as AliveFilter;
+  })();
+  const [aliveFilter, setAliveFilter] = useState<AliveFilter>(initialAliveFilter);
 
   function changeTab(t: ProbTab) {
     setTab(t);
@@ -105,6 +158,16 @@ export function ProbabilityClient({
     params.set("tab", t);
     router.replace(`/probability?${params.toString()}`, { scroll: false });
   }
+
+  const changeAliveFilter = useCallback(
+    (v: AliveFilter) => {
+      setAliveFilter(v);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("filter", v);
+      router.replace(`/probability?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router]
+  );
 
   // Group brackets by tier
   const tierGroups = new Map<TierKey, ProbEntry[]>();
@@ -116,6 +179,40 @@ export function ProbabilityClient({
     tierGroups.get(tierKey)!.push(entry);
   }
 
+  // Alive tab: filter brackets
+  const aliveFiltered = (() => {
+    if (!aliveData) return [];
+    const { brackets, eliminatedArr, bracketFFTeamsMap } = aliveData;
+    const eliminatedTeams = new Set(eliminatedArr);
+
+    function getFFTeams(b: Bracket): string[] {
+      return bracketFFTeamsMap[b.id] ?? [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+    }
+
+    switch (aliveFilter) {
+      case "champion":
+        return brackets
+          .filter((b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick))
+          .sort((a, b) => b.points - a.points);
+      case "ff3":
+        return brackets
+          .filter((b) => {
+            const ffTeams = getFFTeams(b);
+            return ffTeams.filter((t) => !eliminatedTeams.has(t)).length >= 3;
+          })
+          .sort((a, b) => b.points - a.points);
+      case "ff2":
+        return brackets
+          .filter((b) => {
+            const ffTeams = getFFTeams(b);
+            return ffTeams.filter((t) => !eliminatedTeams.has(t)).length >= 2;
+          })
+          .sort((a, b) => b.points - a.points);
+      default:
+        return [...brackets].sort((a, b) => b.points - a.points);
+    }
+  })();
+
   return (
     <div className="space-y-section">
       <div>
@@ -126,7 +223,7 @@ export function ProbabilityClient({
       </div>
 
       {/* Tab pills */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <button onClick={() => changeTab("chances")} className={tab === "chances" ? TAB_ACTIVE : TAB_INACTIVE}>
           Championship Chances
         </button>
@@ -136,6 +233,11 @@ export function ProbabilityClient({
         <button onClick={() => changeTab("path")} className={tab === "path" ? TAB_ACTIVE : TAB_INACTIVE}>
           Path to Victory
         </button>
+        {aliveData && (
+          <button onClick={() => changeTab("alive")} className={tab === "alive" ? TAB_ACTIVE : TAB_INACTIVE}>
+            Who&apos;s Still Alive
+          </button>
+        )}
       </div>
 
       {/* Championship Chances tab */}
@@ -327,6 +429,67 @@ export function ProbabilityClient({
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Who's Still Alive tab */}
+      {tab === "alive" && aliveData && (
+        <div className="space-y-section">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              label="Champion Alive"
+              value={aliveData.champAlive}
+              subtitle="brackets still have their champion"
+            />
+            <StatCard
+              label="3+ Final Four Teams"
+              value={aliveData.ff3Plus}
+              subtitle="brackets have 3+ Final Four teams left"
+            />
+            <StatCard
+              label="2+ Final Four Teams"
+              value={aliveData.ff2Plus}
+              subtitle="brackets have 2+ Final Four teams left"
+            />
+            <StatCard
+              label="Games Remaining"
+              value={aliveData.gamesRemaining}
+            />
+          </div>
+
+          <GamesToWatch games={aliveData.gamesToWatch} teamLogos={teamLogos} />
+
+          <div className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              {(
+                [
+                  ["champion", "Champion Alive"],
+                  ["ff3", "3+ Final Four"],
+                  ["ff2", "2+ Final Four"],
+                  ["all", "All Brackets"],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => changeAliveFilter(key)}
+                  className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
+                    aliveFilter === key
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <DrilldownTable
+              brackets={aliveFiltered}
+              analytics={new Map(Object.entries(aliveData.analyticsObj))}
+              eliminatedTeams={new Set(aliveData.eliminatedArr)}
+              teamLogos={teamLogos}
+            />
+          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { GameCard, PicksDrawer } from "@/components/ui/GameCard";
+import { TeamPill } from "@/components/ui/TeamPill";
 import type { PickerDetails } from "@/components/ui/GameCard";
+
+interface ChampDistEntry {
+  name: string;
+  count: number;
+  alive: boolean;
+  logo: string;
+}
 
 export function PicksContent({
   games,
@@ -14,6 +22,7 @@ export function PicksContent({
   totalBrackets,
   currentRound,
   teamLogos = {},
+  champDistribution = [],
 }: {
   games: Game[];
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
@@ -21,6 +30,7 @@ export function PicksContent({
   totalBrackets: number;
   currentRound: Round;
   teamLogos?: Record<string, string>;
+  champDistribution?: ChampDistEntry[];
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -181,6 +191,31 @@ export function PicksContent({
         <p className="text-on-surface-variant text-sm text-center py-8">
           No games scheduled for this round.
         </p>
+      )}
+
+      {/* Champion Distribution */}
+      {champDistribution.length > 0 && (
+        <div className="rounded-card bg-surface-container p-5 space-y-4">
+          <h3 className="font-display text-lg font-semibold">Champion Distribution</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {champDistribution.map((entry) => (
+              <div
+                key={entry.name}
+                className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2"
+              >
+                <TeamPill
+                  name={entry.name}
+                  logo={entry.logo}
+                  eliminated={!entry.alive}
+                  showStatus
+                />
+                <span className="font-label text-xs text-on-surface-variant ml-2 shrink-0">
+                  {entry.count} bracket{entry.count !== 1 ? "s" : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Centralized drawer with prev/next navigation */}

@@ -48,14 +48,14 @@ export function PicksDrawer({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 top-0 left-0 z-[60] flex justify-end">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
       />
       {/* Drawer panel */}
-      <div className="relative w-full max-w-md h-full bg-surface-container shadow-xl drawer-slide-in overflow-y-auto">
+      <div className="relative w-full max-w-md h-screen bg-surface-container shadow-xl drawer-slide-in overflow-y-auto">
         <div className="sticky top-0 bg-surface-container z-10 p-5 border-b border-surface-bright">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">

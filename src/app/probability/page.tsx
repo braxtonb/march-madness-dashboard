@@ -1,4 +1,5 @@
 import { fetchDashboardData } from "@/lib/sheets";
+import { computeAllAnalytics } from "@/lib/analytics";
 import { runMonteCarlo } from "@/lib/montecarlo";
 import { ProbabilityClient } from "@/components/ProbabilityClient";
 
@@ -6,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProbabilityPage() {
   const data = await fetchDashboardData();
+  const analytics = computeAllAnalytics(data);
   const simResults = runMonteCarlo(data.brackets, data.picks, data.games, 1000);
 
   const probData = data.brackets
@@ -104,6 +106,92 @@ export default async function ProbabilityPage() {
     })
     .sort((a, b) => (b.points + b.maxRemaining) - (a.points + a.maxRemaining));
 
+  // ── Alive Board data ──
+  const { brackets, picks, games } = data;
+
+  const champAlive = brackets.filter(
+    (b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick)
+  ).length;
+
+  // Build a map of bracket_id -> set of Final Four teams from E8 picks
+  const bracketFFPicks = new Map<string, Set<string>>();
+  for (const p of picks) {
+    if (p.round === "E8") {
+      if (!bracketFFPicks.has(p.bracket_id))
+        bracketFFPicks.set(p.bracket_id, new Set());
+      if (p.team_picked) bracketFFPicks.get(p.bracket_id)!.add(p.team_picked);
+    }
+  }
+
+  function getFFTeams(b: (typeof brackets)[0]): string[] {
+    const fromFields = [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+    const fromPicks = bracketFFPicks.get(b.id);
+    const combined = new Set([...fromFields, ...(fromPicks ? [...fromPicks] : [])]);
+    return [...combined];
+  }
+
+  const ff3Plus = brackets.filter((b) => {
+    const ffTeams = getFFTeams(b);
+    const alive = ffTeams.filter((t) => !eliminatedTeams.has(t)).length;
+    return alive >= 3;
+  }).length;
+
+  const ff2Plus = brackets.filter((b) => {
+    const ffTeams = getFFTeams(b);
+    const alive = ffTeams.filter((t) => !eliminatedTeams.has(t)).length;
+    return alive >= 2;
+  }).length;
+
+  const upcomingGames = games.filter(
+    (g) => !g.completed && g.team1 && g.team2
+  );
+  const gamesToWatch = upcomingGames
+    .map((g) => {
+      const affectedBrackets = brackets.filter(
+        (b) =>
+          b.champion_pick === g.team1 || b.champion_pick === g.team2
+      );
+      const affectedNames = affectedBrackets.map((b) => ({
+        name: b.name,
+        owner: b.owner,
+        champion: b.champion_pick,
+      }));
+      return {
+        gameId: g.game_id,
+        seed1: g.seed1,
+        team1: g.team1,
+        seed2: g.seed2,
+        team2: g.team2,
+        round: g.round,
+        affectedCount: affectedBrackets.length,
+        affectedBrackets: affectedNames,
+      };
+    })
+    .filter((x) => x.affectedCount > 0)
+    .sort((a, b) => b.affectedCount - a.affectedCount)
+    .slice(0, 5);
+
+  // Serialize FF teams map for client component
+  const bracketFFTeamsMap: Record<string, string[]> = {};
+  for (const b of brackets) {
+    bracketFFTeamsMap[b.id] = getFFTeams(b);
+  }
+
+  const analyticsObj = Object.fromEntries(analytics);
+  const eliminatedArr = [...eliminatedTeams];
+
+  const aliveData = {
+    champAlive,
+    ff3Plus,
+    ff2Plus,
+    gamesRemaining: 63 - data.meta.games_completed,
+    gamesToWatch,
+    brackets,
+    analyticsObj,
+    eliminatedArr,
+    bracketFFTeamsMap,
+  };
+
   return (
     <ProbabilityClient
       probData={probData}
@@ -112,6 +200,7 @@ export default async function ProbabilityPage() {
       allSnapshotProbsZero={allSnapshotProbsZero}
       teamLogos={teamLogos}
       pathData={pathData}
+      aliveData={aliveData}
     />
   );
 }
