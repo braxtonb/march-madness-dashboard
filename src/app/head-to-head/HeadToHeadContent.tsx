@@ -301,7 +301,7 @@ export function HeadToHeadContent({
           {/* Agreement stat — inline subtle */}
 
           {/* Stat comparison — compact inline */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
                 <p className="font-display text-sm font-bold text-on-surface truncate">{b1.name}</p>
@@ -345,7 +345,7 @@ export function HeadToHeadContent({
           </p>
 
           {/* Round selector with counts */}
-          <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1">
+          <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1 overflow-x-auto no-scrollbar">
             {ROUND_ORDER.map((round) => {
               const stats = roundStats[round];
               const isActive = selectedRound === round;
@@ -369,8 +369,8 @@ export function HeadToHeadContent({
           </div>
 
           {/* Filter pills with counts + status filter */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex gap-1.5">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5 min-w-max">
               <button
                 onClick={() => changeDiffFilter("all")}
                 className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
@@ -425,7 +425,7 @@ export function HeadToHeadContent({
                 <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
                   Completed ({completedFilteredIds.length})
                 </p>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {completedFilteredIds.map((gid) => renderGameCard(gid))}
                 </div>
               </>
@@ -435,7 +435,7 @@ export function HeadToHeadContent({
                 <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
                   Scheduled ({scheduledFilteredIds.length})
                 </p>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {scheduledFilteredIds.map((gid) => renderGameCard(gid))}
                 </div>
               </>

@@ -617,11 +617,11 @@ export default function SimulatorPage() {
             </div>
           ) : (
             <div className="overflow-x-auto rounded-card bg-surface-container max-h-[calc(100vh-14rem)] overflow-y-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[500px] text-sm">
                 <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected ranking based on simulated outcomes">Rank</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
+                    <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Rank change from current standing based on simulation — positive means climbing up">Change</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Current actual points">Pts</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected total points if simulated outcomes happen">Sim Pts</th>
@@ -633,7 +633,7 @@ export default function SimulatorPage() {
                     return (
                       <tr key={r.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
-                        <td className="px-3 py-2">
+                        <td className="sticky left-0 bg-surface-container px-3 py-2">
                           <div className="text-on-surface text-xs">{r.name}</div>
                           <div className="text-[10px] text-on-surface-variant">{r.owner}</div>
                         </td>
