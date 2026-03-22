@@ -9,6 +9,7 @@ import { GamesToWatch } from "@/components/GamesToWatch";
 import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
@@ -160,6 +161,7 @@ export function ProbabilityClient({
   pathData = [],
   aliveData,
 }: ProbabilityClientProps) {
+  const { isMyBracket } = useMyBracket();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -334,7 +336,7 @@ export function ProbabilityClient({
                   {entries.map((entry) => (
                     <div
                       key={entry.name}
-                      className="group flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2 overflow-hidden"
+                      className={`group flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2 overflow-hidden ${isMyBracket(entry.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <CompareCheckbox bracketId={entry.id} />
@@ -396,7 +398,7 @@ export function ProbabilityClient({
                   return (
                     <React.Fragment key={d.id}>
                     <tr
-                      className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                      className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(d.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
                       onClick={() => setExpandedFinishIds((prev) => {
                         const next = new Set(prev);
                         if (next.has(d.id)) next.delete(d.id);

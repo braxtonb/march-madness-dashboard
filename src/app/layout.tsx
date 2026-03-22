@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { fetchDashboardData } from "@/lib/sheets";
 import CompareProvider from "@/components/ui/CompareProvider";
 import CompareBar from "@/components/ui/CompareBar";
+import MyBracketProvider from "@/components/ui/MyBracketProvider";
 
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
@@ -49,8 +50,9 @@ export default async function RootLayout({
         />
       </head>
       <body className="bg-surface text-on-surface font-body antialiased">
+        <MyBracketProvider>
         <CompareProvider>
-          <Navbar meta={meta} />
+          <Navbar meta={meta} brackets={brackets} />
           <div className="flex">
             <Sidebar />
             <main className="ml-0 md:ml-56 w-full min-h-[calc(100vh-52px)] p-6">
@@ -59,6 +61,7 @@ export default async function RootLayout({
           </div>
           <CompareBar brackets={brackets} />
         </CompareProvider>
+        </MyBracketProvider>
       </body>
     </html>
   );

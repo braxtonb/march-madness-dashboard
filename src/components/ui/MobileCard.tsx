@@ -5,6 +5,7 @@ import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { displayName } from "@/lib/constants";
+import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 interface MobileCardProps {
   bracket: Bracket;
@@ -28,6 +29,7 @@ export default function MobileCard({
   eliminatedTeams,
   teamLogos = {},
 }: MobileCardProps) {
+  const { isMyBracket } = useMyBracket();
   const [expanded, setExpanded] = useState(false);
   const champEliminated = eliminatedTeams.has(b.champion_pick);
   const maxOverall = b.points + b.max_remaining;
@@ -36,7 +38,7 @@ export default function MobileCard({
 
   return (
     <div
-      className="group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2"
+      className={`group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
       onClick={() => setExpanded((prev) => !prev)}
     >
       {/* Top row: rank, name, points */}

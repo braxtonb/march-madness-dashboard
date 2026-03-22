@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import type { DashboardData, Game, Pick, Round } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 interface SimResult {
   id: string;
@@ -108,6 +109,7 @@ function getTeamSeed(picks: Pick[], team: string): number {
 }
 
 export default function SimulatorPage() {
+  const { isMyBracket } = useMyBracket();
   const [data, setData] = useState<DashboardData | null>(null);
   const [selections, setSelections] = useState<Map<string, string>>(new Map());
   const [simResults, setSimResults] = useState<SimResult[]>([]);
@@ -648,7 +650,7 @@ export default function SimulatorPage() {
                   {simResults.map((r) => {
                     const delta = r.baseRank - r.simRank;
                     return (
-                      <tr key={r.id} className="group border-b border-outline hover:bg-surface-bright transition-colors">
+                      <tr key={r.id} className={`group border-b border-outline hover:bg-surface-bright transition-colors ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}>
                         <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
                         <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">

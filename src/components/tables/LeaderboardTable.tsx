@@ -8,6 +8,7 @@ import type { Round } from "@/lib/types";
 import MobileSortDropdown from "@/components/ui/MobileSortDropdown";
 import MobileCard from "@/components/ui/MobileCard";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
   if (direction === "asc") return (
@@ -57,6 +58,7 @@ export function LeaderboardTable({
   teamLogos?: Record<string, string>;
   pathEntries?: PathEntry[];
 }) {
+  const { isMyBracket } = useMyBracket();
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -172,7 +174,7 @@ export function LeaderboardTable({
               <>
                 <tr
                   key={b.id}
-                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
                   onClick={() => setExpandedIds((prev) => {
                     const next = new Set(prev);
                     if (next.has(b.id)) next.delete(b.id);

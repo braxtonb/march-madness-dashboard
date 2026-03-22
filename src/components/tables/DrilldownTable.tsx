@@ -5,6 +5,7 @@ import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
   if (direction === "asc") return (
@@ -61,6 +62,7 @@ export function DrilldownTable({
   teamLogos?: Record<string, string>;
   pathData?: PathEntry[];
 }) {
+  const { isMyBracket } = useMyBracket();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
@@ -122,7 +124,7 @@ export function DrilldownTable({
           const primary = displayName(b);
           const showSecondary = primary !== b.name;
           return (
-            <div key={b.id} className="group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2">
+            <div key={b.id} className={`group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <CompareCheckbox bracketId={b.id} />
@@ -172,7 +174,7 @@ export function DrilldownTable({
               return (
                 <React.Fragment key={b.id}>
                 <tr
-                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
                   onClick={() => setExpandedIds((prev) => {
                     const next = new Set(prev);
                     if (next.has(b.id)) next.delete(b.id);

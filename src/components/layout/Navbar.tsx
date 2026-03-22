@@ -1,7 +1,8 @@
-import type { Meta } from "@/lib/types";
+import type { Meta, Bracket } from "@/lib/types";
 import { ROUND_LABELS } from "@/lib/constants";
+import MyBracketBadge from "./MyBracketBadge";
 
-export function Navbar({ meta }: { meta: Meta | null }) {
+export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: Bracket[] }) {
   const roundLabel = meta ? ROUND_LABELS[meta.current_round] : "Loading...";
   const gamesCompleted = meta?.games_completed ?? 0;
 
@@ -26,14 +27,15 @@ export function Navbar({ meta }: { meta: Meta | null }) {
         </span>
       </div>
       <div className="flex items-center gap-4 text-sm text-on-surface-variant">
-        <span className="flex items-center gap-2">
+        <MyBracketBadge brackets={brackets} />
+        <span className="hidden sm:flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
           </span>
           {gamesCompleted}/63 games
         </span>
-        <span>Updated {lastUpdated}</span>
+        <span className="hidden sm:inline">Updated {lastUpdated}</span>
       </div>
     </nav>
   );
