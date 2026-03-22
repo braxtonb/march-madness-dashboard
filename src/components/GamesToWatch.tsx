@@ -33,6 +33,7 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
           No upcoming games affecting champion picks.
         </p>
       )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {games.map((g) => {
         const isExpanded = expandedId === g.gameId;
         return (
@@ -86,6 +87,7 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

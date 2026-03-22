@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useCompare } from "./CompareProvider";
 
 interface BottomSheetProps {
   open: boolean;
@@ -13,6 +14,8 @@ interface BottomSheetProps {
 
 export default function BottomSheet({ open, onClose, title, children, onPrev, onNext }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
+  const { selected } = useCompare();
+  const hasCompareSelections = selected.length > 0;
 
   useEffect(() => {
     if (!open) return;
@@ -47,7 +50,7 @@ export default function BottomSheet({ open, onClose, title, children, onPrev, on
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-surface-bright rounded-lg text-on-surface-variant min-w-[44px] min-h-[44px] flex items-center justify-center">&#10005;</button>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className={`flex-1 overflow-y-auto px-4 py-4 ${hasCompareSelections ? "pb-20" : ""}`}>
           {children}
         </div>
       </div>
