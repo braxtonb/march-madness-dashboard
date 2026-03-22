@@ -68,3 +68,26 @@
 ## Deep Linking
 
 Every filter, tab, and round selection is deep-linked via URL search params for shareability.
+
+## ESPN Integration
+
+- **Boxscore links** — completed games link directly to ESPN boxscore pages (`/game/_/gameId/{id}`) opening in new tabs
+- **Competition IDs** — extracted from outcome mappings in the ESPN API and stored per game
+- **52/63 games** have direct ESPN URLs (future round games get URLs as matchups are determined)
+
+## Sorting
+
+- **Leaderboard table** — sortable by rank, points, max, and per-round columns
+- **Simulated Finishes table** — sortable by Win%, 2nd%, 3rd%, Top 10, Top 25, median finish
+- **DrilldownTable (Who's Still Alive)** — sortable by rank, points, max remaining
+
+## Awards (6 per round)
+
+| Award | Description | Icon |
+|-------|-------------|------|
+| The Oracle | Most correct picks this round | 🔮 |
+| The Trendsetter | Most unique correct picks | 🌟 |
+| The Faithful | Highest scorer with champion alive | 🛡️ |
+| Hot Streak | Most consecutive correct picks | 🔥 |
+| Diamond in the Rough | Single best pick nobody else made | 💎 |
+| The People's Champion | Most aligned with group consensus (plurality) | 👑 |
