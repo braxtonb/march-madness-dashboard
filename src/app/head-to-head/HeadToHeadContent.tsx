@@ -401,29 +401,33 @@ export function HeadToHeadContent({
             </span>
           </div>
 
-          {/* Game cards for the selected round — grouped by status */}
-          <div className="space-y-2">
+          {/* Game cards for the selected round — grouped by status, 2 per row */}
+          <div className="space-y-3">
             {filteredGameIds.length === 0 && (
               <p className="text-on-surface-variant text-sm text-center py-8">
                 No games match the current filter for {ROUND_LABELS[selectedRound]}.
               </p>
             )}
             {completedFilteredIds.length > 0 && statusFilter !== "scheduled" && (
-              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
-                Completed ({completedFilteredIds.length})
-              </p>
+              <>
+                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                  Completed ({completedFilteredIds.length})
+                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {completedFilteredIds.map((gid) => renderGameCard(gid))}
+                </div>
+              </>
             )}
-            {completedFilteredIds.map((gid) => {
-              return renderGameCard(gid);
-            })}
-            {scheduledFilteredIds.length > 0 && statusFilter !== "completed" && completedFilteredIds.length > 0 && (
-              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-3">
-                Scheduled ({scheduledFilteredIds.length})
-              </p>
+            {scheduledFilteredIds.length > 0 && statusFilter !== "completed" && (
+              <>
+                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
+                  Scheduled ({scheduledFilteredIds.length})
+                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  {scheduledFilteredIds.map((gid) => renderGameCard(gid))}
+                </div>
+              </>
             )}
-            {scheduledFilteredIds.map((gid) => {
-              return renderGameCard(gid);
-            })}
           </div>
         </>
       ) : (
