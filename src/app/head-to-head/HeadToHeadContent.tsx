@@ -2,9 +2,8 @@
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import type { Bracket, Pick, Game, BracketAnalytics, Round, Team } from "@/lib/types";
+import type { Bracket, Pick, Game, BracketAnalytics, Round, AwardRound, Team } from "@/lib/types";
 import { ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
-import { RoundSelector } from "@/components/ui/RoundSelector";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { GameHeader } from "@/components/ui/GameHeader";
 
@@ -136,9 +135,10 @@ export function HeadToHeadContent({
 
   const initialDiffFilter = (searchParams.get("filter") as DiffFilter) || "all";
   const initialStatusFilter = (searchParams.get("status") as StatusFilter) || "all";
-  const initialRound = (() => {
-    const param = searchParams.get("round") as Round | null;
-    if (param && ROUND_ORDER.includes(param)) return param;
+  const initialRound: AwardRound = (() => {
+    const param = searchParams.get("round");
+    if (param === "ALL") return "ALL" as AwardRound;
+    if (param && ROUND_ORDER.includes(param as Round)) return param as Round;
     return currentRound;
   })();
 
@@ -153,7 +153,7 @@ export function HeadToHeadContent({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(
     ["all", "completed", "scheduled"].includes(initialStatusFilter) ? initialStatusFilter : "all"
   );
-  const [selectedRound, setSelectedRound] = useState<Round>(initialRound);
+  const [selectedRound, setSelectedRound] = useState<AwardRound>(initialRound);
 
   const updateUrl = useCallback(
     (key: string, value: string) => {
@@ -172,7 +172,7 @@ export function HeadToHeadContent({
     setStatusFilter(v);
     updateUrl("status", v);
   }
-  function changeRound(v: Round) {
+  function changeRound(v: AwardRound) {
     setSelectedRound(v);
     updateUrl("round", v);
   }
@@ -240,22 +240,34 @@ export function HeadToHeadContent({
     return set;
   }, [games]);
 
+  const isAllRounds = selectedRound === "ALL";
+
   // Get unique game_ids from picks data for the selected round (fixes S16/E8 empty issue)
   const roundGameIds = useMemo(() => {
     const ids = new Set<string>();
-    for (const p of picks) {
-      if (p.round === selectedRound && (p.bracket_id === id1 || p.bracket_id === id2)) {
-        ids.add(p.game_id);
+    if (isAllRounds) {
+      for (const p of picks) {
+        if (p.bracket_id === id1 || p.bracket_id === id2) {
+          ids.add(p.game_id);
+        }
       }
-    }
-    // Also include game_ids from games data for this round
-    for (const g of games) {
-      if (g.round === selectedRound) {
+      for (const g of games) {
         ids.add(g.game_id);
+      }
+    } else {
+      for (const p of picks) {
+        if (p.round === selectedRound && (p.bracket_id === id1 || p.bracket_id === id2)) {
+          ids.add(p.game_id);
+        }
+      }
+      for (const g of games) {
+        if (g.round === selectedRound) {
+          ids.add(g.game_id);
+        }
       }
     }
     return [...ids].sort();
-  }, [picks, games, selectedRound, id1, id2]);
+  }, [picks, games, selectedRound, id1, id2, isAllRounds]);
 
   // Compute per-round agreement/difference counts
   const roundStats = useMemo(() => {
@@ -297,9 +309,19 @@ export function HeadToHeadContent({
   const completedFilteredIds = filteredGameIds.filter((gid) => gameMap.get(gid)?.completed);
   const scheduledFilteredIds = filteredGameIds.filter((gid) => !gameMap.get(gid)?.completed);
 
-  // Counts for current round
-  const currentRoundAgree = roundStats[selectedRound]?.agree ?? 0;
-  const currentRoundDiff = roundStats[selectedRound]?.diff ?? 0;
+  // Counts for current round (aggregate when ALL)
+  const currentRoundAgree = isAllRounds
+    ? ROUND_ORDER.reduce((sum, r) => sum + (roundStats[r]?.agree ?? 0), 0)
+    : (roundStats[selectedRound]?.agree ?? 0);
+  const currentRoundDiff = isAllRounds
+    ? ROUND_ORDER.reduce((sum, r) => sum + (roundStats[r]?.diff ?? 0), 0)
+    : (roundStats[selectedRound]?.diff ?? 0);
+  const currentRoundCompleted = isAllRounds
+    ? ROUND_ORDER.reduce((sum, r) => sum + (roundStats[r]?.completed ?? 0), 0)
+    : (roundStats[selectedRound]?.completed ?? 0);
+  const currentRoundScheduled = isAllRounds
+    ? ROUND_ORDER.reduce((sum, r) => sum + (roundStats[r]?.scheduled ?? 0), 0)
+    : (roundStats[selectedRound]?.scheduled ?? 0);
 
   return (
     <div className="space-y-4">
@@ -383,6 +405,24 @@ export function HeadToHeadContent({
                 </button>
               );
             })}
+            <div className="w-px bg-on-surface-variant/20 my-1 mx-1" />
+            <button
+              onClick={() => changeRound("ALL")}
+              className={`rounded-card px-3 py-1.5 font-label text-xs transition-colors ${
+                isAllRounds
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              <span>All Rounds</span>
+              {id1 && id2 && (currentRoundAgree + currentRoundDiff) > 0 && isAllRounds ? null : id1 && id2 && (() => {
+                const totalAg = ROUND_ORDER.reduce((s, r) => s + (roundStats[r]?.agree ?? 0), 0);
+                const totalDf = ROUND_ORDER.reduce((s, r) => s + (roundStats[r]?.diff ?? 0), 0);
+                return (totalAg + totalDf) > 0 ? (
+                  <span className="ml-1.5 text-[10px] opacity-70">{totalAg}-{totalDf}</span>
+                ) : null;
+              })()}
+            </button>
           </div>
 
           {/* Filter pills with counts + status filter */}
@@ -413,48 +453,99 @@ export function HeadToHeadContent({
                 onClick={() => changeStatusFilter("all")}
                 className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
-                All ({(roundStats[selectedRound]?.completed ?? 0) + (roundStats[selectedRound]?.scheduled ?? 0)})
+                All ({currentRoundCompleted + currentRoundScheduled})
               </button>
               <button
                 onClick={() => changeStatusFilter("completed")}
                 className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
-                Completed ({roundStats[selectedRound]?.completed ?? 0})
+                Completed ({currentRoundCompleted})
               </button>
               <button
                 onClick={() => changeStatusFilter("scheduled")}
                 className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
-                Scheduled ({roundStats[selectedRound]?.scheduled ?? 0})
+                Scheduled ({currentRoundScheduled})
               </button>
             </div>
           </div>
 
-          {/* Game cards for the selected round — grouped by status, 2 per row */}
+          {/* Game cards — grouped by round when ALL, otherwise by status */}
           <div className="space-y-3">
             {filteredGameIds.length === 0 && (
               <p className="text-on-surface-variant text-sm text-center py-8">
-                No games match the current filter for {ROUND_LABELS[selectedRound]}.
+                No games match the current filter for {isAllRounds ? "All Rounds" : (ROUND_LABELS[selectedRound as Round] || selectedRound)}.
               </p>
             )}
-            {completedFilteredIds.length > 0 && statusFilter !== "scheduled" && (
+            {isAllRounds ? (
+              /* Group by round with round headers */
+              ROUND_ORDER.map((round) => {
+                const roundIds = filteredGameIds.filter((gid) => {
+                  const g = gameMap.get(gid);
+                  return g?.round === round;
+                });
+                if (roundIds.length === 0) return null;
+                const stats = roundStats[round];
+                const roundCompleted = roundIds.filter((gid) => gameMap.get(gid)?.completed);
+                const roundScheduled = roundIds.filter((gid) => !gameMap.get(gid)?.completed);
+                return (
+                  <div key={round} className="space-y-2">
+                    <div className="flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0">
+                      <p className="font-label text-xs font-semibold text-on-surface">
+                        {ROUND_LABELS[round]}
+                      </p>
+                      {stats && id1 && id2 && stats.total > 0 && (
+                        <span className="text-[10px] text-on-surface-variant">
+                          {stats.agree} agree / {stats.diff} differ
+                        </span>
+                      )}
+                    </div>
+                    {roundCompleted.length > 0 && statusFilter !== "scheduled" && (
+                      <>
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                          Completed ({roundCompleted.length})
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {roundCompleted.map((gid) => renderGameCard(gid))}
+                        </div>
+                      </>
+                    )}
+                    {roundScheduled.length > 0 && statusFilter !== "completed" && (
+                      <>
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
+                          Scheduled ({roundScheduled.length})
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {roundScheduled.map((gid) => renderGameCard(gid))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              /* Single round: group by status */
               <>
-                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                  Completed ({completedFilteredIds.length})
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {completedFilteredIds.map((gid) => renderGameCard(gid))}
-                </div>
-              </>
-            )}
-            {scheduledFilteredIds.length > 0 && statusFilter !== "completed" && (
-              <>
-                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
-                  Scheduled ({scheduledFilteredIds.length})
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {scheduledFilteredIds.map((gid) => renderGameCard(gid))}
-                </div>
+                {completedFilteredIds.length > 0 && statusFilter !== "scheduled" && (
+                  <>
+                    <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                      Completed ({completedFilteredIds.length})
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {completedFilteredIds.map((gid) => renderGameCard(gid))}
+                    </div>
+                  </>
+                )}
+                {scheduledFilteredIds.length > 0 && statusFilter !== "completed" && (
+                  <>
+                    <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
+                      Scheduled ({scheduledFilteredIds.length})
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {scheduledFilteredIds.map((gid) => renderGameCard(gid))}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>

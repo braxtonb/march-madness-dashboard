@@ -98,6 +98,17 @@ function LeaderboardContentInner({
     : "standings";
 
   const [tab, setTab] = useState<LeaderboardTab>(initialTab);
+  const [search, setSearch] = useState("");
+
+  const filteredBrackets = brackets.filter((b) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      b.name.toLowerCase().includes(q) ||
+      b.owner.toLowerCase().includes(q) ||
+      (b.full_name && b.full_name.toLowerCase().includes(q))
+    );
+  });
 
   const updateUrl = useCallback(
     (params: URLSearchParams) => {
@@ -221,8 +232,34 @@ function LeaderboardContentInner({
               Tap &#9675; to compare brackets
             </p>
           </div>
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search brackets..."
+              className="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-on-surface text-sm placeholder:text-on-surface-variant/50 outline-none focus:border-secondary/50 mb-3 pr-8"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-2 text-on-surface-variant/60 hover:text-on-surface transition-colors"
+                aria-label="Clear search"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
+          {search && (
+            <p className="text-xs text-on-surface-variant mb-2">
+              Showing {filteredBrackets.length} of {brackets.length} brackets
+            </p>
+          )}
           <LeaderboardTable
-            brackets={brackets}
+            brackets={filteredBrackets}
             analytics={analytics}
             eliminatedTeams={eliminatedTeams}
             teamLogos={teamLogos}
