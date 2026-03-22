@@ -373,9 +373,9 @@ function FaithfulContent({
   );
 }
 
-/* ── 4. Hot Streak Content ────────────────────────── */
+/* ── 4. Contrarian Content ────────────────────────── */
 
-function HotStreakContent({
+function ContrarianContent({
   winner,
   picks,
   games,
@@ -395,54 +395,62 @@ function HotStreakContent({
   const gameMap = new Map(rGames.map((g) => [g.game_id, g]));
   const wPicks = winnerPicks(picks, winner.bracketId, gameIds);
 
-  // Sort by round order then game_id
-  const sorted = [...wPicks].sort((a, b) => {
-    const ri = ROUND_ORDER.indexOf(a.round as Round) - ROUND_ORDER.indexOf(b.round as Round);
-    if (ri !== 0) return ri;
-    return a.game_id.localeCompare(b.game_id);
-  });
+  // Find correct picks that went against national consensus
+  const contrarianPicks = wPicks
+    .filter((p) => {
+      if (!p.correct) return false;
+      const game = gameMap.get(p.game_id);
+      if (!game || !game.completed) return false;
+      const nationalPctForPick = p.team_picked === game.team1
+        ? (game.national_pct_team1 || 0.5)
+        : (1 - (game.national_pct_team1 || 0.5));
+      return nationalPctForPick < 0.5;
+    })
+    .sort((a, b) => {
+      // Sort by how contrarian (lowest national pct first)
+      const gA = gameMap.get(a.game_id);
+      const gB = gameMap.get(b.game_id);
+      const pctA = a.team_picked === gA?.team1
+        ? (gA?.national_pct_team1 || 0.5)
+        : (1 - (gA?.national_pct_team1 || 0.5));
+      const pctB = b.team_picked === gB?.team1
+        ? (gB?.national_pct_team1 || 0.5)
+        : (1 - (gB?.national_pct_team1 || 0.5));
+      return pctA - pctB;
+    });
 
-  // Find the longest streak
-  let best: Pick[] = [];
-  let current: Pick[] = [];
-  for (const p of sorted) {
-    if (p.correct) {
-      current.push(p);
-      if (current.length > best.length) best = [...current];
-    } else {
-      current = [];
-    }
-  }
-
-  if (best.length === 0) {
+  if (contrarianPicks.length === 0) {
     return (
-      <p className="text-sm text-on-surface-variant italic">No streak found</p>
+      <p className="text-sm text-on-surface-variant italic">No contrarian picks found</p>
     );
   }
 
   const groupByRound = selectedRound === "ALL";
   const rounds = groupByRound
-    ? ROUND_ORDER.filter((r) => best.some((p) => { const g = gameMap.get(p.game_id); return g?.round === r; }))
+    ? ROUND_ORDER.filter((r) => contrarianPicks.some((p) => { const g = gameMap.get(p.game_id); return g?.round === r; }))
     : null;
 
-  // Track global streak index across rounds
-  let globalIdx = 0;
-
-  function renderStreakItem(p: Pick, idx: number) {
+  function renderContrarianItem(p: Pick) {
     const g = gameMap.get(p.game_id);
     if (!g) return null;
+    const nationalPctForPick = p.team_picked === g.team1
+      ? (g.national_pct_team1 || 0.5)
+      : (1 - (g.national_pct_team1 || 0.5));
+    const nationalPctDisplay = Math.round(nationalPctForPick * 100);
     return (
-      <div key={p.game_id} className="flex items-center gap-3 rounded-lg bg-surface-bright/50 px-3 py-2">
-        <span className="text-sm font-display font-bold text-secondary w-6 text-center shrink-0">{idx + 1}</span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
-            <span className="text-[10px] text-on-surface-variant">vs</span>
-            <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
-          </div>
-          <p className="text-[10px] text-on-surface-variant mt-0.5">{ROUND_LABELS[g.round as Round]}</p>
+      <div key={p.game_id} className="space-y-1 rounded-lg bg-surface-bright/50 px-3 py-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <TeamPill name={g.team1} seed={g.seed1} logo={teamLogo(teams, g.team1)} eliminated={teamEliminated(teams, g.team1)} />
+          <span className="text-[10px] text-on-surface-variant">vs</span>
+          <TeamPill name={g.team2} seed={g.seed2} logo={teamLogo(teams, g.team2)} eliminated={teamEliminated(teams, g.team2)} />
         </div>
-        <span className="text-secondary shrink-0">{"\u2713"}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TeamPill name={p.team_picked} seed={p.seed_picked} logo={teamLogo(teams, p.team_picked)} eliminated={teamEliminated(teams, p.team_picked)} />
+            <span className="text-secondary shrink-0">{"\u2713"}</span>
+          </div>
+          <span className="text-[10px] text-on-surface-variant">Only {nationalPctDisplay}% picked this nationally</span>
+        </div>
       </div>
     );
   }
@@ -454,16 +462,14 @@ function HotStreakContent({
           <div className="pt-2 border-t border-surface-bright">
             <p className="font-label text-xs font-semibold text-on-surface">{ROUND_LABELS[rounds[0] as Round]}</p>
           </div>
-          {best.map((p, i) => renderStreakItem(p, i))}
+          {contrarianPicks.filter((p) => { const g = gameMap.get(p.game_id); return g?.round === rounds[0]; }).map(renderContrarianItem)}
         </div>
       );
     }
     return (
       <div className="space-y-2">
         {rounds.map((round) => {
-          const roundPicks = best.filter((p) => { const g = gameMap.get(p.game_id); return g?.round === round; });
-          const startIdx = globalIdx;
-          globalIdx += roundPicks.length;
+          const roundPicks = contrarianPicks.filter((p) => { const g = gameMap.get(p.game_id); return g?.round === round; });
           return (
             <CollapsibleRound
               key={round}
@@ -473,7 +479,7 @@ function HotStreakContent({
               gameCount={roundPicks.length}
             >
               <div className="space-y-2">
-                {roundPicks.map((p, i) => renderStreakItem(p, startIdx + i))}
+                {roundPicks.map(renderContrarianItem)}
               </div>
             </CollapsibleRound>
           );
@@ -484,7 +490,7 @@ function HotStreakContent({
 
   return (
     <div className="space-y-2">
-      {best.map((p, i) => renderStreakItem(p, i))}
+      {contrarianPicks.map(renderContrarianItem)}
     </div>
   );
 }
@@ -779,9 +785,9 @@ export default function AwardDetailSidebar({
         return (
           <FaithfulContent winner={winner} brackets={brackets} teams={teams} />
         );
-      case "Hot Streak":
+      case "The Contrarian":
         return (
-          <HotStreakContent
+          <ContrarianContent
             winner={winner}
             picks={picks}
             games={games}

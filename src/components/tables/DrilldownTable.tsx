@@ -162,7 +162,7 @@ export function DrilldownTable({
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-on-surface-variant uppercase font-label tracking-wide inline-flex items-center gap-0.5"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion:</span>
+                <span className="text-[10px] text-on-surface-variant uppercase font-label tracking-wide inline-flex items-center gap-0.5"><span className="text-sm">🏆</span>Champion:</span>
                 <TeamPill name={b.champion_pick} seed={b.champion_seed} eliminated={eliminatedTeams.has(b.champion_pick)} logo={teamLogos[b.champion_pick]} showStatus />
                 <span className="ml-auto text-[10px] text-on-surface-variant font-label">+{b.max_remaining} remaining</span>
               </div>
@@ -179,7 +179,7 @@ export function DrilldownTable({
               <th className="w-8"></th>
               <th className={hdr} onClick={() => toggleSort("rank")}><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
               <th className={hdrStatic}>Name</th>
-              <th className={hdrStatic}><span className="inline-flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion</span></th>
+              <th className={hdrStatic}><span className="inline-flex items-center gap-1"><span className="text-sm">🏆</span>Champion</span></th>
               <th className={hdr} onClick={() => toggleSort("points")}><span className={hdrDotted}>Points</span>{sortIcon("points")}</th>
               <th className={hdr} onClick={() => toggleSort("max_remaining")}><span className={hdrDotted}>MAX</span>{sortIcon("max_remaining")}</th>
             </tr>

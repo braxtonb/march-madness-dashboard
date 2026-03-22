@@ -9,7 +9,7 @@ function getAwardDescription(title: string, roundLabel?: string): string {
     "The Oracle": `Most correct picks — ${scope}`,
     "The Trendsetter": `Most unique correct picks — ${scope}`,
     "The Faithful": `Highest scorer whose champion is still alive — ${scope}`,
-    "Hot Streak": `Most consecutive correct picks — ${scope}`,
+    "The Contrarian": `Most correct picks against national consensus — ${scope}`,
     "Diamond in the Rough": `Single best pick almost nobody else made — ${scope}`,
     "The People's Champion": `Most aligned with group consensus — ${scope}`,
   };
@@ -20,7 +20,7 @@ const AWARD_ICONS: Record<string, string> = {
   "The Oracle": String.fromCodePoint(0x1F52E),
   "The Trendsetter": String.fromCodePoint(0x1F31F),
   "The Faithful": String.fromCodePoint(0x1F6E1, 0xFE0F),
-  "Hot Streak": String.fromCodePoint(0x1F525),
+  "The Contrarian": String.fromCodePoint(0x1F504),
   "Diamond in the Rough": String.fromCodePoint(0x1F48E),
   "The People's Champion": String.fromCodePoint(0x1F451),
 };
@@ -77,25 +77,9 @@ export function AwardCard({
           {award.description.startsWith("No winner") ? award.description : "No winner yet"}
         </p>
       ) : isTie ? (
-        <>
-          {/* Tied winners: show compact label only */}
-          <p className="text-sm text-on-surface-variant">
-            {award.winners.length}-way tie &mdash; {firstWinner.stat}
-          </p>
-
-          {/* Show details link */}
-          {onClick && (
-            <div className="flex justify-end">
-              <span className="flex items-center gap-1 text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M15 3v18" />
-                </svg>
-                Show details
-              </span>
-            </div>
-          )}
-        </>
+        <p className="text-sm text-on-surface-variant">
+          {award.winners.length}-way tie &mdash; {firstWinner.stat}
+        </p>
       ) : (
         <>
           {/* Single winner */}
@@ -113,19 +97,18 @@ export function AwardCard({
               <span className="inline-flex items-center gap-1">{"\uD83C\uDFC6"} Champion</span>: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
             </p>
           )}
-          {/* Show details link */}
-          {onClick && (
-            <div className="flex justify-end">
-              <span className="flex items-center gap-1 text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <path d="M15 3v18" />
-                </svg>
-                Show details
-              </span>
-            </div>
-          )}
         </>
+      )}
+
+      {/* Card footer */}
+      {onClick && hasWinners && (
+        <div className="mt-3 pt-2 border-t border-outline-variant/30 flex items-center gap-1.5 text-xs text-on-surface-variant group-hover:text-on-surface transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M15 3v18" />
+          </svg>
+          Show details
+        </div>
       )}
     </div>
   );

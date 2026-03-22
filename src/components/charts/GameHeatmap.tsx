@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import type { Game, Round } from "@/lib/types";
 import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
 
@@ -22,17 +22,10 @@ function accuracyColor(pctCorrect: number): string {
   return "bg-red-600/70";
 }
 
-function accuracyLabel(pctCorrect: number): string {
-  const pct = Math.round(pctCorrect * 100);
-  if (pctCorrect >= 0.5) return `${pct}% correct`;
-  return `${pct}% correct`;
-}
-
 /** Abbreviate long team names for compact display */
 function shortName(name: string): string {
   if (!name) return "TBD";
-  if (name.length <= 10) return name;
-  // Common abbreviations
+  if (name.length <= 12) return name;
   const abbrevs: Record<string, string> = {
     "Connecticut": "UConn",
     "Michigan State": "Mich St",
@@ -62,12 +55,11 @@ function shortName(name: string): string {
     "Long Beach State": "LBSU",
   };
   if (abbrevs[name]) return abbrevs[name];
-  // Truncate with ellipsis if still long
-  if (name.length > 12) return name.slice(0, 11) + "\u2026";
+  if (name.length > 14) return name.slice(0, 13) + "\u2026";
   return name;
 }
 
-/** Check if a game has TBD teams (teams not yet determined) */
+/** Check if a game has TBD teams */
 function isTBDTeam(name: string): boolean {
   return !name || name === "TBD" || name === "";
 }
@@ -93,6 +85,29 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
       .filter((g) => g.games.length > 0);
   }, [filteredGames, isAllRounds, round]);
 
+  // Compute which rounds are fully completed (for default collapse state)
+  const fullyCompletedRounds = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of ROUND_ORDER) {
+      const rGames = games.filter((g) => g.round === r);
+      if (rGames.length > 0 && rGames.every((g) => g.completed)) {
+        set.add(r);
+      }
+    }
+    return set;
+  }, [games]);
+
+  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => new Set(fullyCompletedRounds));
+
+  const toggleRoundCollapse = useCallback((r: string) => {
+    setCollapsedRounds((prev) => {
+      const next = new Set(prev);
+      if (next.has(r)) next.delete(r);
+      else next.add(r);
+      return next;
+    });
+  }, []);
+
   if (filteredGames.length === 0) {
     return (
       <div className="text-center py-8">
@@ -101,11 +116,105 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
     );
   }
 
+  function renderGameCell(game: Game) {
+    const split = pickSplits[game.game_id];
+    const total = split ? split.team1Count + split.team2Count : 0;
+
+    if (!game.completed) {
+      const tbd1 = isTBDTeam(game.team1);
+      const tbd2 = isTBDTeam(game.team2);
+
+      if (tbd1 && tbd2) {
+        return (
+          <div
+            key={game.game_id}
+            className="flex items-center gap-1.5 rounded-lg bg-on-surface-variant/5 px-2.5 py-1.5"
+          >
+            <span className="text-xs text-on-surface-variant/50 font-label truncate min-w-0 flex-1">TBD</span>
+            <span className="text-xs text-on-surface-variant/30 shrink-0">vs</span>
+            <span className="text-xs text-on-surface-variant/50 font-label truncate min-w-0 flex-1 text-right">TBD</span>
+          </div>
+        );
+      }
+
+      const pct1 = total > 0 ? Math.round((split.team1Count / total) * 100) : 50;
+      const pct2 = total > 0 ? 100 - pct1 : 50;
+
+      return (
+        <div
+          key={game.game_id}
+          className="flex items-center gap-1.5 rounded-lg bg-on-surface-variant/10 px-2.5 py-1.5"
+        >
+          {!tbd1 && (
+            <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+              {game.seed1}
+            </span>
+          )}
+          <span className={`text-sm font-medium truncate min-w-0 flex-1 ${tbd1 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
+            {tbd1 ? "TBD" : shortName(game.team1)}
+          </span>
+          <span className="text-xs text-on-surface-variant font-label shrink-0">{pct1}%</span>
+          <span className="text-xs text-on-surface-variant/50 shrink-0">v</span>
+          <span className="text-xs text-on-surface-variant font-label shrink-0">{pct2}%</span>
+          <span className={`text-sm font-medium truncate min-w-0 flex-1 text-right ${tbd2 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
+            {tbd2 ? "TBD" : shortName(game.team2)}
+          </span>
+          {!tbd2 && (
+            <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+              {game.seed2}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // Completed game -- calculate group accuracy
+    const winnerIsTeam1 = game.winner === game.team1;
+    const correctPicks = winnerIsTeam1 ? (split?.team1Count || 0) : (split?.team2Count || 0);
+    const pctCorrect = total > 0 ? correctPicks / total : 0;
+    const colorClass = accuracyColor(pctCorrect);
+    const pctDisplay = Math.round(pctCorrect * 100);
+
+    return (
+      <div
+        key={game.game_id}
+        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${colorClass}`}
+      >
+        <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+          {game.seed1}
+        </span>
+        <span
+          className={`text-sm font-medium truncate min-w-0 flex-1 ${
+            game.winner === game.team1 ? "text-on-surface font-bold" : "text-on-surface-variant line-through"
+          }`}
+        >
+          {shortName(game.team1)}
+        </span>
+        <span className="text-xs text-on-surface-variant/50 shrink-0">v</span>
+        <span
+          className={`text-sm font-medium truncate min-w-0 flex-1 text-right ${
+            game.winner === game.team2 ? "text-on-surface font-bold" : "text-on-surface-variant line-through"
+          }`}
+        >
+          {shortName(game.team2)}
+        </span>
+        <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+          {game.seed2}
+        </span>
+        <span className="text-xs text-on-surface font-label w-9 text-right shrink-0">
+          {pctDisplay}%
+        </span>
+      </div>
+    );
+  }
+
+  const showRoundHeaders = isAllRounds && groupedGames.length > 1;
+
   return (
-    <div className="space-y-3 max-w-2xl mx-auto">
+    <div className="space-y-3">
       {/* Legend */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] text-on-surface-variant font-label" title="Percentage of completed games where the group's most popular pick was correct">Group Accuracy:</span>
+        <span className="text-xs text-on-surface-variant font-label" title="Percentage of completed games where the group's most popular pick was correct">Group Accuracy:</span>
         <div className="flex items-center gap-0.5">
           <div className="w-5 h-3 rounded-sm bg-red-600/70" />
           <div className="w-5 h-3 rounded-sm bg-red-500/50" />
@@ -114,119 +223,60 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
           <div className="w-5 h-3 rounded-sm bg-emerald-500/50" />
           <div className="w-5 h-3 rounded-sm bg-emerald-600/70" />
         </div>
-        <span className="text-[10px] text-on-surface-variant">
+        <span className="text-xs text-on-surface-variant">
           Wrong &larr; &rarr; Correct
         </span>
         <div className="flex items-center gap-0.5 ml-2">
           <div className="w-5 h-3 rounded-sm bg-on-surface-variant/10" />
-          <span className="text-[10px] text-on-surface-variant">Pending</span>
+          <span className="text-xs text-on-surface-variant">Pending</span>
         </div>
       </div>
 
-      {groupedGames.map((group) => (
-        <div key={group.round} className="space-y-1">
-          {isAllRounds && (
-            <p className="font-label text-xs font-semibold text-on-surface pt-1">
-              {ROUND_LABELS[group.round]}
-            </p>
-          )}
-          <div className="space-y-0.5">
-            {group.games.map((game) => {
-              const split = pickSplits[game.game_id];
-              const total = split ? split.team1Count + split.team2Count : 0;
+      {groupedGames.map((group) => {
+        const isCollapsed = collapsedRounds.has(group.round);
 
-              if (!game.completed) {
-                const tbd1 = isTBDTeam(game.team1);
-                const tbd2 = isTBDTeam(game.team2);
-                const bothTBD = tbd1 && tbd2;
-
-                // Pending game
-                const pct1 = total > 0 ? Math.round((split.team1Count / total) * 100) : 50;
-                const pct2 = total > 0 ? 100 - pct1 : 50;
-
-                if (bothTBD) {
-                  return (
-                    <div
-                      key={game.game_id}
-                      className="flex items-center gap-1 rounded bg-on-surface-variant/5 px-1.5 py-0.5"
-                    >
-                      <span className="text-[10px] text-on-surface-variant/50 font-label truncate min-w-0 flex-1">TBD</span>
-                      <span className="text-[9px] text-on-surface-variant/30 shrink-0">vs</span>
-                      <span className="text-[10px] text-on-surface-variant/50 font-label truncate min-w-0 flex-1 text-right">TBD</span>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={game.game_id}
-                    className="flex items-center gap-1 rounded bg-on-surface-variant/10 px-1.5 py-0.5"
-                  >
-                    {!tbd1 && (
-                      <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
-                        {game.seed1}
-                      </span>
-                    )}
-                    <span className={`text-[10px] font-medium truncate min-w-0 flex-1 ${tbd1 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
-                      {tbd1 ? "TBD" : shortName(game.team1)}
-                    </span>
-                    <span className="text-[9px] text-on-surface-variant font-label shrink-0">{pct1}%</span>
-                    <span className="text-[8px] text-on-surface-variant/50 shrink-0">v</span>
-                    <span className="text-[9px] text-on-surface-variant font-label shrink-0">{pct2}%</span>
-                    <span className={`text-[10px] font-medium truncate min-w-0 flex-1 text-right ${tbd2 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
-                      {tbd2 ? "TBD" : shortName(game.team2)}
-                    </span>
-                    {!tbd2 && (
-                      <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
-                        {game.seed2}
-                      </span>
-                    )}
-                  </div>
-                );
-              }
-
-              // Completed game -- calculate group accuracy
-              const winnerIsTeam1 = game.winner === game.team1;
-              const correctPicks = winnerIsTeam1 ? (split?.team1Count || 0) : (split?.team2Count || 0);
-              const pctCorrect = total > 0 ? correctPicks / total : 0;
-              const colorClass = accuracyColor(pctCorrect);
-              const pctDisplay = Math.round(pctCorrect * 100);
-
-              return (
-                <div
-                  key={game.game_id}
-                  className={`flex items-center gap-1 rounded px-1.5 py-0.5 ${colorClass}`}
-                >
-                  <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
-                    {game.seed1}
+        if (showRoundHeaders) {
+          return (
+            <div key={group.round} className="space-y-2">
+              <button
+                type="button"
+                onClick={() => toggleRoundCollapse(group.round)}
+                className="w-full flex items-center gap-2 pt-2 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+              >
+                <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">
+                  {isCollapsed ? "+" : "\u2212"}
+                </span>
+                <p className="font-label text-sm font-semibold text-on-surface">
+                  {ROUND_LABELS[group.round]}
+                </p>
+                {isCollapsed && (
+                  <span className="text-xs text-on-surface-variant/50 ml-auto">
+                    {group.games.length} game{group.games.length !== 1 ? "s" : ""}
                   </span>
-                  <span
-                    className={`text-[10px] font-medium truncate min-w-0 flex-1 ${
-                      game.winner === game.team1 ? "text-on-surface font-bold" : "text-on-surface-variant line-through"
-                    }`}
-                  >
-                    {shortName(game.team1)}
-                  </span>
-                  <span className="text-[8px] text-on-surface-variant/50 shrink-0">v</span>
-                  <span
-                    className={`text-[10px] font-medium truncate min-w-0 flex-1 text-right ${
-                      game.winner === game.team2 ? "text-on-surface font-bold" : "text-on-surface-variant line-through"
-                    }`}
-                  >
-                    {shortName(game.team2)}
-                  </span>
-                  <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
-                    {game.seed2}
-                  </span>
-                  <span className="text-[9px] text-on-surface font-label w-8 text-right shrink-0">
-                    {pctDisplay}%
-                  </span>
+                )}
+              </button>
+              {!isCollapsed && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {group.games.map((game) => renderGameCell(game))}
                 </div>
-              );
-            })}
+              )}
+            </div>
+          );
+        }
+
+        return (
+          <div key={group.round} className="space-y-2">
+            {isAllRounds && (
+              <p className="font-label text-sm font-semibold text-on-surface pt-1">
+                {ROUND_LABELS[group.round]}
+              </p>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {group.games.map((game) => renderGameCell(game))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

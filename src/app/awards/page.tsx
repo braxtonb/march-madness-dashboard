@@ -10,7 +10,7 @@ const AWARD_DEFINITIONS: { title: string; description: string; icon: string; tie
   { title: "The Oracle", description: "Most correct picks", icon: "oracle", tier: "gold" },
   { title: "The Trendsetter", description: "Most unique correct picks", icon: "trendsetter", tier: "gold" },
   { title: "The Faithful", description: "Highest scorer whose champion is still alive", icon: "faithful", tier: "silver" },
-  { title: "Hot Streak", description: "Most consecutive correct picks", icon: "streak", tier: "silver" },
+  { title: "The Contrarian", description: "Most correct picks against national consensus", icon: "contrarian", tier: "silver" },
   { title: "Diamond in the Rough", description: "Single best pick almost nobody else made", icon: "diamond", tier: "bronze" },
   { title: "The People's Champion", description: "Most aligned with group consensus", icon: "people", tier: "bronze" },
 ];
@@ -109,32 +109,35 @@ function computeAwards(
     awards.push({ title: "The Faithful", description: "No winner — all champions eliminated", icon: "faithful", tier: "silver", winners: [] });
   }
 
-  // 4. Hot Streak — most consecutive correct picks
-  const streakCounts = new Map<string, number>();
+  // 4. The Contrarian — most correct picks against national consensus
+  const gameMap = new Map(roundGames.map((g) => [g.game_id, g]));
+  const contrarianCounts = new Map<string, number>();
   for (const b of brackets) {
-    const bPicks = [...(picksByBracket.get(b.id) || [])];
-    if (round === "ALL") {
-      bPicks.sort((a, bp) => {
-        const ri = ROUND_ORDER.indexOf(a.round as Round) - ROUND_ORDER.indexOf(bp.round as Round);
-        if (ri !== 0) return ri;
-        return a.game_id.localeCompare(bp.game_id);
-      });
-    }
-    let streak = 0, maxStreak = 0;
+    const bPicks = picksByBracket.get(b.id) || [];
+    let contrarianCorrect = 0;
     for (const p of bPicks) {
-      if (p.correct) { streak++; maxStreak = Math.max(maxStreak, streak); }
-      else streak = 0;
+      if (!p.correct) continue;
+      const game = gameMap.get(p.game_id);
+      if (!game || !game.completed) continue;
+      // national_pct_team1 is the percentage that picked team1 nationally
+      const nationalPctForPick = p.team_picked === game.team1
+        ? (game.national_pct_team1 || 0.5)
+        : (1 - (game.national_pct_team1 || 0.5));
+      // "Against consensus" = picked the team that < 50% of national audience picked
+      if (nationalPctForPick < 0.5) {
+        contrarianCorrect++;
+      }
     }
-    streakCounts.set(b.id, maxStreak);
+    contrarianCounts.set(b.id, contrarianCorrect);
   }
-  const maxStreak = Math.max(...streakCounts.values(), 0);
-  if (maxStreak > 0) {
-    const streakWinners: AwardWinner[] = brackets
-      .filter((b) => streakCounts.get(b.id) === maxStreak)
-      .map((b) => toWinner(b, `${maxStreak} consecutive correct picks`));
-    awards.push({ title: "Hot Streak", description: "Most consecutive correct picks", icon: "streak", tier: "silver", winners: streakWinners });
+  const maxContrarian = Math.max(...contrarianCounts.values(), 0);
+  if (maxContrarian > 0) {
+    const contrarianWinners: AwardWinner[] = brackets
+      .filter((b) => contrarianCounts.get(b.id) === maxContrarian)
+      .map((b) => toWinner(b, `${maxContrarian} correct picks against consensus`));
+    awards.push({ title: "The Contrarian", description: "Most correct picks against national consensus", icon: "contrarian", tier: "silver", winners: contrarianWinners });
   } else {
-    awards.push({ title: "Hot Streak", description: "Most consecutive correct picks", icon: "streak", tier: "silver", winners: [] });
+    awards.push({ title: "The Contrarian", description: "Most correct picks against national consensus", icon: "contrarian", tier: "silver", winners: [] });
   }
 
   // 5. Diamond in the Rough — single best pick that almost nobody else made and was correct
