@@ -74,7 +74,22 @@ export ESPN_S2="your-s2-cookie"
 python -m scraper.scrape
 ```
 
-The scraper uses ESPN's gambit JSON API with a 3-endpoint merge strategy to fetch all 75 entries. Runs every 30 minutes via GitHub Actions during game windows.
+The scraper uses ESPN's gambit JSON API with a 3-endpoint merge strategy to fetch all 75 entries. Runs hourly via GitHub Actions during game windows (4pm–5am UTC / noon–1am ET, March–April).
+
+### Manual Refresh
+
+To trigger a data refresh outside the cron schedule (admin only — requires repo access):
+
+**Option 1: GitHub CLI**
+```bash
+gh workflow run "Scrape ESPN Brackets" -R braxtonb/march-madness-dashboard
+```
+
+**Option 2: GitHub UI**
+1. Go to [Actions → Scrape ESPN Brackets](https://github.com/braxtonb/march-madness-dashboard/actions/workflows/scrape.yml)
+2. Click **Run workflow** → **Run workflow**
+
+The workflow scrapes ESPN, updates Google Sheets, commits `public/data.json`, and triggers a Vercel redeploy automatically.
 
 ### GitHub Actions Secrets
 
