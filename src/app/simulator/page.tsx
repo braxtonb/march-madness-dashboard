@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { DashboardData, Game, Pick, Round, Bracket } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
@@ -10,6 +10,61 @@ import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import { Skeleton, CardSkeleton } from "@/components/ui/Skeleton";
+
+function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
+  if (direction === "asc") return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M12 5v14" /><path d="m12 5-4 4" /><path d="m12 5 4 4" />
+    </svg>
+  );
+  if (direction === "desc") return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`inline-block ml-0.5 ${active ? "text-on-surface-variant" : "text-on-surface-variant/40"}`}>
+      <path d="M12 19V5" /><path d="m12 19-4-4" /><path d="m12 19 4-4" />
+    </svg>
+  );
+  return (
+    <svg width="10" height="14" viewBox="0 0 24 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block ml-0.5 opacity-30">
+      <path d="M12 3v8" /><path d="m12 3-3 3" /><path d="m12 3 3 3" />
+      <path d="M12 25v-8" /><path d="m12 25-3-3" /><path d="m12 25 3-3" />
+    </svg>
+  );
+}
+
+// --- Deep link helpers for simulator picks ---
+function encodePicks(picks: Map<string, string>, games: Game[]): string {
+  const parts: string[] = [];
+  games.forEach((g, i) => {
+    const winner = picks.get(g.game_id);
+    if (winner) {
+      parts.push(`${i}:${winner === g.team1 ? 1 : 2}`);
+    }
+  });
+  return parts.length > 0 ? `picks=${parts.join(",")}` : "";
+}
+
+function decodePicks(hash: string, games: Game[]): Map<string, string> {
+  const picks = new Map<string, string>();
+  const match = hash.match(/picks=([^&]+)/);
+  if (!match) return picks;
+  for (const part of match[1].split(",")) {
+    const [gi, ti] = part.split(":").map(Number);
+    const game = games[gi];
+    if (game) {
+      picks.set(game.game_id, ti === 1 ? game.team1 : game.team2);
+    }
+  }
+  return picks;
+}
+
+function parseHashParams(hash: string): URLSearchParams {
+  const stripped = hash.startsWith("#") ? hash.slice(1) : hash;
+  return new URLSearchParams(stripped);
+}
+
+function updateHash(params: URLSearchParams) {
+  const str = params.toString();
+  window.location.hash = str ? `#${str}` : "";
+}
 
 interface SimResult {
   id: string;
@@ -121,6 +176,27 @@ export default function SimulatorPage() {
   const [simSearch, setSimSearch] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Impact table sort state (from hash)
+  type ImpactSort = "simRank" | "simPoints" | "basePoints" | "delta";
+  const VALID_IMPACT_SORTS: ImpactSort[] = ["simRank", "simPoints", "basePoints", "delta"];
+  const [impactSortKey, setImpactSortKey] = useState<ImpactSort>(() => {
+    if (typeof window === "undefined") return "simRank";
+    const hp = parseHashParams(window.location.hash);
+    const s = hp.get("isort") as ImpactSort | null;
+    return s && VALID_IMPACT_SORTS.includes(s) ? s : "simRank";
+  });
+  const [impactSortAsc, setImpactSortAsc] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const hp = parseHashParams(window.location.hash);
+    const d = hp.get("idir");
+    if (d === "asc") return true;
+    if (d === "desc") return false;
+    return true;
+  });
+
+  // Flag to restore picks from hash once data loads
+  const picksRestoredRef = useRef(false);
+
   useEffect(() => {
     fetch("/api/data")
       .then((r) => r.json())
@@ -141,6 +217,19 @@ export default function SimulatorPage() {
       })
       .catch(() => {});
   }, []);
+
+  // Restore picks from URL hash once data is available
+  useEffect(() => {
+    if (!data || picksRestoredRef.current) return;
+    picksRestoredRef.current = true;
+    const hash = window.location.hash;
+    if (hash) {
+      const restored = decodePicks(hash, data.games);
+      if (restored.size > 0) {
+        setSelections(restored);
+      }
+    }
+  }, [data]);
 
   // Build bracket structure chain
   const gameChain = useMemo(() => {
@@ -246,12 +335,21 @@ export default function SimulatorPage() {
     return data.brackets.map((b) => ({ value: b.id, label: b.name, sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined }));
   }, [data]);
 
-  // Filter sim results by search
+  // Filter and sort sim results
   const filteredSimResults = useMemo(() => {
-    if (simSearch.length === 0) return simResults;
-    const idSet = new Set(simSearch);
-    return simResults.filter((r) => idSet.has(r.id));
-  }, [simResults, simSearch]);
+    let list = simSearch.length === 0 ? simResults : simResults.filter((r) => new Set(simSearch).has(r.id));
+    return [...list].sort((a, b) => {
+      let aVal: number, bVal: number;
+      switch (impactSortKey) {
+        case "simRank": aVal = a.simRank; bVal = b.simRank; break;
+        case "simPoints": aVal = a.simPoints; bVal = b.simPoints; break;
+        case "basePoints": aVal = a.basePoints; bVal = b.basePoints; break;
+        case "delta": aVal = a.baseRank - a.simRank; bVal = b.baseRank - b.simRank; break;
+        default: aVal = a.simRank; bVal = b.simRank;
+      }
+      return impactSortAsc ? aVal - bVal : bVal - aVal;
+    });
+  }, [simResults, simSearch, impactSortKey, impactSortAsc]);
 
   // Path to victory per bracket
   const pathMap = useMemo(() => {
@@ -285,6 +383,20 @@ export default function SimulatorPage() {
     }
     return map;
   }, [data]);
+
+  // Sync selections to URL hash
+  useEffect(() => {
+    if (!data) return;
+    const hp = parseHashParams(window.location.hash);
+    const picksStr = encodePicks(selections, data.games);
+    if (picksStr) {
+      const match = picksStr.match(/picks=(.+)/);
+      if (match) hp.set("picks", match[1]);
+    } else {
+      hp.delete("picks");
+    }
+    updateHash(hp);
+  }, [selections, data]);
 
   // Auto-simulate impact
   const runSimulate = useCallback(
@@ -462,6 +574,22 @@ export default function SimulatorPage() {
     }
     setSelections(next);
   }
+
+  function toggleImpactSort(key: ImpactSort) {
+    const newAsc = impactSortKey === key ? !impactSortAsc : key === "simRank";
+    setImpactSortKey(key);
+    setImpactSortAsc(newAsc);
+    const hp = parseHashParams(window.location.hash);
+    hp.set("isort", key);
+    hp.set("idir", newAsc ? "asc" : "desc");
+    updateHash(hp);
+  }
+
+  const impactSortIcon = (key: ImpactSort) => {
+    const active = impactSortKey === key;
+    const direction = active ? (impactSortAsc ? "asc" : "desc") : "neutral";
+    return <SortIcon direction={direction} active={active} />;
+  };
 
   function toggleRoundCollapse(round: string) {
     setCollapsedRounds((prev) => {
@@ -734,12 +862,12 @@ export default function SimulatorPage() {
                 <thead className="sticky top-0 z-20 bg-surface-container">
                   <tr className="border-b border-outline">
                     <th className="w-8"></th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Rank</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleImpactSort("simRank")}><span className="border-b border-dotted border-on-surface-variant/40">Rank</span>{impactSortIcon("simRank")}</th>
                     <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Champion</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Change</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Pts</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Sim Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleImpactSort("delta")}><span className="border-b border-dotted border-on-surface-variant/40">Change</span>{impactSortIcon("delta")}</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleImpactSort("basePoints")}><span className="border-b border-dotted border-on-surface-variant/40">Pts</span>{impactSortIcon("basePoints")}</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleImpactSort("simPoints")}><span className="border-b border-dotted border-on-surface-variant/40">Sim Pts</span>{impactSortIcon("simPoints")}</th>
                   </tr>
                 </thead>
                 <tbody>

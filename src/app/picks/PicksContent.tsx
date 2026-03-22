@@ -173,26 +173,56 @@ export function PicksContent({
   }, []);
 
   // Champion distribution drawer state (Fix 8)
-  const [champDrawerTeam, setChampDrawerTeam] = useState<string | null>(null);
+  const [champDrawerTeam, setChampDrawerTeam] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("champ") || null;
+  });
+
+  function setChampDrawerWithUrl(team: string | null) {
+    setChampDrawerTeam(team);
+    const url = new URL(window.location.href);
+    if (team) {
+      url.searchParams.set("champ", team);
+    } else {
+      url.searchParams.delete("champ");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }
   const champDrawerEntry = champDrawerTeam
     ? champDistribution.find((e) => e.name === champDrawerTeam)
     : null;
 
   // Drawer state — managed here for cross-game navigation
-  const [drawerGameId, setDrawerGameId] = useState<string | null>(null);
+  const [drawerGameId, setDrawerGameId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("game") || null;
+  });
+
+  function setDrawerGameWithUrl(gameId: string | null) {
+    setDrawerGameId(gameId);
+    const url = new URL(window.location.href);
+    if (gameId) {
+      url.searchParams.set("game", gameId);
+    } else {
+      url.searchParams.delete("game");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }
 
   const drawerGame = drawerGameId ? games.find((g) => g.game_id === drawerGameId) : null;
   const drawerIdx = drawerGameId ? filteredGames.findIndex((g) => g.game_id === drawerGameId) : -1;
 
   function openDrawer(gameId: string) {
-    setDrawerGameId(gameId);
+    setDrawerGameWithUrl(gameId);
   }
 
   function navigateDrawer(delta: number) {
     if (drawerIdx < 0) return;
     const nextIdx = drawerIdx + delta;
     if (nextIdx >= 0 && nextIdx < filteredGames.length) {
-      setDrawerGameId(filteredGames[nextIdx].game_id);
+      setDrawerGameWithUrl(filteredGames[nextIdx].game_id);
     }
   }
 
@@ -465,7 +495,7 @@ export function PicksContent({
         <PicksDrawer
           game={drawerGame}
           pickerDetails={pickerDetailsMap[drawerGame.game_id]}
-          onClose={() => setDrawerGameId(null)}
+          onClose={() => setDrawerGameWithUrl(null)}
           teamLogos={teamLogos}
           onPrev={drawerIdx > 0 ? () => navigateDrawer(-1) : undefined}
           onNext={drawerIdx < filteredGames.length - 1 ? () => navigateDrawer(1) : undefined}
@@ -490,7 +520,7 @@ export function PicksContent({
               >
                 <button
                   type="button"
-                  onClick={() => setChampDrawerTeam(entry.name)}
+                  onClick={() => setChampDrawerWithUrl(entry.name)}
                   className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-bright transition-colors"
                 >
                   <TeamPill
@@ -517,7 +547,7 @@ export function PicksContent({
           {champDrawerEntry && champDrawerEntry.brackets && (
             <BottomSheet
               open={true}
-              onClose={() => setChampDrawerTeam(null)}
+              onClose={() => setChampDrawerWithUrl(null)}
               title={`Picked ${champDrawerEntry.name}`}
             >
               <div className="space-y-1">

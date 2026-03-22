@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
@@ -66,8 +66,23 @@ export function DrilldownTable({
 }) {
   const { isMyBracket } = useMyBracket();
   const [searchIds, setSearchIds] = useState<string[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>("rank");
-  const [sortAsc, setSortAsc] = useState(true);
+
+  // Initialize sort from URL params (prefixed with "a" for alive table)
+  const [sortKey, setSortKey] = useState<SortKey>(() => {
+    if (typeof window === "undefined") return "rank";
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get("asort") as SortKey | null;
+    const validKeys: SortKey[] = ["rank", "points", "max_remaining"];
+    return s && validKeys.includes(s) ? s : "rank";
+  });
+  const [sortAsc, setSortAsc] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const params = new URLSearchParams(window.location.search);
+    const d = params.get("adir");
+    if (d === "asc") return true;
+    if (d === "desc") return false;
+    return true;
+  });
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const bracketOptions: MultiSelectOption[] = useMemo(() => {
@@ -107,8 +122,13 @@ export function DrilldownTable({
   }, [brackets, searchIds, sortKey, sortAsc, analytics]);
 
   function toggleSort(key: SortKey) {
-    if (sortKey === key) setSortAsc(!sortAsc);
-    else { setSortKey(key); setSortAsc(key === "rank"); }
+    const newAsc = sortKey === key ? !sortAsc : key === "rank";
+    setSortKey(key);
+    setSortAsc(newAsc);
+    const url = new URL(window.location.href);
+    url.searchParams.set("asort", key);
+    url.searchParams.set("adir", newAsc ? "asc" : "desc");
+    window.history.replaceState(null, "", url.toString());
   }
   const sortIcon = (key: SortKey) => {
     const active = sortKey === key;

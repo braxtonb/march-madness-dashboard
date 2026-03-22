@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { ROUND_LABELS } from "@/lib/constants";
@@ -59,8 +59,23 @@ export function LeaderboardTable({
   pathEntries?: PathEntry[];
 }) {
   const { isMyBracket } = useMyBracket();
-  const [sortKey, setSortKey] = useState<SortKey>("rank");
-  const [sortAsc, setSortAsc] = useState(true);
+
+  // Initialize sort from URL params
+  const [sortKey, setSortKey] = useState<SortKey>(() => {
+    if (typeof window === "undefined") return "rank";
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get("sort") as SortKey | null;
+    const validKeys: SortKey[] = ["rank", "points", "max", "r64", "r32", "s16", "e8", "ff", "champ"];
+    return s && validKeys.includes(s) ? s : "rank";
+  });
+  const [sortAsc, setSortAsc] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const params = new URLSearchParams(window.location.search);
+    const d = params.get("dir");
+    if (d === "asc") return true;
+    if (d === "desc") return false;
+    return true;
+  });
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const pathMap = new Map(pathEntries.map((p) => [p.bracketId, p]));
@@ -87,12 +102,13 @@ export function LeaderboardTable({
   });
 
   function toggleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortAsc(!sortAsc);
-    } else {
-      setSortKey(key);
-      setSortAsc(key === "rank");
-    }
+    const newAsc = sortKey === key ? !sortAsc : key === "rank";
+    setSortKey(key);
+    setSortAsc(newAsc);
+    const url = new URL(window.location.href);
+    url.searchParams.set("sort", key);
+    url.searchParams.set("dir", newAsc ? "asc" : "desc");
+    window.history.replaceState(null, "", url.toString());
   }
 
   const mobileSortOptions = [
@@ -120,12 +136,13 @@ export function LeaderboardTable({
           value={sortKey}
           onChange={(key) => {
             const newKey = key as SortKey;
-            if (sortKey === newKey) {
-              setSortAsc(!sortAsc);
-            } else {
-              setSortKey(newKey);
-              setSortAsc(newKey === "rank");
-            }
+            const newAsc = sortKey === newKey ? !sortAsc : newKey === "rank";
+            setSortKey(newKey);
+            setSortAsc(newAsc);
+            const url = new URL(window.location.href);
+            url.searchParams.set("sort", newKey);
+            url.searchParams.set("dir", newAsc ? "asc" : "desc");
+            window.history.replaceState(null, "", url.toString());
           }}
         />
         {sorted.map((b) => {

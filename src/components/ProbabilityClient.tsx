@@ -182,8 +182,21 @@ export function ProbabilityClient({
 
   // Sort state for simulated finishes table
   type FinishSort = "probability" | "pct_second" | "pct_third" | "pct_top10" | "pct_top25" | "median_rank";
-  const [finishSortKey, setFinishSortKey] = useState<FinishSort>("probability");
-  const [finishSortAsc, setFinishSortAsc] = useState(false);
+  const VALID_FINISH_SORTS: FinishSort[] = ["probability", "pct_second", "pct_third", "pct_top10", "pct_top25", "median_rank"];
+  const [finishSortKey, setFinishSortKey] = useState<FinishSort>(() => {
+    if (typeof window === "undefined") return "probability";
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get("fsort") as FinishSort | null;
+    return s && VALID_FINISH_SORTS.includes(s) ? s : "probability";
+  });
+  const [finishSortAsc, setFinishSortAsc] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    const d = params.get("fdir");
+    if (d === "asc") return true;
+    if (d === "desc") return false;
+    return false;
+  });
   const [expandedFinishIds, setExpandedFinishIds] = useState<Set<string>>(new Set());
   const [finishSearch, setFinishSearch] = useState<string[]>([]);
 
@@ -210,8 +223,13 @@ export function ProbabilityClient({
   }, [probData, finishSortKey, finishSortAsc, finishSearch]);
 
   function toggleFinishSort(key: FinishSort) {
-    if (finishSortKey === key) setFinishSortAsc(!finishSortAsc);
-    else { setFinishSortKey(key); setFinishSortAsc(false); }
+    const newAsc = finishSortKey === key ? !finishSortAsc : false;
+    setFinishSortKey(key);
+    setFinishSortAsc(newAsc);
+    const url = new URL(window.location.href);
+    url.searchParams.set("fsort", key);
+    url.searchParams.set("fdir", newAsc ? "asc" : "desc");
+    window.history.replaceState(null, "", url.toString());
   }
   const fSortIcon = (key: FinishSort) => {
     const active = finishSortKey === key;

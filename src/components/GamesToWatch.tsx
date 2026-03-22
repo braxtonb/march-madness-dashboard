@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TeamPill } from "@/components/ui/TeamPill";
 import BottomSheet from "@/components/ui/BottomSheet";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
@@ -28,7 +28,27 @@ interface GameToWatch {
 }
 
 export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games: GameToWatch[]; teamLogos?: Record<string, string>; eliminatedTeams?: Set<string> }) {
-  const [selectedGameIdx, setSelectedGameIdx] = useState<number | null>(null);
+  const [selectedGameIdx, setSelectedGameIdx] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    const watchParam = params.get("watch");
+    if (watchParam) {
+      const idx = games.findIndex((g) => g.gameId === watchParam);
+      if (idx >= 0) return idx;
+    }
+    return null;
+  });
+
+  function setGameIdxWithUrl(idx: number | null) {
+    setSelectedGameIdx(idx);
+    const url = new URL(window.location.href);
+    if (idx != null && games[idx]) {
+      url.searchParams.set("watch", games[idx].gameId);
+    } else {
+      url.searchParams.delete("watch");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }
 
   const selectedGame = selectedGameIdx !== null ? games[selectedGameIdx] : null;
 
@@ -45,7 +65,7 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
         return (
           <button
             key={g.gameId}
-            onClick={() => setSelectedGameIdx(idx)}
+            onClick={() => setGameIdxWithUrl(idx)}
             className="group rounded-card bg-surface-bright p-4 text-left space-y-2 hover:bg-surface-bright/80 transition-colors cursor-pointer w-full"
           >
             <div className="flex items-center justify-between text-sm">
@@ -79,10 +99,10 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
       {/* Sidebar for affected brackets */}
       <BottomSheet
         open={!!selectedGame}
-        onClose={() => setSelectedGameIdx(null)}
+        onClose={() => setGameIdxWithUrl(null)}
         title={selectedGame ? `${selectedGame.team1} vs ${selectedGame.team2}` : ""}
-        onPrev={selectedGameIdx !== null && selectedGameIdx > 0 ? () => setSelectedGameIdx(selectedGameIdx - 1) : undefined}
-        onNext={selectedGameIdx !== null && selectedGameIdx < games.length - 1 ? () => setSelectedGameIdx(selectedGameIdx + 1) : undefined}
+        onPrev={selectedGameIdx !== null && selectedGameIdx > 0 ? () => setGameIdxWithUrl(selectedGameIdx - 1) : undefined}
+        onNext={selectedGameIdx !== null && selectedGameIdx < games.length - 1 ? () => setGameIdxWithUrl(selectedGameIdx + 1) : undefined}
       >
         {selectedGame && (
           <div className="space-y-4">

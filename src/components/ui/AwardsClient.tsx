@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { AwardCard } from "@/components/ui/AwardCard";
@@ -35,7 +35,28 @@ export function AwardsClient({
   const [selectedRound, setSelectedRound] = useState<string>(
     paramRound && validRounds.includes(paramRound) ? paramRound : "ALL"
   );
-  const [selectedAwardIdx, setSelectedAwardIdx] = useState<number | null>(null);
+  const [selectedAwardIdx, setSelectedAwardIdx] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    const awardParam = params.get("award");
+    if (awardParam != null) {
+      const idx = Number(awardParam);
+      if (!isNaN(idx) && idx >= 0) return idx;
+    }
+    return null;
+  });
+
+  // Update URL when award sidebar opens/closes
+  function setAwardWithUrl(idx: number | null) {
+    setSelectedAwardIdx(idx);
+    const url = new URL(window.location.href);
+    if (idx != null) {
+      url.searchParams.set("award", String(idx));
+    } else {
+      url.searchParams.delete("award");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }
 
   // Build team logo lookup for AwardCard
   const teamLogos: Record<string, string> = useMemo(() => {
@@ -71,7 +92,7 @@ export function AwardsClient({
           <AwardCard
             key={award.title}
             award={award}
-            onClick={() => setSelectedAwardIdx(idx)}
+            onClick={() => setAwardWithUrl(idx)}
             teamLogos={teamLogos}
             roundLabel={roundLabel}
           />
@@ -82,9 +103,9 @@ export function AwardsClient({
         <AwardDetailSidebar
           awards={awards}
           selectedIndex={selectedAwardIdx}
-          onChangeIndex={setSelectedAwardIdx}
+          onChangeIndex={setAwardWithUrl}
           open={true}
-          onClose={() => setSelectedAwardIdx(null)}
+          onClose={() => setAwardWithUrl(null)}
           picks={picks}
           games={games}
           teams={teams}
