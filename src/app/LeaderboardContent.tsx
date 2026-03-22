@@ -9,7 +9,7 @@ import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter
 import { TeamPill } from "@/components/ui/TeamPill";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
-import { ROUND_LABELS, displayName } from "@/lib/constants";
+import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
 type LeaderboardTab = "standings" | "calls" | "style";
@@ -103,7 +103,11 @@ function LeaderboardContentInner({
 
   // Build options for MultiSelectSearch
   const bracketOptions: MultiSelectOption[] = useMemo(
-    () => brackets.map((b) => { const dn = displayName(b); return { value: b.id, label: b.name, sublabel: dn !== b.name ? dn : undefined }; }),
+    () => brackets.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined,
+    })),
     [brackets]
   );
 
@@ -202,12 +206,10 @@ function LeaderboardContentInner({
                       <p className={`font-label text-xs uppercase tracking-wider ${m.textClass}`}>
                         {m.label}
                       </p>
-                      {(() => { const primary = displayName(b); return (<>
-                        <p className="font-display text-base font-bold text-on-surface leading-tight">
-                          {primary}
-                        </p>
-                        {b.name !== primary && <p className="text-xs text-on-surface-variant">{b.name}</p>}
-                      </>); })()}
+                      <p className="font-display text-base font-bold text-on-surface leading-tight">
+                        {b.name}
+                      </p>
+                      {b.full_name && b.full_name !== b.name && <p className="text-xs text-on-surface-variant">{b.full_name}</p>}
                       <p className={`font-display text-2xl font-black ${m.textClass}`}>
                         {b.points}
                         <span className="text-xs font-label ml-1">pts</span>
@@ -285,16 +287,14 @@ function LeaderboardContentInner({
                     {i + 1}
                   </span>
                   <div>
-                    {(() => { const primary = displayName({ full_name: gc.bracketFullName, name: gc.bracketName, owner: gc.bracketOwner }); return (<>
-                      <span className="text-on-surface font-body font-medium">
-                        {primary}
+                    <span className="text-on-surface font-body font-semibold">
+                      {gc.bracketName}
+                    </span>
+                    {gc.bracketFullName && gc.bracketFullName !== gc.bracketName && (
+                      <span className="text-xs text-on-surface-variant ml-2">
+                        {gc.bracketFullName}
                       </span>
-                      {gc.bracketName !== primary && (
-                        <span className="text-xs text-on-surface-variant ml-2">
-                          {gc.bracketName}
-                        </span>
-                      )}
-                    </>); })()}
+                    )}
                     <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
                       Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />
                       {gc.round &&

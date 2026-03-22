@@ -2,7 +2,6 @@
 
 import { TeamPill } from "@/components/ui/TeamPill";
 import type { Award } from "@/lib/types";
-import { displayName as getDisplayName } from "@/lib/constants";
 
 const AWARD_DESCRIPTIONS: Record<string, string> = {
   "The Oracle": "Most correct picks this round — seeing the future clearly",
@@ -89,8 +88,10 @@ export function AwardCard({
         <>
           {/* Single winner */}
           <div>
-            <p className="font-body text-on-surface font-medium">{getDisplayName({ full_name: firstWinner.fullName, name: firstWinner.name, owner: firstWinner.bracketName })}</p>
-            <p className="text-xs text-on-surface-variant">{firstWinner.name}</p>
+            <p className="font-body text-on-surface font-semibold">{firstWinner.name}</p>
+            {firstWinner.fullName && firstWinner.fullName !== firstWinner.name && (
+              <p className="text-xs text-on-surface-variant">{firstWinner.fullName}</p>
+            )}
           </div>
           <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
           {firstWinner.championPick && (

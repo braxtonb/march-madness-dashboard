@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { displayName } from "@/lib/constants";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 
 interface ScatterPoint {
@@ -81,7 +80,11 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
 
   // Build options
   const sheetOptions = useMemo(() =>
-    data.map((d) => { const dn = displayName(d); return { value: d.name, label: d.name, sublabel: dn !== d.name ? dn : undefined }; }),
+    data.map((d) => ({
+      value: d.name,
+      label: d.name,
+      sublabel: d.full_name && d.full_name !== d.name ? d.full_name : undefined,
+    })),
     [data]
   );
 
@@ -227,7 +230,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
                       <circle cx={cx} cy={cy} r={6} fill="#00f4fe" opacity={0.8} />
                     )}
                     <text x={cx} y={cy + 20} textAnchor="middle" fill="#a7abb2" fontSize={8} fontFamily="Inter">
-                      {(() => { const dn = displayName(point); return dn.length > 18 ? dn.slice(0, 17) + "\u2026" : dn; })()}
+                      {point.name.length > 18 ? point.name.slice(0, 17) + "\u2026" : point.name}
                     </text>
                   </>
                 ) : (
@@ -263,9 +266,12 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {p.logo && <img src={p.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px]" />}
                   <div className="min-w-0">
-                    <div className="text-on-surface truncate">{displayName(p)}</div>
+                    <div className="font-semibold text-on-surface truncate">{p.name}</div>
+                    {p.full_name && p.full_name !== p.name && (
+                      <div className="text-[10px] text-on-surface-variant truncate">{p.full_name}</div>
+                    )}
                     <div className="text-[10px] text-on-surface-variant truncate">
-                      {p.name}{p.points != null ? ` · ${p.points} pts` : ""}
+                      {p.points != null ? `${p.points} pts` : ""}
                     </div>
                     <div className="text-[10px] text-on-surface-variant">
                       Chalk: {p.skill}% · Upset: {p.fortune}%

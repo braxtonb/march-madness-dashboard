@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
-import { ROUND_LABELS, displayName } from "@/lib/constants";
+import { ROUND_LABELS } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
@@ -136,8 +136,6 @@ export function DrilldownTable({
       <div className="sm:hidden space-y-2">
         {filtered.map((b) => {
           const a = analytics.get(b.id);
-          const primary = displayName(b);
-          const showSecondary = primary !== b.name;
           return (
             <div key={b.id} className={`group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}>
               <div className="flex items-start justify-between gap-2">
@@ -147,9 +145,9 @@ export function DrilldownTable({
                     <span className="font-label text-xs font-bold text-on-surface">{a?.rank ?? "—"}</span>
                   </div>
                   <div className="min-w-0">
-                    <p className="font-body text-sm text-on-surface font-medium truncate">{primary}</p>
-                    {showSecondary && (
-                      <p className="text-[11px] text-on-surface-variant truncate">{b.name}</p>
+                    <p className="font-body text-sm text-on-surface font-semibold truncate">{b.name}</p>
+                    {b.full_name && b.full_name !== b.name && (
+                      <p className="text-[11px] text-on-surface-variant truncate">{b.full_name}</p>
                     )}
                   </div>
                 </div>
@@ -203,10 +201,8 @@ export function DrilldownTable({
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                       <div>
-                        {(() => { const primary = displayName(b); return (<>
-                          <div className="text-on-surface">{primary}</div>
-                          {b.name !== primary && <div className="text-xs text-on-surface-variant">{b.name}</div>}
-                        </>); })()}
+                        <div className="font-semibold text-on-surface">{b.name}</div>
+                        {b.full_name && b.full_name !== b.name && <div className="text-xs text-on-surface-variant">{b.full_name}</div>}
                       </div>
                     </div>
                   </td>

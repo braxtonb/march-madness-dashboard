@@ -3,7 +3,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { DashboardData, Game, Pick, Round } from "@/lib/types";
-import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
+import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
@@ -114,6 +116,7 @@ export default function SimulatorPage() {
   const [selections, setSelections] = useState<Map<string, string>>(new Map());
   const [simResults, setSimResults] = useState<SimResult[]>([]);
   const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(new Set());
+  const [simSearch, setSimSearch] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("/api/data")
@@ -221,6 +224,19 @@ export default function SimulatorPage() {
     if (!data) return {} as Record<string, string>;
     return Object.fromEntries(data.teams.map((t) => [t.name, t.logo || ""]));
   }, [data]);
+
+  // Build bracket options for MultiSelectSearch
+  const bracketOptions: MultiSelectOption[] = useMemo(() => {
+    if (!data) return [];
+    return data.brackets.map((b) => ({ value: b.id, label: b.name, sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined }));
+  }, [data]);
+
+  // Filter sim results by search
+  const filteredSimResults = useMemo(() => {
+    if (simSearch.length === 0) return simResults;
+    const idSet = new Set(simSearch);
+    return simResults.filter((r) => idSet.has(r.id));
+  }, [simResults, simSearch]);
 
   // Auto-simulate impact
   const runSimulate = useCallback(
@@ -626,6 +642,27 @@ export default function SimulatorPage() {
         {/* Right: impact table */}
         <div className="lg:col-span-3 lg:sticky lg:top-4 space-y-4">
           <h3 className="font-display text-lg font-semibold">Impact</h3>
+          <p className="hidden sm:block text-xs text-on-surface-variant">
+            Click any row to see details &middot; Hover any row to compare brackets
+          </p>
+          <p className="sm:hidden text-xs text-on-surface-variant">
+            Tap any row for details &middot; Tap &#9675; to compare brackets
+          </p>
+          <div className="w-full sm:w-72">
+            <MultiSelectSearch
+              mode="multi"
+              label="Brackets"
+              options={bracketOptions}
+              selected={simSearch}
+              onSelectedChange={setSimSearch}
+              placeholder="Search brackets..."
+            />
+          </div>
+          {simSearch.length > 0 && (
+            <p className="text-xs text-on-surface-variant">
+              Showing {filteredSimResults.length} of {simResults.length} brackets
+            </p>
+          )}
 
           {simResults.length === 0 ? (
             <div className="rounded-card bg-surface-container p-8 text-center">
@@ -647,17 +684,15 @@ export default function SimulatorPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {simResults.map((r) => {
+                  {filteredSimResults.map((r) => {
                     const delta = r.baseRank - r.simRank;
                     return (
                       <tr key={r.id} className={`group border-b border-outline hover:bg-surface-bright transition-colors ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}>
                         <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
                         <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
-                          {(() => { const primary = displayName(r); return (<>
-                            <div className="text-on-surface text-xs">{primary}</div>
-                            {r.name !== primary && <div className="text-[10px] text-on-surface-variant">{r.name}</div>}
-                          </>); })()}
+                          <div className="font-semibold text-on-surface text-xs">{r.name}</div>
+                          {r.full_name && r.full_name !== r.name && <div className="text-[10px] text-on-surface-variant">{r.full_name}</div>}
                         </td>
                         <td className="px-3 py-2 font-label">
                           {delta > 0 && <span className="text-secondary">+{delta}</span>}

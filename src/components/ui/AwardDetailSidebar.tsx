@@ -4,7 +4,7 @@ import { useState } from "react";
 import BottomSheet from "./BottomSheet";
 import { TeamPill } from "./TeamPill";
 import type { Award, AwardWinner, Pick, Game, Team, Bracket, Round } from "@/lib/types";
-import { ROUND_ORDER, ROUND_LABELS, ROUND_POINTS, displayName as getDisplayName } from "@/lib/constants";
+import { ROUND_ORDER, ROUND_LABELS, ROUND_POINTS } from "@/lib/constants";
 
 interface AwardDetailSidebarProps {
   award: Award;
@@ -568,7 +568,6 @@ export default function AwardDetailSidebar({
   const hasPrev = winnerIdx > 0;
   const hasNext = winnerIdx < total - 1;
 
-  const winnerDisplayName = getDisplayName({ full_name: winner.fullName, name: winner.name, owner: winner.bracketName });
   const title = award.title;
 
   function renderContent() {
@@ -657,9 +656,9 @@ export default function AwardDetailSidebar({
               </button>
             )}
             <div className="min-w-0">
-              <div className="text-on-surface font-semibold truncate">{winnerDisplayName}</div>
-              {winner.name !== winnerDisplayName && (
-                <div className="text-xs text-on-surface-variant truncate">{winner.name}</div>
+              <div className="text-on-surface font-semibold truncate">{winner.name}</div>
+              {winner.fullName && winner.fullName !== winner.name && (
+                <div className="text-xs text-on-surface-variant truncate">{winner.fullName}</div>
               )}
             </div>
             {total > 1 && hasNext && (

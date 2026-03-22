@@ -5,7 +5,6 @@ import { TeamPill } from "./TeamPill";
 import { GameHeader } from "./GameHeader";
 import BottomSheet from "./BottomSheet";
 import CompareCheckbox from "./CompareCheckbox";
-import { displayName } from "@/lib/constants";
 
 export interface PickerInfo {
   bracketId: string; // bracket id for compare
@@ -72,11 +71,11 @@ export function PicksDrawer({
                 >
                   <CompareCheckbox bracketId={picker.bracketId} />
                   <div>
-                    <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
-                      {displayName(picker)}{isCorrect && " \u2713"}
+                    <p className={`text-sm font-semibold ${isCorrect ? "" : "text-on-surface"}`}>
+                      {picker.name}{isCorrect && " \u2713"}
                     </p>
-                    {displayName(picker) !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant">{picker.name}</p>
+                    {picker.full_name && picker.full_name !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.full_name}</p>
                     )}
                   </div>
                 </div>
@@ -105,11 +104,11 @@ export function PicksDrawer({
                 >
                   <CompareCheckbox bracketId={picker.bracketId} />
                   <div>
-                    <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
-                      {displayName(picker)}{isCorrect && " \u2713"}
+                    <p className={`text-sm font-semibold ${isCorrect ? "" : "text-on-surface"}`}>
+                      {picker.name}{isCorrect && " \u2713"}
                     </p>
-                    {displayName(picker) !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant">{picker.name}</p>
+                    {picker.full_name && picker.full_name !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.full_name}</p>
                     )}
                   </div>
                 </div>

@@ -10,7 +10,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
-import { ROUND_LABELS, displayName } from "@/lib/constants";
+import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
@@ -354,16 +354,14 @@ export function ProbabilityClient({
                       <div className="flex items-center gap-2 min-w-0">
                         <CompareCheckbox bracketId={entry.id} />
                         <div className="min-w-0">
-                          {(() => { const primary = displayName(entry); return (<>
-                            <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
-                              {primary}
+                          <div className={`font-body text-sm font-semibold truncate ${tier.colorClass}`}>
+                            {entry.name}
+                          </div>
+                          {entry.full_name && entry.full_name !== entry.name && (
+                            <div className="text-xs text-on-surface-variant truncate">
+                              {entry.full_name}
                             </div>
-                            {entry.name !== primary && (
-                              <div className="text-xs text-on-surface-variant truncate">
-                                {entry.name}
-                              </div>
-                            )}
-                          </>); })()}
+                          )}
                         </div>
                       </div>
                       {showExact && (
@@ -430,10 +428,8 @@ export function ProbabilityClient({
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                           <div>
-                            {(() => { const primary = displayName(d); return (<>
-                              <div className="text-on-surface text-xs">{primary}</div>
-                              {d.name !== primary && <div className="text-[10px] text-on-surface-variant">{d.name}</div>}
-                            </>); })()}
+                            <div className="font-semibold text-on-surface text-xs">{d.name}</div>
+                            {d.full_name && d.full_name !== d.name && <div className="text-[10px] text-on-surface-variant">{d.full_name}</div>}
                           </div>
                         </div>
                       </td>
@@ -530,10 +526,8 @@ export function ProbabilityClient({
                   <div key={entry.name} className="rounded-card bg-surface-container p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        {(() => { const primary = displayName(entry); return (<>
-                          <p className="font-display text-sm font-semibold text-on-surface">{primary}</p>
-                          {entry.name !== primary && <p className="text-[10px] text-on-surface-variant">{entry.name}</p>}
-                        </>); })()}
+                        <p className="font-display text-sm font-semibold text-on-surface">{entry.name}</p>
+                        {entry.full_name && entry.full_name !== entry.name && <p className="text-[10px] text-on-surface-variant">{entry.full_name}</p>}
                       </div>
                       <div className="text-right">
                         <p className="font-label text-xs text-on-surface">{entry.points} pts <span className="text-on-surface-variant">+ {totalPossible} possible</span></p>

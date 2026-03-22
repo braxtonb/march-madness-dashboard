@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
-import { displayName } from "@/lib/constants";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 interface MobileCardProps {
@@ -33,8 +32,6 @@ export default function MobileCard({
   const [expanded, setExpanded] = useState(false);
   const champEliminated = eliminatedTeams.has(b.champion_pick);
   const maxOverall = b.points + b.max_remaining;
-  const primary = displayName(b);
-  const showSecondary = primary !== b.name;
 
   return (
     <div
@@ -50,9 +47,9 @@ export default function MobileCard({
             <span className="font-label text-sm font-bold text-on-surface">{a.rank}</span>
           </div>
           <div className="min-w-0">
-            <p className="font-body text-sm text-on-surface font-medium truncate">{primary}</p>
-            {showSecondary && (
-              <p className="text-[11px] text-on-surface-variant truncate">{b.name}</p>
+            <p className="font-body text-sm text-on-surface font-semibold truncate">{b.name}</p>
+            {b.full_name && b.full_name !== b.name && (
+              <p className="text-[11px] text-on-surface-variant truncate">{b.full_name}</p>
             )}
           </div>
         </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
-import { ROUND_LABELS, displayName } from "@/lib/constants";
+import { ROUND_LABELS } from "@/lib/constants";
 import type { Round } from "@/lib/types";
 import MobileSortDropdown from "@/components/ui/MobileSortDropdown";
 import MobileCard from "@/components/ui/MobileCard";
@@ -196,10 +196,8 @@ export function LeaderboardTable({
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                       <div>
-                        {(() => { const primary = displayName(b); return (<>
-                          <div className="font-body text-on-surface text-xs">{primary}</div>
-                          {b.name !== primary && <div className="text-[10px] text-on-surface-variant">{b.name}</div>}
-                        </>); })()}
+                        <div className="font-body font-semibold text-on-surface text-xs">{b.name}</div>
+                        {b.full_name && b.full_name !== b.name && <div className="text-[10px] text-on-surface-variant">{b.full_name}</div>}
                       </div>
                     </div>
                   </td>

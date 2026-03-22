@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Bracket, Pick, Game, BracketAnalytics, Round, AwardRound, Team } from "@/lib/types";
-import { ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
+import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { GameHeader } from "@/components/ui/GameHeader";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
@@ -101,10 +101,11 @@ export function HeadToHeadContent({
 
   // Build bracket options for MultiSelectSearch
   const bracketOptions: MultiSelectOption[] = useMemo(
-    () => brackets.map((b) => {
-      const dn = displayName(b);
-      return { value: b.id, label: b.name, sublabel: dn !== b.name ? dn : undefined };
-    }),
+    () => brackets.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined,
+    })),
     [brackets]
   );
 
@@ -270,10 +271,8 @@ export function HeadToHeadContent({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                {(() => { const primary = displayName(b1); return (<>
-                  <p className="font-display text-sm font-bold text-on-surface truncate">{primary}</p>
-                  {b1.name !== primary && <p className="font-label text-[10px] text-on-surface-variant">{b1.name}</p>}
-                </>); })()}
+                <p className="font-display text-sm font-bold text-on-surface truncate">{b1.name}</p>
+                {b1.full_name && b1.full_name !== b1.name && <p className="font-label text-[10px] text-on-surface-variant">{b1.full_name}</p>}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">
@@ -290,10 +289,8 @@ export function HeadToHeadContent({
 
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                {(() => { const primary = displayName(b2); return (<>
-                  <p className="font-display text-sm font-bold text-on-surface truncate">{primary}</p>
-                  {b2.name !== primary && <p className="font-label text-[10px] text-on-surface-variant">{b2.name}</p>}
-                </>); })()}
+                <p className="font-display text-sm font-bold text-on-surface truncate">{b2.name}</p>
+                {b2.full_name && b2.full_name !== b2.name && <p className="font-label text-[10px] text-on-surface-variant">{b2.full_name}</p>}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">
@@ -543,7 +540,7 @@ export function HeadToHeadContent({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-md px-2.5 py-2 ${pick1Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface">{b1 ? displayName(b1) : ""}</p>
+            <p className="text-[10px] font-semibold text-on-surface">{b1 ? b1.name : ""}</p>
             {pick1 ? (
               <div className="mt-1">
                 <TeamPill name={pick1} seed={teamSeeds.get(pick1)} logo={teamLogos[pick1]} eliminated={eliminatedTeams.has(pick1)} showStatus />
@@ -558,7 +555,7 @@ export function HeadToHeadContent({
             )}
           </div>
           <div className={`rounded-md px-2.5 py-2 ${pick2Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface">{b2 ? displayName(b2) : ""}</p>
+            <p className="text-[10px] font-semibold text-on-surface">{b2 ? b2.name : ""}</p>
             {pick2 ? (
               <div className="mt-1">
                 <TeamPill name={pick2} seed={teamSeeds.get(pick2)} logo={teamLogos[pick2]} eliminated={eliminatedTeams.has(pick2)} showStatus />

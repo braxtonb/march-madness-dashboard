@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
-import { displayName } from "@/lib/constants";
 import type { Bracket } from "@/lib/types";
 
 interface MyBracketBadgeProps {
@@ -47,10 +46,11 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
   // Build bracket options for MultiSelectSearch
   // Fix 3: bracket name primary, full name secondary
   const bracketOptions: MultiSelectOption[] = useMemo(
-    () => brackets.map((b) => {
-      const primary = displayName(b);
-      return { value: b.id, label: b.name, sublabel: b.name !== primary ? primary : undefined };
-    }),
+    () => brackets.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined,
+    })),
     [brackets]
   );
 
@@ -88,7 +88,7 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 shrink-0">
             <path d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.7 7-13c0-3.9-3.1-7-7-7zm0 9.5c-1.4 0-2.5-1.1-2.5-2.5S10.6 6.5 12 6.5s2.5 1.1 2.5 2.5S13.4 11.5 12 11.5z" />
           </svg>
-          <span className="truncate">{displayName(pinned)}</span>
+          <span className="truncate">{pinned.name}</span>
           <span className="text-secondary/70">#{pinnedRank}</span>
           <span className="text-secondary/50">&middot;</span>
           <span className="text-secondary/70">{pinned.points}&nbsp;pts</span>
