@@ -15,6 +15,7 @@ export default async function ProbabilityPage() {
     .map((b) => {
       const sim = simResults.get(b.id);
       return {
+        id: b.id,
         name: b.name,
         owner: b.owner,
         probability: sim ? (sim.wins / 1000) * 100 : 0,

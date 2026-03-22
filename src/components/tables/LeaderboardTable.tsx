@@ -7,6 +7,7 @@ import { ROUND_LABELS } from "@/lib/constants";
 import type { Round } from "@/lib/types";
 import MobileSortDropdown from "@/components/ui/MobileSortDropdown";
 import MobileCard from "@/components/ui/MobileCard";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
 type SortKey = "rank" | "points" | "max" | "r64" | "r32" | "s16" | "e8" | "ff" | "champ";
 
@@ -82,7 +83,7 @@ export function LeaderboardTable({
   const hdr = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
   const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant whitespace-nowrap";
   const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
-  const colCount = 11;
+  const colCount = 12;
 
   return (
     <>
@@ -121,6 +122,7 @@ export function LeaderboardTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-outline">
+            <th className="w-8"></th>
             <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{arrow("rank")}</th>
             <th className={hdrStatic} title="Bracket name and username. Click any row to see path to victory.">Name</th>
             <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
@@ -155,6 +157,7 @@ export function LeaderboardTable({
                     return next;
                   })}
                 >
+                  <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={b.id} /></td>
                   <td className="px-2 py-2 font-label">
                     <span className="text-on-surface">{a.rank}</span>
                     {a.rank_delta > 0 && (

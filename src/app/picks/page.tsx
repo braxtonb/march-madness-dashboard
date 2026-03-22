@@ -31,14 +31,14 @@ export default async function GroupPicksPage() {
     ).length;
     pickSplits[game.game_id] = { team1Count, team2Count };
 
-    const team1Pickers: { name: string; owner: string }[] = [];
-    const team2Pickers: { name: string; owner: string }[] = [];
+    const team1Pickers: { bracketId: string; name: string; owner: string }[] = [];
+    const team2Pickers: { bracketId: string; name: string; owner: string }[] = [];
     for (const p of gamePicks) {
       const bracket = bracketById.get(p.bracket_id) || { name: p.bracket_id, owner: "" };
       if (p.team_picked === game.team1) {
-        team1Pickers.push(bracket);
+        team1Pickers.push({ bracketId: p.bracket_id, ...bracket });
       } else if (p.team_picked === game.team2) {
-        team2Pickers.push(bracket);
+        team2Pickers.push({ bracketId: p.bracket_id, ...bracket });
       }
     }
     // Sort pickers by points descending

@@ -8,9 +8,11 @@ import { DrilldownTable } from "@/components/tables/DrilldownTable";
 import { GamesToWatch } from "@/components/GamesToWatch";
 import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 
 interface ProbEntry {
+  id: string;
   name: string;
   owner: string;
   probability: number;
@@ -297,12 +299,15 @@ export function ProbabilityClient({
                       key={entry.name}
                       className="flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2 overflow-hidden"
                     >
-                      <div className="min-w-0">
-                        <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
-                          {entry.name}
-                        </div>
-                        <div className="text-xs text-on-surface-variant truncate">
-                          {entry.owner}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <CompareCheckbox bracketId={entry.id} />
+                        <div className="min-w-0">
+                          <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
+                            {entry.name}
+                          </div>
+                          <div className="text-xs text-on-surface-variant truncate">
+                            {entry.owner}
+                          </div>
                         </div>
                       </div>
                       {showExact && (
@@ -335,6 +340,7 @@ export function ProbabilityClient({
             <table className="min-w-[700px] w-full text-sm">
               <thead>
                 <tr className="border-b border-outline">
+                  <th className="w-8"></th>
                   <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant" title="Championship chances tier">Tier</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}>Win %{fArrow("probability")}</th>
@@ -356,6 +362,7 @@ export function ProbabilityClient({
                   const tier = TIERS.find((t) => t.key === tierKey)!;
                   return (
                     <tr key={d.name} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                      <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={d.id} /></td>
                       <td className="sticky left-0 bg-surface-container z-10 px-2 py-2">
                         <div className="text-on-surface text-xs">{d.name}</div>
                         <div className="text-[10px] text-on-surface-variant">{d.owner}</div>

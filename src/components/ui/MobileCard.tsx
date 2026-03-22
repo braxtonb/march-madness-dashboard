@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
 interface MobileCardProps {
   bracket: Bracket;
@@ -39,6 +40,7 @@ export default function MobileCard({
       {/* Top row: rank, name, points */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
+          <CompareCheckbox bracketId={b.id} />
           {/* Rank badge */}
           <div className="shrink-0 w-8 h-8 rounded-full bg-surface-bright flex items-center justify-center">
             <span className="font-label text-sm font-bold text-on-surface">{a.rank}</span>

@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { DashboardData, Game, Pick, Round } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
 interface SimResult {
   id: string;
@@ -620,6 +621,7 @@ export default function SimulatorPage() {
               <table className="w-full min-w-[500px] text-sm">
                 <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
+                    <th className="w-8"></th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Projected ranking based on simulated outcomes">Rank</th>
                     <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Bracket</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Rank change from current standing based on simulation — positive means climbing up">Change</th>
@@ -632,6 +634,7 @@ export default function SimulatorPage() {
                     const delta = r.baseRank - r.simRank;
                     return (
                       <tr key={r.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                        <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
                         <td className="sticky left-0 bg-surface-container px-3 py-2">
                           <div className="text-on-surface text-xs">{r.name}</div>

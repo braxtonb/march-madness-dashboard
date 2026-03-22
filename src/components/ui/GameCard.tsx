@@ -4,8 +4,10 @@ import type { Game } from "@/lib/types";
 import { TeamPill } from "./TeamPill";
 import { GameHeader } from "./GameHeader";
 import BottomSheet from "./BottomSheet";
+import CompareCheckbox from "./CompareCheckbox";
 
 export interface PickerInfo {
+  bracketId: string; // bracket id for compare
   name: string;   // bracket name (primary)
   owner: string;  // username (secondary)
 }
@@ -62,14 +64,17 @@ export function PicksDrawer({
               return (
                 <div
                   key={picker.name}
-                  className={`${isCorrect ? "text-secondary" : ""}`}
+                  className={`flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
                 >
-                  <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
-                    {picker.name}{isCorrect && " \u2713"}
-                  </p>
-                  {picker.owner !== picker.name && (
-                    <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
-                  )}
+                  <CompareCheckbox bracketId={picker.bracketId} />
+                  <div>
+                    <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
+                      {picker.name}{isCorrect && " \u2713"}
+                    </p>
+                    {picker.owner !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
+                    )}
+                  </div>
                 </div>
               );
             })
@@ -92,14 +97,17 @@ export function PicksDrawer({
               return (
                 <div
                   key={picker.name}
-                  className={`${isCorrect ? "text-secondary" : ""}`}
+                  className={`flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
                 >
-                  <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
-                    {picker.name}{isCorrect && " \u2713"}
-                  </p>
-                  {picker.owner !== picker.name && (
-                    <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
-                  )}
+                  <CompareCheckbox bracketId={picker.bracketId} />
+                  <div>
+                    <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
+                      {picker.name}{isCorrect && " \u2713"}
+                    </p>
+                    {picker.owner !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
+                    )}
+                  </div>
                 </div>
               );
             })

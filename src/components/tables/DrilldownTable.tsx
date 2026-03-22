@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
+import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
 type SortKey = "rank" | "points" | "max_remaining";
 
@@ -66,6 +67,7 @@ export function DrilldownTable({
             <div key={b.id} className="rounded-card bg-surface-container border border-outline-variant p-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
+                  <CompareCheckbox bracketId={b.id} />
                   <div className="shrink-0 w-7 h-7 rounded-full bg-surface-bright flex items-center justify-center">
                     <span className="font-label text-xs font-bold text-on-surface">{a?.rank ?? "—"}</span>
                   </div>
@@ -96,6 +98,7 @@ export function DrilldownTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-outline">
+              <th className="w-8"></th>
               <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{arrow("rank")}</th>
               <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Bracket name and username">Name</th>
               <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant" title="Championship pick — green dot if still alive">Champion</th>
@@ -108,6 +111,7 @@ export function DrilldownTable({
               const a = analytics.get(b.id);
               return (
                 <tr key={b.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                  <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={b.id} /></td>
                   <td className="px-3 py-2 font-label">{a?.rank ?? "—"}</td>
                   <td className="px-3 py-2">
                     <div className="text-on-surface">{b.name}</div>
