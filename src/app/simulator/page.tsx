@@ -436,12 +436,12 @@ export default function SimulatorPage() {
                           <div key={g.game_id} className="rounded-card bg-surface-container/50 p-2.5 opacity-50">
                             <div className="flex items-center gap-2">
                               <span className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label inline-flex items-center gap-1 ${g.winner === g.team1 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
-                                {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-sm" />}
+                                {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
                                 {g.seed1} {g.team1}{g.winner === g.team1 && " \u2713"}
                               </span>
                               <span className="text-[10px] text-on-surface-variant">vs</span>
                               <span className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label inline-flex items-center gap-1 ${g.winner === g.team2 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
-                                {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-sm" />}
+                                {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
                                 {g.seed2} {g.team2}{g.winner === g.team2 && " \u2713"}
                               </span>
                             </div>
@@ -469,7 +469,7 @@ export default function SimulatorPage() {
                                     : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
                                 }`}
                               >
-                                {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-sm" />}
+                                {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
                                 {g.seed1} {g.team1}
                               </button>
                               <span className="text-[10px] text-on-surface-variant">vs</span>
@@ -481,7 +481,7 @@ export default function SimulatorPage() {
                                     : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
                                 }`}
                               >
-                                {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-sm" />}
+                                {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
                                 {g.seed2} {g.team2}
                               </button>
                             </div>
@@ -493,11 +493,11 @@ export default function SimulatorPage() {
                         <div key={g.game_id} className="rounded-card border border-dashed border-outline/30 bg-surface-container/30 p-2.5">
                           <div className="flex items-center gap-2">
                             <span className="flex-1 text-center text-xs font-label text-on-surface-variant/40 inline-flex items-center justify-center gap-1">
-                              {g.team1 ? <>{teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-sm" />}{g.seed1} {g.team1}</> : "TBD"}
+                              {g.team1 ? <>{teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}{g.seed1} {g.team1}</> : "TBD"}
                             </span>
                             <span className="text-[10px] text-on-surface-variant/40">vs</span>
                             <span className="flex-1 text-center text-xs font-label text-on-surface-variant/40 inline-flex items-center justify-center gap-1">
-                              {g.team2 ? <>{teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-sm" />}{g.seed2} {g.team2}</> : "TBD"}
+                              {g.team2 ? <>{teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}{g.seed2} {g.team2}</> : "TBD"}
                             </span>
                           </div>
                           <p className="text-[9px] text-on-surface-variant/30 italic text-center mt-1">

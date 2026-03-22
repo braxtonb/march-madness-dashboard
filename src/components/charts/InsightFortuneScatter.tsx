@@ -142,7 +142,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
             {clusters[activeCluster].points.map((p) => (
               <div key={p.name} className="flex items-center gap-2 text-xs">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {p.logo && <img src={p.logo} alt="" className="w-4 h-4 bg-white/90 p-[1px]" />}
+                {p.logo && <img src={p.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px]" />}
                 <div className="min-w-0">
                   <div className="text-on-surface truncate">{p.name}</div>
                   <div className="text-[10px] text-on-surface-variant">

@@ -226,7 +226,7 @@ export function ProbabilityClient({
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
                       <td className="px-2 py-2 text-xs text-on-surface-variant">
                         <span className="inline-flex items-center gap-1">
-                          {teamLogos[d.champion] && <img src={teamLogos[d.champion]} alt="" className="w-4 h-4 inline-block rounded-sm" />}
+                          {teamLogos[d.champion] && <img src={teamLogos[d.champion]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
                           {d.champion}
                         </span>
                       </td>

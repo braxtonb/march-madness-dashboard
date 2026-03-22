@@ -68,7 +68,7 @@ export function AwardCard({
           <p className="text-sm text-on-surface-variant">{stat}</p>
           {championName && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
-              Champion: {championLogo && <img src={championLogo} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+              Champion: {championLogo && <img src={championLogo} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
               <span className="text-on-surface font-medium">{championName}</span>
             </p>
           )}
