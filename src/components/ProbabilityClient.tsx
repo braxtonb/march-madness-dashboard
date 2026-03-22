@@ -147,8 +147,8 @@ function getTierKey(probability: number): TierKey {
   return "miracle";
 }
 
-const TAB_ACTIVE = "bg-primary/15 text-primary border border-primary/30 rounded-card px-3 py-1.5 text-sm font-label";
-const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface rounded-card px-3 py-1.5 text-sm font-label";
+const TAB_ACTIVE = "text-primary border-b-2 border-primary px-3 py-1.5 text-sm font-semibold font-label";
+const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface px-3 py-1.5 text-sm font-semibold font-label";
 
 type AliveFilter = "champion" | "ff3" | "ff2" | "all";
 const VALID_ALIVE_FILTERS: AliveFilter[] = ["champion", "ff3", "ff2", "all"];
@@ -642,7 +642,7 @@ export function ProbabilityClient({
                   <button
                     key={key}
                     onClick={() => changeAliveFilter(key)}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${
+                    className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${
                       aliveFilter === key
                         ? "bg-primary/15 text-primary border border-primary/30"
                         : "text-on-surface-variant hover:text-on-surface"

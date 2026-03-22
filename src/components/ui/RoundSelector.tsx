@@ -28,7 +28,7 @@ export function RoundSelector({
                 key={opt.value}
                 onClick={() => onSelect(opt.value)}
                 className={`
-                  rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors
+                  rounded-card px-2.5 py-1 font-label text-xs h-7 transition-colors
                   ${
                     selected === opt.value
                       ? "bg-primary/15 text-primary border border-primary/30"
@@ -47,7 +47,7 @@ export function RoundSelector({
             key={round}
             onClick={() => onSelect(round)}
             className={`
-              rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors
+              rounded-card px-2.5 py-1 font-label text-xs h-7 transition-colors
               ${
                 selected === round
                   ? "bg-primary/15 text-primary border border-primary/30"

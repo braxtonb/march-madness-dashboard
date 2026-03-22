@@ -4,7 +4,6 @@ import MyBracketBadge from "./MyBracketBadge";
 
 export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: Bracket[] }) {
   const roundLabel = meta ? ROUND_LABELS[meta.current_round] : "Loading...";
-  const gamesCompleted = meta?.games_completed ?? 0;
 
   let lastUpdated = "—";
   if (meta?.last_updated) {
@@ -33,9 +32,8 @@ export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: 
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
           </span>
-          {gamesCompleted}/63 games
+          Updated {lastUpdated}
         </span>
-        <span className="hidden sm:inline">Updated {lastUpdated}</span>
       </div>
     </nav>
   );

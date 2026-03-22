@@ -183,8 +183,8 @@ export function PicksContent({
     }
   }
 
-  const TAB_ACTIVE = "bg-primary/15 text-primary border border-primary/30 rounded-card px-3 py-1.5 text-sm font-label";
-  const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface rounded-card px-3 py-1.5 text-sm font-label";
+  const TAB_ACTIVE = "text-primary border-b-2 border-primary px-3 py-1.5 text-sm font-semibold font-label";
+  const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface px-3 py-1.5 text-sm font-semibold font-label";
 
   // Panel icon for sidebar/drawer triggers (Fix 9)
   const panelIcon = (
@@ -226,7 +226,7 @@ export function PicksContent({
               <button
                 key={opt.value}
                 onClick={() => changeStatusFilter(opt.value)}
-                className={`rounded-card px-3 py-1.5 text-sm font-label h-8 transition-colors ${
+                className={`rounded-card px-2.5 py-1 text-xs font-label h-7 transition-colors ${
                   statusFilter === opt.value
                     ? "bg-primary/15 text-primary border border-primary/30"
                     : "text-on-surface-variant hover:text-on-surface"

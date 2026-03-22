@@ -315,7 +315,7 @@ export function HeadToHeadContent({
           <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1 overflow-x-auto no-scrollbar">
             <button
               onClick={() => changeRound("ALL")}
-              className={`rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors ${
+              className={`rounded-card px-2.5 py-1 font-label text-xs h-7 transition-colors ${
                 isAllRounds
                   ? "bg-primary/15 text-primary border border-primary/30"
                   : "text-on-surface-variant hover:text-on-surface"
@@ -338,7 +338,7 @@ export function HeadToHeadContent({
                 <button
                   key={round}
                   onClick={() => changeRound(round)}
-                  className={`rounded-card px-3 py-1.5 font-label text-sm h-8 transition-colors ${
+                  className={`rounded-card px-2.5 py-1 font-label text-xs h-7 transition-colors ${
                     isActive
                       ? "bg-primary/15 text-primary border border-primary/30"
                       : "text-on-surface-variant hover:text-on-surface"
@@ -358,19 +358,19 @@ export function HeadToHeadContent({
             <div className="flex gap-1.5 min-w-max">
               <button
                 onClick={() => changeDiffFilter("all")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All ({currentRoundAgree + currentRoundDiff})
               </button>
               <button
                 onClick={() => changeDiffFilter("agreement")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Agreement ({currentRoundAgree})
               </button>
               <button
                 onClick={() => changeDiffFilter("differences")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Differences ({currentRoundDiff})
               </button>
@@ -379,19 +379,19 @@ export function HeadToHeadContent({
             <div className="flex gap-1.5">
               <button
                 onClick={() => changeStatusFilter("all")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 All ({currentRoundCompleted + currentRoundScheduled})
               </button>
               <button
                 onClick={() => changeStatusFilter("completed")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Completed ({currentRoundCompleted})
               </button>
               <button
                 onClick={() => changeStatusFilter("scheduled")}
-                className={`rounded-lg px-3 py-1.5 text-sm font-label h-8 transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Scheduled ({currentRoundScheduled})
               </button>

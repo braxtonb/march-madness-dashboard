@@ -158,9 +158,9 @@ function LeaderboardContentInner({
             <button
               key={opt.value}
               onClick={() => changeTab(opt.value)}
-              className={`rounded-card px-3 py-1.5 text-sm font-label transition-colors ${
+              className={`px-3 py-1.5 text-sm font-semibold font-label transition-colors ${
                 tab === opt.value
-                  ? "bg-primary/15 text-primary border border-primary/30"
+                  ? "text-primary border-b-2 border-primary"
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
             >
