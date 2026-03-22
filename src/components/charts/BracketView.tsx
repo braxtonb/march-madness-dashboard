@@ -23,8 +23,9 @@ interface BracketViewProps {
 
 const GAME_H = 56;
 const GAME_W = 140;
-const BASE_GAP = 8;
-const CONNECTOR_W = 16; // tighter connectors for less horizontal spread
+const BASE_GAP = 32; // enough gap so next round's game fits between each pair
+const CONNECTOR_W = 16;
+const REGION_GAP = 48; // vertical gap between regions on the same side
 
 /** Region codes to display labels */
 const REGION_NAMES: Record<string, string> = {
@@ -363,9 +364,9 @@ function RegionBracket({
 
   return (
     <div>
-      {/* Region label */}
+      {/* Region label — with top padding so sticky header doesn't overlap */}
       <div
-        className={`font-display text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-widest mb-1 px-1 ${isMirror ? "text-right" : ""}`}
+        className={`font-display text-xs font-bold text-on-surface uppercase tracking-widest mb-2 pt-2 px-1 ${isMirror ? "text-right" : ""}`}
       >
         {REGION_NAMES[region] || region}
       </div>
@@ -384,7 +385,7 @@ function RegionBracket({
 
             {/* Games column */}
             <div
-              className="flex flex-col justify-around shrink-0"
+              className="flex flex-col justify-evenly shrink-0"
               style={{
                 height: regionHeight,
                 minHeight: regionHeight,
@@ -500,7 +501,7 @@ export function BracketView({
 
   // Calculate the total height for the left and right halves
   // Each side has two regions stacked with a gap between them
-  const regionGap = 24;
+  const regionGap = REGION_GAP;
 
   return (
     <div className="space-y-3">
@@ -612,7 +613,7 @@ export function BracketView({
                   {/* Connector from E8 left to FF left */}
                   <ConnectorColumn gameCount={2} regionHeight={GAME_H * 2 + BASE_GAP} />
                   <div
-                    className="flex flex-col justify-around shrink-0"
+                    className="flex flex-col justify-evenly shrink-0"
                     style={{ height: GAME_H * 2 + BASE_GAP }}
                   >
                     <GameCell
@@ -642,7 +643,7 @@ export function BracketView({
                     <ConnectorColumn gameCount={2} regionHeight={GAME_H * 2 + BASE_GAP} />
                   )}
                   <div
-                    className="flex flex-col justify-around shrink-0"
+                    className="flex flex-col justify-evenly shrink-0"
                     style={{ height: GAME_H * 2 + BASE_GAP }}
                   >
                     {champGames.map((game) => (
@@ -675,7 +676,7 @@ export function BracketView({
               {ffRight && (
                 <div className="flex items-stretch shrink-0">
                   <div
-                    className="flex flex-col justify-around shrink-0"
+                    className="flex flex-col justify-evenly shrink-0"
                     style={{ height: GAME_H * 2 + BASE_GAP }}
                   >
                     <GameCell
