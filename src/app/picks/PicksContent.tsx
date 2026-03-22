@@ -332,6 +332,7 @@ export function PicksContent({
           totalBrackets={totalBrackets}
           teamLogos={teamLogos}
           eliminatedTeams={eliminatedTeams}
+          onGameClick={openDrawer}
         />
       )}
 

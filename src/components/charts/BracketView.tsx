@@ -2,7 +2,11 @@
 
 import { useMemo, useRef, useEffect } from "react";
 import type { Game, Round } from "@/lib/types";
-import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
+import { ROUND_LABELS } from "@/lib/constants";
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface BracketViewProps {
   games: Game[];
@@ -10,7 +14,12 @@ interface BracketViewProps {
   totalBrackets: number;
   teamLogos?: Record<string, string>;
   eliminatedTeams?: Set<string>;
+  onGameClick?: (gameId: string) => void;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
 
 /** Abbreviate long team names for compact display */
 function shortName(name: string): string {
@@ -49,16 +58,33 @@ function shortName(name: string): string {
   return name;
 }
 
+/** Region codes to display labels */
+const REGION_LABELS: Record<string, string> = {
+  R1: "Region 1",
+  R2: "Region 2",
+  R3: "Region 3",
+  R4: "Region 4",
+};
+
+/** Rounds within each region (left-to-right) */
+const REGION_ROUNDS: Round[] = ["R64", "R32", "S16", "E8"];
+
+/* ------------------------------------------------------------------ */
+/*  GameCell — a single matchup in the bracket tree                   */
+/* ------------------------------------------------------------------ */
+
 function GameCell({
   game,
   pickSplit,
   totalBrackets,
   eliminatedTeams,
+  onClick,
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
   totalBrackets: number;
   eliminatedTeams?: Set<string>;
+  onClick?: () => void;
 }) {
   const total = pickSplit.team1Count + pickSplit.team2Count;
   const pct1 = total > 0 ? Math.round((pickSplit.team1Count / total) * 100) : 50;
@@ -68,11 +94,15 @@ function GameCell({
 
   if (isTBD) {
     return (
-      <div className="rounded-lg bg-surface-container/50 border border-outline/20 px-2 py-1.5 min-w-[180px] opacity-50">
-        <div className="flex items-center justify-between gap-1">
-          <span className="text-[11px] text-on-surface-variant/50 font-label">TBD</span>
-          <span className="text-[9px] text-on-surface-variant/30">vs</span>
-          <span className="text-[11px] text-on-surface-variant/50 font-label">TBD</span>
+      <div className="w-40 rounded border border-outline-variant/20 bg-surface-container/50 opacity-50 text-left">
+        <div className="flex items-center justify-between px-2 py-1 text-xs border-b border-outline-variant/10">
+          <span className="text-on-surface-variant/50">TBD</span>
+        </div>
+        <div className="flex items-center justify-between px-2 py-1 text-xs">
+          <span className="text-on-surface-variant/50">TBD</span>
+        </div>
+        <div className="flex h-1">
+          <div className="bg-surface-bright w-full" />
         </div>
       </div>
     );
@@ -84,81 +114,245 @@ function GameCell({
   const team2Eliminated = eliminatedTeams?.has(game.team2);
 
   return (
-    <div
-      className={`rounded-lg border px-2 py-1.5 min-w-[180px] space-y-1 ${
-        isCompleted
-          ? "bg-surface-container border-outline/30"
-          : "bg-surface-container/60 border-outline/15"
-      }`}
+    <button
+      onClick={onClick}
+      className="w-40 rounded border border-outline-variant/30 bg-surface-container hover:bg-surface-bright transition-colors text-left cursor-pointer"
     >
-      {/* Team 1 row */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-on-surface-variant font-label w-4 text-right shrink-0">
-          {game.seed1 || ""}
-        </span>
-        <span
-          className={`text-[11px] font-label flex-1 min-w-0 truncate ${
-            team1IsWinner
-              ? "text-on-surface font-bold"
-              : team1Eliminated
-                ? "text-on-surface-variant/40 line-through"
-                : "text-on-surface"
-          }`}
-        >
+      {/* Team 1 */}
+      <div
+        className={`flex items-center justify-between px-2 py-1 text-xs border-b border-outline-variant/20 ${
+          team1IsWinner
+            ? "text-on-surface font-semibold"
+            : team1Eliminated
+              ? "text-on-surface-variant/40 line-through"
+              : "text-on-surface-variant"
+        }`}
+      >
+        <span className="truncate">
+          <span className="text-on-surface-variant/60 mr-1">{game.seed1 || ""}</span>
           {shortName(game.team1)}
         </span>
-        <span className="text-[10px] font-label text-on-surface-variant shrink-0">
-          {pct1}%
-        </span>
+        <span className="text-[10px] ml-1 shrink-0">{pct1}%</span>
       </div>
-
-      {/* Pick split bar */}
-      <div className="flex h-1.5 rounded-full overflow-hidden bg-surface-bright">
-        <div
-          className="bg-primary transition-all"
-          style={{ width: `${pct1}%` }}
-        />
-        <div
-          className="bg-secondary transition-all"
-          style={{ width: `${pct2}%` }}
-        />
-      </div>
-
-      {/* Team 2 row */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-on-surface-variant font-label w-4 text-right shrink-0">
-          {game.seed2 || ""}
-        </span>
-        <span
-          className={`text-[11px] font-label flex-1 min-w-0 truncate ${
-            team2IsWinner
-              ? "text-on-surface font-bold"
-              : team2Eliminated
-                ? "text-on-surface-variant/40 line-through"
-                : "text-on-surface"
-          }`}
-        >
+      {/* Team 2 */}
+      <div
+        className={`flex items-center justify-between px-2 py-1 text-xs ${
+          team2IsWinner
+            ? "text-on-surface font-semibold"
+            : team2Eliminated
+              ? "text-on-surface-variant/40 line-through"
+              : "text-on-surface-variant"
+        }`}
+      >
+        <span className="truncate">
+          <span className="text-on-surface-variant/60 mr-1">{game.seed2 || ""}</span>
           {shortName(game.team2)}
         </span>
-        <span className="text-[10px] font-label text-on-surface-variant shrink-0">
-          {pct2}%
-        </span>
+        <span className="text-[10px] ml-1 shrink-0">{pct2}%</span>
       </div>
+      {/* Mini pick split bar */}
+      <div className="flex h-1">
+        <div className="bg-primary transition-all" style={{ width: `${pct1}%` }} />
+        <div className="bg-secondary transition-all" style={{ width: `${pct2}%` }} />
+      </div>
+    </button>
+  );
+}
 
-      {/* Winner / status badge */}
-      {isCompleted && game.winner && (
-        <div className="text-[9px] font-label text-secondary truncate">
-          Winner: {shortName(game.winner)}
-        </div>
-      )}
-      {!isCompleted && game.team1 && game.team2 && (
-        <div className="text-[9px] font-label text-on-surface-variant/50">
-          Scheduled
-        </div>
-      )}
+/* ------------------------------------------------------------------ */
+/*  RegionBracket — one region as a horizontal tree                   */
+/* ------------------------------------------------------------------ */
+
+function RegionBracket({
+  games,
+  region,
+  pickSplits,
+  totalBrackets,
+  eliminatedTeams,
+  onGameClick,
+}: {
+  games: Game[];
+  region: string;
+  pickSplits: Record<string, { team1Count: number; team2Count: number }>;
+  totalBrackets: number;
+  eliminatedTeams?: Set<string>;
+  onGameClick?: (gameId: string) => void;
+}) {
+  const regionGames = useMemo(
+    () => games.filter((g) => g.region === region),
+    [games, region]
+  );
+
+  // Group and sort games by round. Sort by game_id within each round
+  // to maintain standard bracket topology (1v16, 8v9, 5v12, 4v13, 6v11, 3v14, 7v10, 2v15)
+  const roundGameMap = useMemo(() => {
+    const map: Record<string, Game[]> = {};
+    for (const round of REGION_ROUNDS) {
+      const rGames = regionGames
+        .filter((g) => g.round === round)
+        .sort((a, b) => a.game_id.localeCompare(b.game_id));
+      if (rGames.length > 0) {
+        map[round] = rGames;
+      }
+    }
+    return map;
+  }, [regionGames]);
+
+  const activeRounds = REGION_ROUNDS.filter((r) => roundGameMap[r]);
+
+  if (activeRounds.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <h3 className="font-display text-sm font-semibold text-on-surface px-1">
+        {REGION_LABELS[region] || region}
+      </h3>
+      <div className="flex items-center gap-0">
+        {activeRounds.map((round, roundIdx) => {
+          const roundGames = roundGameMap[round];
+          // Exponentially increasing gap to create tree alignment
+          const gapPx = Math.pow(2, roundIdx) * 8;
+
+          return (
+            <div key={round} className="flex flex-col items-stretch shrink-0">
+              {/* Round label */}
+              <div className="text-center mb-1">
+                <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
+                  {ROUND_LABELS[round] || round}
+                </span>
+              </div>
+              {/* Games column with increasing gap */}
+              <div
+                className="flex flex-col justify-around"
+                style={{ gap: `${gapPx}px` }}
+              >
+                {roundGames.map((game) => (
+                  <div key={game.game_id} className="flex items-center">
+                    <GameCell
+                      game={game}
+                      pickSplit={
+                        pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
+                      }
+                      totalBrackets={totalBrackets}
+                      eliminatedTeams={eliminatedTeams}
+                      onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
+                    />
+                    {/* Connector line to next round */}
+                    {roundIdx < activeRounds.length - 1 && (
+                      <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  FinalRoundsBracket — Final Four + Championship in the center      */
+/* ------------------------------------------------------------------ */
+
+function FinalRoundsBracket({
+  games,
+  pickSplits,
+  totalBrackets,
+  eliminatedTeams,
+  onGameClick,
+}: {
+  games: Game[];
+  pickSplits: Record<string, { team1Count: number; team2Count: number }>;
+  totalBrackets: number;
+  eliminatedTeams?: Set<string>;
+  onGameClick?: (gameId: string) => void;
+}) {
+  const ffGames = useMemo(
+    () =>
+      games
+        .filter((g) => g.round === "FF")
+        .sort((a, b) => a.game_id.localeCompare(b.game_id)),
+    [games]
+  );
+  const champGames = useMemo(
+    () =>
+      games
+        .filter((g) => g.round === "CHAMP")
+        .sort((a, b) => a.game_id.localeCompare(b.game_id)),
+    [games]
+  );
+
+  if (ffGames.length === 0 && champGames.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <h3 className="font-display text-sm font-semibold text-on-surface px-1">
+        Final Four &amp; Championship
+      </h3>
+      <div className="flex items-center gap-0">
+        {/* Final Four column */}
+        {ffGames.length > 0 && (
+          <div className="flex flex-col items-stretch shrink-0">
+            <div className="text-center mb-1">
+              <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
+                {ROUND_LABELS["FF"]}
+              </span>
+            </div>
+            <div className="flex flex-col justify-around" style={{ gap: "16px" }}>
+              {ffGames.map((game) => (
+                <div key={game.game_id} className="flex items-center">
+                  <GameCell
+                    game={game}
+                    pickSplit={
+                      pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
+                    }
+                    totalBrackets={totalBrackets}
+                    eliminatedTeams={eliminatedTeams}
+                    onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
+                  />
+                  {champGames.length > 0 && (
+                    <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Championship column */}
+        {champGames.length > 0 && (
+          <div className="flex flex-col items-stretch shrink-0">
+            <div className="text-center mb-1">
+              <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
+                {ROUND_LABELS["CHAMP"]}
+              </span>
+            </div>
+            <div className="flex flex-col justify-around" style={{ gap: "16px" }}>
+              {champGames.map((game) => (
+                <GameCell
+                  key={game.game_id}
+                  game={game}
+                  pickSplit={
+                    pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
+                  }
+                  totalBrackets={totalBrackets}
+                  eliminatedTeams={eliminatedTeams}
+                  onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  BracketView — main export                                          */
+/* ------------------------------------------------------------------ */
 
 export function BracketView({
   games,
@@ -166,75 +360,52 @@ export function BracketView({
   totalBrackets,
   teamLogos = {},
   eliminatedTeams,
+  onGameClick,
 }: BracketViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Group games by round
-  const gamesByRound = useMemo(() => {
-    const map: Record<string, Game[]> = {};
-    for (const round of ROUND_ORDER) {
-      const roundGames = games.filter((g) => g.round === round);
-      if (roundGames.length > 0) {
-        map[round] = roundGames;
+  // Determine which regions have games
+  const regions = useMemo(() => {
+    const regionSet = new Set<string>();
+    for (const g of games) {
+      if (g.region && !["FF", "CHAMP"].includes(g.region)) {
+        regionSet.add(g.region);
       }
     }
-    return map;
+    return Array.from(regionSet).sort();
   }, [games]);
 
-  // Find the latest round that has at least one game, and scroll to it on mobile
-  const latestRoundIdx = useMemo(() => {
-    let latest = 0;
-    for (let i = ROUND_ORDER.length - 1; i >= 0; i--) {
-      const round = ROUND_ORDER[i];
-      const roundGames = games.filter((g) => g.round === round);
-      if (roundGames.some((g) => g.completed || (g.team1 && g.team2))) {
-        latest = i;
-        break;
-      }
-    }
-    return latest;
-  }, [games]);
-
-  // Auto-scroll to the latest round on mount (mobile)
-  useEffect(() => {
-    if (scrollRef.current && latestRoundIdx > 0) {
-      const columns = scrollRef.current.querySelectorAll("[data-round-col]");
-      if (columns[latestRoundIdx]) {
-        columns[latestRoundIdx].scrollIntoView({
-          behavior: "smooth",
-          inline: "start",
-          block: "nearest",
-        });
-      }
-    }
-  }, [latestRoundIdx]);
-
-  const roundsWithGames = useMemo(
-    () => ROUND_ORDER.filter((r) => gamesByRound[r]),
-    [gamesByRound]
+  const hasFinalRounds = useMemo(
+    () => games.some((g) => g.round === "FF" || g.round === "CHAMP"),
+    [games]
   );
 
-  // Group games by region within each round
-  const regionsByRound = useMemo(() => {
-    const result: Record<string, { region: string; games: Game[] }[]> = {};
-    for (const round of roundsWithGames) {
-      const roundGames = gamesByRound[round];
-      if (!roundGames) continue;
-      const regionMap = new Map<string, Game[]>();
-      for (const g of roundGames) {
-        const region = g.region || "Other";
-        if (!regionMap.has(region)) regionMap.set(region, []);
-        regionMap.get(region)!.push(g);
-      }
-      result[round] = [...regionMap.entries()].map(([region, games]) => ({
-        region,
-        games,
-      }));
-    }
-    return result;
-  }, [roundsWithGames, gamesByRound]);
+  // Auto-scroll to show the latest action
+  useEffect(() => {
+    if (scrollRef.current) {
+      // Find the latest round with completed games and scroll there
+      const latestRoundIdx = (() => {
+        const allRounds: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
+        let latest = 0;
+        for (let i = allRounds.length - 1; i >= 0; i--) {
+          if (games.some((g) => g.round === allRounds[i] && (g.completed || (g.team1 && g.team2)))) {
+            latest = i;
+            break;
+          }
+        }
+        return latest;
+      })();
 
-  if (roundsWithGames.length === 0) {
+      // On mobile, give a horizontal nudge if deeper rounds are active
+      if (latestRoundIdx >= 2 && scrollRef.current.scrollWidth > scrollRef.current.clientWidth) {
+        // Scroll to approximately where the active round is
+        const approxOffset = latestRoundIdx * 170;
+        scrollRef.current.scrollTo({ left: Math.max(0, approxOffset - 100), behavior: "smooth" });
+      }
+    }
+  }, [games]);
+
+  if (games.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-on-surface-variant text-sm">No games to display.</p>
@@ -257,62 +428,43 @@ export function BracketView({
         </div>
         <span className="text-on-surface-variant/50">|</span>
         <span>Bold = Winner</span>
+        {onGameClick && (
+          <>
+            <span className="text-on-surface-variant/50">|</span>
+            <span>Click a game to see individual picks</span>
+          </>
+        )}
       </div>
 
-      {/* Horizontally scrollable bracket columns */}
+      {/* Horizontally scrollable bracket */}
       <div
         ref={scrollRef}
         className="overflow-x-auto no-scrollbar pb-4"
       >
-        <div className="flex gap-3 min-w-max">
-          {roundsWithGames.map((round) => {
-            const regions = regionsByRound[round];
-            const gameCount = gamesByRound[round].length;
+        <div className="space-y-6 min-w-max">
+          {/* Each region as a bracket tree */}
+          {regions.map((region) => (
+            <RegionBracket
+              key={region}
+              games={games}
+              region={region}
+              pickSplits={pickSplits}
+              totalBrackets={totalBrackets}
+              eliminatedTeams={eliminatedTeams}
+              onGameClick={onGameClick}
+            />
+          ))}
 
-            return (
-              <div
-                key={round}
-                data-round-col
-                className="flex flex-col gap-2 shrink-0"
-                style={{ width: 200 }}
-              >
-                {/* Round header */}
-                <div className="sticky top-0 z-10 bg-surface rounded-lg px-2 py-1.5 border border-outline/20">
-                  <p className="font-label text-xs font-semibold text-on-surface text-center">
-                    {ROUND_LABELS[round as Round] || round}
-                  </p>
-                  <p className="text-[9px] text-on-surface-variant text-center">
-                    {gameCount} game{gameCount !== 1 ? "s" : ""}
-                  </p>
-                </div>
-
-                {/* Games stacked by region */}
-                {regions.map(({ region, games: regionGames }) => (
-                  <div key={region} className="space-y-1.5">
-                    {regions.length > 1 && (
-                      <p className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider px-1">
-                        {region}
-                      </p>
-                    )}
-                    {regionGames.map((game) => (
-                      <GameCell
-                        key={game.game_id}
-                        game={game}
-                        pickSplit={
-                          pickSplits[game.game_id] || {
-                            team1Count: 0,
-                            team2Count: 0,
-                          }
-                        }
-                        totalBrackets={totalBrackets}
-                        eliminatedTeams={eliminatedTeams}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+          {/* Final Four + Championship */}
+          {hasFinalRounds && (
+            <FinalRoundsBracket
+              games={games}
+              pickSplits={pickSplits}
+              totalBrackets={totalBrackets}
+              eliminatedTeams={eliminatedTeams}
+              onGameClick={onGameClick}
+            />
+          )}
         </div>
       </div>
     </div>

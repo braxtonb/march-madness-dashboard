@@ -276,7 +276,7 @@ function LeaderboardContentInner({
 
             const quickLinks = [
               {
-                href: "/picks?view=bracket",
+                href: "/picks?rview=bracket",
                 title: "Bracket View",
                 description: "See every pick in bracket format",
                 icon: (
