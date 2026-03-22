@@ -25,19 +25,27 @@ export function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed top-3 left-3 z-50 rounded-card bg-surface-bright p-2 md:hidden"
+        className="fixed top-2 left-2 z-50 rounded-card bg-surface-bright min-w-[44px] min-h-[44px] flex items-center justify-center md:hidden"
         aria-label="Toggle menu"
       >
         <span className="text-on-surface text-xl">☰</span>
       </button>
 
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       <aside
         className={`
           fixed left-0 top-[52px] z-40 h-[calc(100vh-52px)]
           bg-surface-container transition-all duration-300
-          w-16 hover:w-56 overflow-hidden
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
+          overflow-hidden
+          ${mobileOpen ? "translate-x-0 w-56" : "-translate-x-full w-56"}
+          md:translate-x-0 md:w-16 md:hover:w-56
         `}
       >
         <nav className="flex flex-col gap-1 p-3 pt-4">

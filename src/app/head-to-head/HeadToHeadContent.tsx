@@ -338,7 +338,8 @@ export function HeadToHeadContent({
           </p>
 
           {/* Round selector with counts */}
-          <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1 overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto no-scrollbar rounded-card bg-surface-container p-1">
+          <div className="flex gap-1 min-w-max">
             <button
               onClick={() => changeRound("ALL")}
               className={`rounded-card px-2.5 py-1 font-label text-xs h-7 transition-colors ${
@@ -378,49 +379,52 @@ export function HeadToHeadContent({
               );
             })}
           </div>
+          </div>
 
           {/* Filter pills with counts + status filter */}
-          <div className="flex flex-wrap items-center gap-2 overflow-x-auto no-scrollbar">
-            <div className="flex gap-1.5 min-w-max">
-              <button
-                onClick={() => changeDiffFilter("all")}
-                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
-              >
-                All ({currentRoundAgree + currentRoundDiff})
-              </button>
-              <button
-                onClick={() => changeDiffFilter("agreement")}
-                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
-              >
-                Agreement ({currentRoundAgree})
-              </button>
-              <button
-                onClick={() => changeDiffFilter("differences")}
-                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
-              >
-                Differences ({currentRoundDiff})
-              </button>
-            </div>
-            <span className="text-on-surface-variant/30">|</span>
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => changeStatusFilter("all")}
-                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
-              >
-                All ({currentRoundCompleted + currentRoundScheduled})
-              </button>
-              <button
-                onClick={() => changeStatusFilter("completed")}
-                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
-              >
-                Completed ({currentRoundCompleted})
-              </button>
-              <button
-                onClick={() => changeStatusFilter("scheduled")}
-                className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
-              >
-                Scheduled ({currentRoundScheduled})
-              </button>
+          <div className="overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 min-w-max">
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => changeDiffFilter("all")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors whitespace-nowrap ${diffFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  All ({currentRoundAgree + currentRoundDiff})
+                </button>
+                <button
+                  onClick={() => changeDiffFilter("agreement")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors whitespace-nowrap ${diffFilter === "agreement" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  Agreement ({currentRoundAgree})
+                </button>
+                <button
+                  onClick={() => changeDiffFilter("differences")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors whitespace-nowrap ${diffFilter === "differences" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  Differences ({currentRoundDiff})
+                </button>
+              </div>
+              <span className="text-on-surface-variant/30">|</span>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => changeStatusFilter("all")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors whitespace-nowrap ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  All ({currentRoundCompleted + currentRoundScheduled})
+                </button>
+                <button
+                  onClick={() => changeStatusFilter("completed")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors whitespace-nowrap ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  Completed ({currentRoundCompleted})
+                </button>
+                <button
+                  onClick={() => changeStatusFilter("scheduled")}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors whitespace-nowrap ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  Scheduled ({currentRoundScheduled})
+                </button>
+              </div>
             </div>
           </div>
 

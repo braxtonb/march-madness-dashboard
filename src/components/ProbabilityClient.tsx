@@ -358,13 +358,13 @@ export function ProbabilityClient({
       {/* Championship Chances tab */}
       {tab === "chances" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <h3 className="font-display text-lg font-semibold">Championship Chances</h3>
             <button
               onClick={() => setShowExact(!showExact)}
-              className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors"
+              className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors whitespace-nowrap min-h-[44px] flex items-center"
             >
-              {showExact ? "Hide exact percentages" : "Reveal exact percentages"}
+              {showExact ? "Hide exact %" : "Reveal exact %"}
             </button>
           </div>
 
@@ -416,7 +416,7 @@ export function ProbabilityClient({
 
       {/* Simulated Finishes tab */}
       {tab === "finishes" && (
-        <div className="rounded-card bg-surface-container p-5">
+        <div className="rounded-card bg-surface-container p-3 sm:p-5">
           <div className="mb-4">
             <h3 className="font-display text-lg font-semibold">Simulated Finishes</h3>
             <p className="hidden sm:block text-xs text-on-surface-variant mt-1">
@@ -441,7 +441,7 @@ export function ProbabilityClient({
               Showing {sortedProbData.length} of {probData.length} brackets
             </p>
           )}
-          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
             <table className="min-w-[850px] w-full text-sm">
               <thead className="sticky top-0 z-20 bg-surface-container">
                 <tr className="border-b border-outline-variant">

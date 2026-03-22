@@ -52,7 +52,7 @@ export default function CompareBar({ brackets }: CompareBarProps) {
             <button
               key={b.id}
               onClick={() => toggle(b.id)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-secondary/30 bg-secondary/10 text-secondary text-sm truncate max-w-[220px] cursor-pointer hover:bg-secondary/20 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-secondary/30 bg-secondary/10 text-secondary text-xs sm:text-sm truncate max-w-[140px] sm:max-w-[220px] cursor-pointer hover:bg-secondary/20 transition-colors"
               title={b.full_name && b.full_name !== b.name ? `${b.name} (${b.full_name})` : b.name}
             >
               <span className="truncate">{b.name}</span>

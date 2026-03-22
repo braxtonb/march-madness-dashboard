@@ -10,6 +10,7 @@ import { TeamPill } from "@/components/ui/TeamPill";
 import BottomSheet from "@/components/ui/BottomSheet";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { GameHeatmap } from "@/components/charts/GameHeatmap";
+import { BracketView } from "@/components/charts/BracketView";
 import type { PickerDetails } from "@/components/ui/GameCard";
 
 interface ChampBracketInfo {
@@ -110,10 +111,10 @@ export function PicksContent({
   })();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
 
-  type ResultView = "cards" | "heatmap";
+  type ResultView = "cards" | "bracket" | "heatmap";
   const initialResultView = (() => {
     const param = searchParams.get("rview");
-    if (param && ["cards", "heatmap"].includes(param)) return param as ResultView;
+    if (param && ["cards", "bracket", "heatmap"].includes(param)) return param as ResultView;
     return "cards" as ResultView;
   })();
   const [resultView, setResultView] = useState<ResultView>(initialResultView);
@@ -255,6 +256,8 @@ export function PicksContent({
 
       {pageTab === "results" && (
       <div className="space-y-section">
+      {/* Round/status filters — hidden when bracket view is active */}
+      {resultView !== "bracket" && (
       <div className="flex flex-wrap items-center gap-3">
         <RoundSelector
           selected={round}
@@ -283,12 +286,14 @@ export function PicksContent({
           </div>
         </div>
       </div>
+      )}
 
       {/* View toggle */}
       <div className="overflow-x-auto no-scrollbar">
         <div className="flex gap-1.5 min-w-max">
           {([
             { label: "Card View", value: "cards" as ResultView },
+            { label: "Bracket", value: "bracket" as ResultView },
             { label: "Heatmap", value: "heatmap" as ResultView },
           ]).map((opt) => (
             <button
@@ -305,6 +310,17 @@ export function PicksContent({
           ))}
         </div>
       </div>
+
+      {/* Bracket view — shows all rounds, ignores round/status filters */}
+      {resultView === "bracket" && (
+        <BracketView
+          games={games}
+          pickSplits={pickSplits}
+          totalBrackets={totalBrackets}
+          teamLogos={teamLogos}
+          eliminatedTeams={eliminatedTeams}
+        />
+      )}
 
       {/* Heatmap view */}
       {resultView === "heatmap" && (

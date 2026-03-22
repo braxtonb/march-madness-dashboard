@@ -15,10 +15,10 @@ export function GameHeader({
   const espnLink = game.espn_url || game.espnUrl || undefined;
 
   return (
-    <div className="flex items-center justify-between">
-      <div>
+    <div className="flex items-center justify-between gap-2">
+      <div className="min-w-0 flex-1">
         {hasTeams ? (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <TeamPill
               name={game.team1}
               seed={game.seed1}

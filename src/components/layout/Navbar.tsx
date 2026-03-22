@@ -14,9 +14,10 @@ export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: 
 
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-[#141a20]/60 backdrop-blur-xl shadow-2xl shadow-black/50">
-      <div className="flex items-center gap-4">
-        <h1 className="font-display text-lg font-bold text-on-surface">
-          DoorDash AP 2026 Bracket Lab
+      <div className="flex items-center gap-4 pl-10 md:pl-0">
+        <h1 className="font-display text-lg font-bold text-on-surface truncate">
+          <span className="hidden sm:inline">DoorDash AP 2026 Bracket Lab</span>
+          <span className="sm:hidden">Bracket Lab</span>
         </h1>
       </div>
       <div className="flex items-center gap-4 text-sm text-on-surface-variant">

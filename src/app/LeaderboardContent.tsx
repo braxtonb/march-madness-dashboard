@@ -279,16 +279,16 @@ function LeaderboardContentInner({
             {greatestCalls.slice(0, 15).map((gc, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between rounded-card bg-surface-bright px-3 py-2.5"
+                className="flex items-center justify-between gap-2 rounded-card bg-surface-bright px-3 py-2.5"
               >
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center shrink-0">
                     {i + 1}
                   </span>
-                  <div>
-                    <div className="text-on-surface font-medium">{gc.bracketName}</div>
+                  <div className="min-w-0">
+                    <div className="text-on-surface font-medium truncate">{gc.bracketName}</div>
                     {gc.bracketFullName && gc.bracketFullName !== gc.bracketName && (
-                      <div className="text-xs text-on-surface-variant">{gc.bracketFullName}</div>
+                      <div className="text-xs text-on-surface-variant truncate">{gc.bracketFullName}</div>
                     )}
                     <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
                       Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />
@@ -297,8 +297,8 @@ function LeaderboardContentInner({
                     </p>
                   </div>
                 </div>
-                <span className="font-label text-xs text-secondary whitespace-nowrap">
-                  Only {Math.round(gc.rate * 100)}% picked this
+                <span className="font-label text-xs text-secondary whitespace-nowrap shrink-0">
+                  Only {Math.round(gc.rate * 100)}%
                 </span>
               </div>
             ))}

@@ -55,7 +55,7 @@ export default async function RootLayout({
           <Navbar meta={meta} brackets={brackets} />
           <div className="flex">
             <Sidebar />
-            <main className="ml-0 md:ml-56 w-full min-h-[calc(100vh-52px)] p-6">
+            <main className="ml-0 md:ml-56 w-full min-h-[calc(100vh-52px)] px-4 py-4 sm:p-6">
               {children}
             </main>
           </div>
