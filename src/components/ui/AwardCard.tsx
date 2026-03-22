@@ -20,10 +20,10 @@ function getAwardDescription(title: string, roundLabel?: string): string {
 const AWARD_ICONS: Record<string, ReactNode> = {
   "The Oracle": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f4fe" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="14" r="7" fill="#00f4fe" fillOpacity="0.1" />
-      <circle cx="12" cy="14" r="3" fill="#00f4fe" fillOpacity="0.3" />
-      <path d="M12 7v-2" /><path d="M8 8l-1-1" /><path d="M16 8l1-1" />
-      <path d="M7 21h10" /><path d="M9 21v-2a3 3 0 0 1 6 0v2" />
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="#00f4fe" fillOpacity="0.08" />
+      <circle cx="12" cy="12" r="3.5" fill="#00f4fe" fillOpacity="0.25" />
+      <circle cx="12" cy="12" r="1.5" fill="#00f4fe" fillOpacity="0.5" />
+      <path d="M12 3v2" /><path d="M5.5 5.5l1.2 1.2" /><path d="M18.5 5.5l-1.2 1.2" />
     </svg>
   ),
   "The Trendsetter": (
