@@ -82,7 +82,7 @@ export function LeaderboardTable({
         <thead>
           <tr className="border-b border-outline">
             <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points">Rank{arrow("rank")}</th>
-            <th className={hdrStatic} title="Bracket name and username">Name</th>
+            <th className={hdrStatic} title="Bracket name and username. Click any row to see path to victory.">Name</th>
             <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
             <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far">Pts{arrow("points")}</th>
             <th className={hdr} onClick={() => toggleSort("max")} title="Maximum possible points if all remaining picks are correct">Max{arrow("max")}</th>
@@ -120,8 +120,13 @@ export function LeaderboardTable({
                     )}
                   </td>
                   <td className="px-2 py-2">
-                    <div className="font-body text-on-surface text-xs">{b.name}</div>
-                    <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[9px] text-on-surface-variant/50 transition-transform ${isExpanded ? "rotate-90" : ""}`}>▶</span>
+                      <div>
+                        <div className="font-body text-on-surface text-xs">{b.name}</div>
+                        <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-2 py-2">
                     <TeamPill

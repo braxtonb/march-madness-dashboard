@@ -300,60 +300,49 @@ export function HeadToHeadContent({
         <>
           {/* Agreement stat — inline subtle */}
 
-          {/* Stat comparison cards — compact */}
+          {/* Stat comparison — compact inline */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Bracket 1 stats */}
-            <div className="rounded-card bg-surface-container px-3 py-2.5 space-y-2">
-              <div>
-                <p className="font-display text-sm font-bold text-on-surface">{b1.name}</p>
-                <p className="font-label text-[10px] text-on-surface-variant uppercase">{b1.owner}</p>
+            <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-sm font-bold text-on-surface truncate">{b1.name}</p>
+                <p className="font-label text-[10px] text-on-surface-variant">{b1.owner}</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Pts</p>
-                  <p className="font-display text-lg font-bold text-on-surface">{b1.points}</p>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="text-center">
+                  <p className="font-display text-sm font-bold text-on-surface">{b1.points}</p>
+                  <p className="font-label text-[8px] text-on-surface-variant">PTS</p>
                 </div>
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">MAX</p>
-                  <p className="font-display text-lg font-bold text-on-surface">{b1.max_remaining}</p>
+                <div className="text-center">
+                  <p className="font-display text-sm font-bold text-on-surface">{b1.max_remaining}</p>
+                  <p className="font-label text-[8px] text-on-surface-variant">MAX</p>
                 </div>
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Champ</p>
-                  <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} eliminated={eliminatedTeams.has(b1.champion_pick)} showStatus />
-                </div>
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Win %</p>
-                  <p className="font-display text-lg font-bold text-on-surface">{winPct(b1.id)}%</p>
-                </div>
+                <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} eliminated={eliminatedTeams.has(b1.champion_pick)} showStatus />
               </div>
             </div>
 
-            {/* Bracket 2 stats */}
-            <div className="rounded-card bg-surface-container px-3 py-2.5 space-y-2">
-              <div>
-                <p className="font-display text-sm font-bold text-on-surface">{b2.name}</p>
-                <p className="font-label text-[10px] text-on-surface-variant uppercase">{b2.owner}</p>
+            <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-sm font-bold text-on-surface truncate">{b2.name}</p>
+                <p className="font-label text-[10px] text-on-surface-variant">{b2.owner}</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Pts</p>
-                  <p className="font-display text-lg font-bold text-on-surface">{b2.points}</p>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="text-center">
+                  <p className="font-display text-sm font-bold text-on-surface">{b2.points}</p>
+                  <p className="font-label text-[8px] text-on-surface-variant">PTS</p>
                 </div>
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">MAX</p>
-                  <p className="font-display text-lg font-bold text-on-surface">{b2.max_remaining}</p>
+                <div className="text-center">
+                  <p className="font-display text-sm font-bold text-on-surface">{b2.max_remaining}</p>
+                  <p className="font-label text-[8px] text-on-surface-variant">MAX</p>
                 </div>
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Champ</p>
-                  <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} eliminated={eliminatedTeams.has(b2.champion_pick)} showStatus />
-                </div>
-                <div>
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase">Win %</p>
-                  <p className="font-display text-lg font-bold text-on-surface">{winPct(b2.id)}%</p>
-                </div>
+                <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} eliminated={eliminatedTeams.has(b2.champion_pick)} showStatus />
               </div>
             </div>
           </div>
+
+          {/* Overall agreement inline */}
+          <p className="text-xs text-on-surface-variant">
+            Overall: <span className="text-on-surface font-semibold">{agree}/{total}</span> picks agree ({total > 0 ? Math.round((agree / total) * 100) : 0}%)
+          </p>
 
           {/* Round selector with counts */}
           <div className="flex gap-1 flex-wrap rounded-card bg-surface-container p-1">
@@ -364,7 +353,7 @@ export function HeadToHeadContent({
                 <button
                   key={round}
                   onClick={() => changeRound(round)}
-                  className={`rounded-card px-2.5 py-1.5 font-label text-[10px] transition-colors ${
+                  className={`rounded-card px-3 py-1.5 font-label text-xs transition-colors ${
                     isActive
                       ? "bg-primary/15 text-primary border border-primary/30"
                       : "text-on-surface-variant hover:text-on-surface"
@@ -422,9 +411,6 @@ export function HeadToHeadContent({
                 Scheduled
               </button>
             </div>
-            <span className="text-on-surface-variant text-[10px] ml-auto">
-              Overall: {agree}/{total} agree ({total > 0 ? Math.round((agree / total) * 100) : 0}%)
-            </span>
           </div>
 
           {/* Game cards for the selected round — grouped by status, 2 per row */}

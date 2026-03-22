@@ -204,6 +204,7 @@ function LeaderboardContentInner({
           })()}
 
           {/* Leaderboard table */}
+          <p className="text-[10px] text-on-surface-variant italic">Click any row to see their path to victory</p>
           <LeaderboardTable
             brackets={brackets}
             analytics={analytics}

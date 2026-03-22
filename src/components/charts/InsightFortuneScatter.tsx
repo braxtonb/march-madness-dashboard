@@ -87,20 +87,26 @@ function SearchDropdown({
 
   return (
     <div className="space-y-1.5" ref={containerRef}>
-      <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">{label}</label>
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {value.map((v) => {
-            const opt = options.find((o) => o.value === v);
-            return (
-              <span key={v} className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[10px] font-label">
-                {opt?.label || v}
-                <button type="button" onClick={() => toggle(v)} className="hover:text-on-surface transition-colors">&times;</button>
-              </span>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant shrink-0">{label}</label>
+        {value.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {value.map((v) => {
+              const opt = options.find((o) => o.value === v);
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => toggle(v)}
+                  className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[10px] font-label hover:bg-primary/25 transition-colors cursor-pointer"
+                >
+                  {opt?.label || v} &times;
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
       <div className="relative">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
           className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none">
