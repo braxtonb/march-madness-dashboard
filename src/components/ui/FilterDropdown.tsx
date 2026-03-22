@@ -19,6 +19,7 @@ export default function FilterDropdown({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -68,33 +69,102 @@ export default function FilterDropdown({
   }, [options, search, selectedSet]);
 
   const hasSelections = selected.length > 0;
-  const buttonLabel = hasSelections ? `${label} (${selected.length})` : label;
+
+  // Compact display text: 0 -> placeholder, 1 -> name, 2+ -> name +N more
+  const displayText = useMemo(() => {
+    if (selected.length === 0) return "";
+    const firstOption = options.find((o) => o.value === selected[0]);
+    const firstName = firstOption?.label || selected[0];
+    if (selected.length === 1) return firstName;
+    return `${firstName} +${selected.length - 1} more`;
+  }, [selected, options]);
+
+  const placeholderText = `Filter by ${label.toLowerCase()}...`;
+
+  // When the dropdown opens, the input field is for searching.
+  // When closed, show the compact selected display.
+  const inputValue = open ? search : displayText;
 
   return (
     <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => {
-          setOpen(!open);
-          if (!open) setSearch("");
-        }}
-        className={`
-          px-3 py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[36px] flex items-center gap-1
-          ${
+      <div className="relative">
+        {/* Search icon */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-on-surface-variant pointer-events-none"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+
+        <input
+          ref={inputRef}
+          type="text"
+          readOnly={!searchable || !open}
+          value={inputValue}
+          placeholder={placeholderText}
+          onFocus={() => {
+            setOpen(true);
+            setSearch("");
+          }}
+          onClick={() => {
+            if (!open) {
+              setOpen(true);
+              setSearch("");
+            }
+          }}
+          onChange={(e) => {
+            if (searchable && open) {
+              setSearch(e.target.value);
+            }
+          }}
+          className={`w-full rounded-card bg-surface-container border px-3 py-2.5 pl-9 pr-8 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all cursor-pointer min-w-[200px] min-h-[36px] ${
             hasSelections
-              ? "bg-primary/15 text-primary border border-primary/30"
-              : "bg-surface-bright text-on-surface-variant border border-outline-variant hover:border-on-surface-variant"
-          }
-        `}
-      >
-        {buttonLabel}
-        <span className="text-[10px] ml-0.5">&#9662;</span>
-      </button>
+              ? "text-on-surface border-primary/30"
+              : "text-on-surface-variant border-outline"
+          } placeholder:text-on-surface-variant`}
+        />
+
+        {/* Clear button when items are selected */}
+        {hasSelections && !open && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange([]);
+            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant/60 hover:text-on-surface transition-colors"
+            aria-label="Clear selection"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M4 4L12 12M12 4L4 12"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        )}
+
+        {/* Selection count badge */}
+        {hasSelections && selected.length > 1 && (
+          <span className="absolute right-8 top-1/2 -translate-y-1/2 text-[10px] text-primary font-medium pointer-events-none">
+            ({selected.length})
+          </span>
+        )}
+      </div>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1 w-64 max-h-72 bg-surface-container border border-outline-variant rounded-lg shadow-2xl shadow-black/30 z-50 flex flex-col overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-full min-w-[240px] max-h-72 bg-surface-container border border-outline rounded-card shadow-2xl shadow-black/30 z-50 flex flex-col overflow-hidden">
           {searchable && (
-            <div className="relative border-b border-outline-variant">
+            <div className="relative border-b border-outline">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -118,6 +188,13 @@ export default function FilterDropdown({
               />
             </div>
           )}
+          <div className="sticky top-0 bg-surface-container px-3 py-1.5 border-b border-outline">
+            <span className="text-[10px] text-on-surface-variant">
+              {selected.length > 0
+                ? `${selected.length} selected of ${options.length}`
+                : `${filtered.length} ${label.toLowerCase()}`}
+            </span>
+          </div>
           <div className="overflow-y-auto flex-1">
             {filtered.map((o) => {
               const isSelected = selectedSet.has(o.value);
@@ -126,7 +203,11 @@ export default function FilterDropdown({
                   key={o.value}
                   type="button"
                   onClick={() => toggle(o.value)}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors"
+                  className={`w-full text-left px-3 py-2.5 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors border-l-2 ${
+                    isSelected
+                      ? "bg-surface-bright border-l-primary"
+                      : "border-l-transparent"
+                  }`}
                 >
                   <span
                     className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
@@ -183,7 +264,7 @@ export default function FilterDropdown({
             <button
               type="button"
               onClick={() => onChange([])}
-              className="px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface border-t border-outline-variant transition-colors"
+              className="px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface border-t border-outline transition-colors"
             >
               Clear all
             </button>
