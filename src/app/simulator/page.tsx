@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import type { DashboardData, Game, Pick, Round } from "@/lib/types";
+import type { DashboardData, Game, Pick, Round, Bracket } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
@@ -225,6 +225,18 @@ export default function SimulatorPage() {
   const teamLogos = useMemo(() => {
     if (!data) return {} as Record<string, string>;
     return Object.fromEntries(data.teams.map((t) => [t.name, t.logo || ""]));
+  }, [data]);
+
+  // Build bracket lookup by id for champion display
+  const bracketById = useMemo(() => {
+    if (!data) return new Map<string, Bracket>();
+    return new Map(data.brackets.map((b) => [b.id, b]));
+  }, [data]);
+
+  // Build eliminated teams set
+  const eliminatedTeamsSet = useMemo(() => {
+    if (!data) return new Set<string>();
+    return new Set(data.teams.filter((t) => t.eliminated).map((t) => t.name));
   }, [data]);
 
   // Build bracket options for MultiSelectSearch
@@ -713,6 +725,7 @@ export default function SimulatorPage() {
                     <th className="w-8"></th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Rank</th>
                     <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default"><span className="inline-flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion</span></th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Change</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Pts</th>
                     <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Sim Pts</th>
@@ -741,6 +754,13 @@ export default function SimulatorPage() {
                               </div>
                             </div>
                           </td>
+                          <td className="px-3 py-2 text-xs">
+                            {(() => {
+                              const bracket = bracketById.get(r.id);
+                              if (!bracket) return null;
+                              return <TeamPill name={bracket.champion_pick} seed={bracket.champion_seed} logo={teamLogos[bracket.champion_pick]} eliminated={eliminatedTeamsSet.has(bracket.champion_pick)} showStatus />;
+                            })()}
+                          </td>
                           <td className="px-3 py-2 font-label">
                             {delta > 0 && <span className="text-secondary">+{delta}</span>}
                             {delta === 0 && <span className="text-on-surface-variant">&mdash;</span>}
@@ -751,7 +771,7 @@ export default function SimulatorPage() {
                         </tr>
                         {isExpanded && path && (
                           <tr key={`${r.id}-path`}>
-                            <td colSpan={6} className="px-4 py-3 bg-surface-bright/50">
+                            <td colSpan={7} className="px-4 py-3 bg-surface-bright/50">
                               <div className="space-y-2">
                                 <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
                                   Path to victory — {path.remainingPicks.length} alive picks remaining

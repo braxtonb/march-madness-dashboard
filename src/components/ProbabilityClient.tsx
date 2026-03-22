@@ -427,6 +427,7 @@ export function ProbabilityClient({
                 <tr className="border-b border-outline-variant">
                   <th className="w-8"></th>
                   <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default"><span className="inline-flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion</span></th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Tier</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("probability")}><span className="border-b border-dotted border-on-surface-variant/40">Win %</span>{fSortIcon("probability")}</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_second")}><span className="border-b border-dotted border-on-surface-variant/40">2nd %</span>{fSortIcon("pct_second")}</th>
@@ -434,7 +435,6 @@ export function ProbabilityClient({
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_top10")}><span className="border-b border-dotted border-on-surface-variant/40">Top 10</span>{fSortIcon("pct_top10")}</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_top25")}><span className="border-b border-dotted border-on-surface-variant/40">Top 25</span>{fSortIcon("pct_top25")}</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("median_rank")}><span className="border-b border-dotted border-on-surface-variant/40">Median</span>{fSortIcon("median_rank")}</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default"><span className="inline-flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -464,6 +464,9 @@ export function ProbabilityClient({
                           </div>
                         </div>
                       </td>
+                      <td className="px-2 py-2 text-xs text-on-surface-variant">
+                        <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
+                      </td>
                       <td className="px-2 py-2">
                         <span className={`inline-block rounded-card px-2 py-0.5 font-label text-[10px] ${tier.badgeClass}`}>
                           {tier.label}
@@ -475,9 +478,6 @@ export function ProbabilityClient({
                       <td className="px-2 py-2 font-label text-xs text-secondary">{d.pct_top10.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface">{d.pct_top25.toFixed(1)}%</td>
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
-                      <td className="px-2 py-2 text-xs text-on-surface-variant">
-                        <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
-                      </td>
                     </tr>
                     {isExpanded && (() => {
                       const path = pathByName.get(d.name);

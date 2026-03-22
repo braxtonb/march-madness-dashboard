@@ -45,7 +45,9 @@ function CollapsibleRound({
 }
 
 interface AwardDetailSidebarProps {
-  award: Award;
+  awards: Award[];
+  selectedIndex: number;
+  onChangeIndex: (idx: number) => void;
   open: boolean;
   onClose: () => void;
   picks: Pick[];
@@ -699,7 +701,9 @@ function PeoplesChampionContent({
 /* ── Main Sidebar Component ───────────────────────── */
 
 export default function AwardDetailSidebar({
-  award,
+  awards,
+  selectedIndex,
+  onChangeIndex,
   open,
   onClose,
   picks,
@@ -723,7 +727,10 @@ export default function AwardDetailSidebar({
     return set;
   }, [games]);
 
-  // Reset index when award changes
+  const award = awards[selectedIndex];
+  if (!award) return null;
+
+  // Reset winner index when switching awards
   const winner = award.winners[winnerIdx] ?? award.winners[0];
   if (!winner) return null;
 
@@ -732,6 +739,9 @@ export default function AwardDetailSidebar({
   const hasNext = winnerIdx < total - 1;
 
   const title = award.title;
+
+  const hasAwardPrev = selectedIndex > 0;
+  const hasAwardNext = selectedIndex < awards.length - 1;
 
   function renderContent() {
     switch (award.title) {
@@ -810,6 +820,8 @@ export default function AwardDetailSidebar({
       open={open}
       onClose={onClose}
       title={title}
+      onPrev={hasAwardPrev ? () => { onChangeIndex(selectedIndex - 1); setWinnerIdx(0); } : undefined}
+      onNext={hasAwardNext ? () => { onChangeIndex(selectedIndex + 1); setWinnerIdx(0); } : undefined}
     >
       <div className="space-y-4">
         {/* Winner info header with compact prev/next navigation */}

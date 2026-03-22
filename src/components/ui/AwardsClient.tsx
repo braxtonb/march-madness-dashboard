@@ -35,7 +35,7 @@ export function AwardsClient({
   const [selectedRound, setSelectedRound] = useState<string>(
     paramRound && validRounds.includes(paramRound) ? paramRound : "ALL"
   );
-  const [selectedAward, setSelectedAward] = useState<Award | null>(null);
+  const [selectedAwardIdx, setSelectedAwardIdx] = useState<number | null>(null);
 
   // Build team logo lookup for AwardCard
   const teamLogos: Record<string, string> = useMemo(() => {
@@ -67,22 +67,24 @@ export function AwardsClient({
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {awards.map((award) => (
+        {awards.map((award, idx) => (
           <AwardCard
             key={award.title}
             award={award}
-            onClick={() => setSelectedAward(award)}
+            onClick={() => setSelectedAwardIdx(idx)}
             teamLogos={teamLogos}
             roundLabel={roundLabel}
           />
         ))}
       </div>
 
-      {selectedAward && (
+      {selectedAwardIdx !== null && awards[selectedAwardIdx] && (
         <AwardDetailSidebar
-          award={selectedAward}
-          open={!!selectedAward}
-          onClose={() => setSelectedAward(null)}
+          awards={awards}
+          selectedIndex={selectedAwardIdx}
+          onChangeIndex={setSelectedAwardIdx}
+          open={true}
+          onClose={() => setSelectedAwardIdx(null)}
           picks={picks}
           games={games}
           teams={teams}
