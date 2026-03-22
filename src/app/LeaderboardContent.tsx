@@ -99,7 +99,25 @@ function LeaderboardContentInner({
     : "standings";
 
   const [tab, setTab] = useState<LeaderboardTab>(initialTab);
-  const [selectedSearchIds, setSelectedSearchIds] = useState<string[]>([]);
+
+  // Deep-link bracket search: initialize from URL
+  const [selectedSearchIds, setSelectedSearchIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    const params = new URLSearchParams(window.location.search);
+    const bracketParam = params.get("brackets");
+    return bracketParam ? bracketParam.split(",").filter(Boolean) : [];
+  });
+
+  // Update URL when bracket selection changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (selectedSearchIds.length > 0) {
+      url.searchParams.set("brackets", selectedSearchIds.join(","));
+    } else {
+      url.searchParams.delete("brackets");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, [selectedSearchIds]);
 
   // Build options for MultiSelectSearch
   const bracketOptions: MultiSelectOption[] = useMemo(
@@ -120,9 +138,23 @@ function LeaderboardContentInner({
   const changeTab = useCallback(
     (newTab: LeaderboardTab) => {
       setTab(newTab);
-      const params = new URLSearchParams(window.location.search);
-      params.set("tab", newTab);
-      window.history.replaceState(null, "", `?${params.toString()}`);
+      const url = new URL(window.location.href);
+
+      // Define which params belong to which tab
+      const standingsParams = ["sort", "dir", "brackets"];
+      const styleParams = ["search", "champion", "pts", "ptsOp"];
+      // "calls" tab has no URL params
+
+      // Clear params not belonging to the new tab
+      const allTabParams = [...standingsParams, ...styleParams];
+      for (const p of allTabParams) {
+        if (newTab === "standings" && standingsParams.includes(p)) continue;
+        if (newTab === "style" && styleParams.includes(p)) continue;
+        url.searchParams.delete(p);
+      }
+
+      url.searchParams.set("tab", newTab);
+      window.history.replaceState(null, "", url.toString());
     },
     []
   );

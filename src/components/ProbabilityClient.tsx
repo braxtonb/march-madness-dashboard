@@ -247,9 +247,23 @@ export function ProbabilityClient({
 
   function changeTab(t: ProbTab) {
     setTab(t);
-    const params = new URLSearchParams(window.location.search);
-    params.set("tab", t);
-    window.history.replaceState(null, "", `/probability?${params.toString()}`);
+    const url = new URL(window.location.href);
+
+    // Define which params belong to which tab
+    const finishesParams = ["fsort", "fdir", "finishBrackets"];
+    const aliveParams = ["filter", "watch"];
+    // "chances" and "path" tabs have no specific URL params
+
+    // Clear params not belonging to the new tab
+    const allTabParams = [...finishesParams, ...aliveParams];
+    for (const p of allTabParams) {
+      if (t === "finishes" && finishesParams.includes(p)) continue;
+      if (t === "alive" && aliveParams.includes(p)) continue;
+      url.searchParams.delete(p);
+    }
+
+    url.searchParams.set("tab", t);
+    window.history.replaceState(null, "", url.toString());
   }
 
   const changeAliveFilter = useCallback(

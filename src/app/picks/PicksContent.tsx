@@ -66,9 +66,22 @@ export function PicksContent({
 
   function changePageTab(t: PageTab) {
     setPageTab(t);
-    const params = new URLSearchParams(window.location.search);
-    params.set("view", t);
-    window.history.replaceState(null, "", `?${params.toString()}`);
+    const url = new URL(window.location.href);
+
+    // Define which params belong to which tab
+    const resultsParams = ["game", "round", "status", "rview"];
+    const championsParams = ["champ"];
+
+    // Clear params not belonging to the new tab
+    const allTabParams = [...resultsParams, ...championsParams];
+    for (const p of allTabParams) {
+      if (t === "results" && resultsParams.includes(p)) continue;
+      if (t === "champions" && championsParams.includes(p)) continue;
+      url.searchParams.delete(p);
+    }
+
+    url.searchParams.set("view", t);
+    window.history.replaceState(null, "", url.toString());
   }
 
   const VALID_ROUNDS: string[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP", "ALL"];
