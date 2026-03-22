@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { AwardCard } from "@/components/ui/AwardCard";
+import AwardDetailSidebar from "@/components/ui/AwardDetailSidebar";
 import type { Award, Round, Bracket, Pick, Game, Team } from "@/lib/types";
 import { ROUND_ORDER } from "@/lib/constants";
 
@@ -69,6 +70,20 @@ export function AwardsClient({
           />
         ))}
       </div>
+
+      {selectedAward && (
+        <AwardDetailSidebar
+          award={selectedAward}
+          open={!!selectedAward}
+          onClose={() => setSelectedAward(null)}
+          picks={picks}
+          games={games}
+          teams={teams}
+          brackets={brackets}
+          pickRates={pickRates}
+          selectedRound={selectedRound}
+        />
+      )}
     </>
   );
 }
