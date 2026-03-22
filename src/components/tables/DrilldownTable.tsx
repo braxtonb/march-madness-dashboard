@@ -177,11 +177,11 @@ export function DrilldownTable({
           <thead>
             <tr className="border-b border-outline">
               <th className="w-8"></th>
-              <th className={hdr} onClick={() => toggleSort("rank")}><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
+              <th className={`${hdr} relative`} onClick={() => toggleSort("rank")}><span className={`${hdrDotted} peer`}>Rank</span>{sortIcon("rank")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Current overall ranking</span></th>
               <th className={hdrStatic}>Name</th>
               <th className={hdrStatic}>Champion</th>
-              <th className={hdr} onClick={() => toggleSort("points")}><span className={hdrDotted}>Points</span>{sortIcon("points")}</th>
-              <th className={hdr} onClick={() => toggleSort("max_remaining")}><span className={hdrDotted}>MAX</span>{sortIcon("max_remaining")}</th>
+              <th className={`${hdr} relative`} onClick={() => toggleSort("points")}><span className={`${hdrDotted} peer`}>Points</span>{sortIcon("points")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Total points earned so far</span></th>
+              <th className={`${hdr} relative`} onClick={() => toggleSort("max_remaining")}><span className={`${hdrDotted} peer`}>MAX</span>{sortIcon("max_remaining")}<span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 rounded bg-surface-bright text-[10px] text-on-surface whitespace-nowrap opacity-0 pointer-events-none peer-hover:opacity-100 transition-opacity z-20 shadow-lg border border-outline-variant">Maximum remaining points possible</span></th>
             </tr>
           </thead>
           <tbody>
