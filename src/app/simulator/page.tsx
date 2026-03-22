@@ -9,6 +9,7 @@ import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
+import { Skeleton, CardSkeleton } from "@/components/ui/Skeleton";
 
 interface SimResult {
   id: string;
@@ -476,7 +477,17 @@ export default function SimulatorPage() {
       <div className="space-y-section">
         <div>
           <h2 className="font-display text-2xl font-bold">Scenario Simulator</h2>
-          <p className="text-on-surface-variant text-sm mt-1">Loading data...</p>
+          <Skeleton className="h-4 w-64 mt-1" />
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <Skeleton className="h-8 w-28 rounded-card" />
+          <Skeleton className="h-8 w-28 rounded-card" />
+          <Skeleton className="h-8 w-28 rounded-card" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
       </div>
     );
