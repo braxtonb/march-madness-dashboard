@@ -676,11 +676,11 @@ export default function SimulatorPage() {
                 <thead className="sticky top-0 bg-surface-container z-10">
                   <tr className="border-b border-outline">
                     <th className="w-8"></th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Projected ranking based on simulated outcomes">Rank</th>
-                    <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Bracket name and username">Bracket</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Rank change from current standing based on simulation — positive means climbing up">Change</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Current actual points">Pts</th>
-                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default" title="Projected total points if simulated outcomes happen">Sim Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Rank</th>
+                    <th className="sticky left-0 bg-surface-container px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Change</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Pts</th>
+                    <th className="px-3 py-2 text-left font-label text-xs uppercase tracking-wider text-on-surface-variant cursor-default">Sim Pts</th>
                   </tr>
                 </thead>
                 <tbody>

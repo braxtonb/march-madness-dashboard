@@ -177,11 +177,11 @@ export function DrilldownTable({
           <thead>
             <tr className="border-b border-outline">
               <th className="w-8"></th>
-              <th className={hdr} onClick={() => toggleSort("rank")} title="Current ranking based on total points"><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
-              <th className={hdrStatic} title="Bracket name and username">Name</th>
-              <th className={hdrStatic} title="Championship pick — green dot if still alive">Champion</th>
-              <th className={hdr} onClick={() => toggleSort("points")} title="Total points earned so far"><span className={hdrDotted}>Points</span>{sortIcon("points")}</th>
-              <th className={hdr} onClick={() => toggleSort("max_remaining")} title="Maximum possible points remaining"><span className={hdrDotted}>MAX</span>{sortIcon("max_remaining")}</th>
+              <th className={hdr} onClick={() => toggleSort("rank")}><span className={hdrDotted}>Rank</span>{sortIcon("rank")}</th>
+              <th className={hdrStatic}>Name</th>
+              <th className={hdrStatic}>Champion</th>
+              <th className={hdr} onClick={() => toggleSort("points")}><span className={hdrDotted}>Points</span>{sortIcon("points")}</th>
+              <th className={hdr} onClick={() => toggleSort("max_remaining")}><span className={hdrDotted}>MAX</span>{sortIcon("max_remaining")}</th>
             </tr>
           </thead>
           <tbody>

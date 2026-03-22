@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 import { DrilldownTable } from "@/components/tables/DrilldownTable";
 import { GamesToWatch } from "@/components/GamesToWatch";
@@ -165,7 +165,6 @@ export function ProbabilityClient({
 }: ProbabilityClientProps) {
   const { isMyBracket } = useMyBracket();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const eliminatedTeamsSet = useMemo(() => new Set(eliminatedTeamsArr), [eliminatedTeamsArr]);
 
@@ -228,19 +227,19 @@ export function ProbabilityClient({
 
   function changeTab(t: ProbTab) {
     setTab(t);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.set("tab", t);
-    router.replace(`/probability?${params.toString()}`, { scroll: false });
+    window.history.replaceState(null, "", `/probability?${params.toString()}`);
   }
 
   const changeAliveFilter = useCallback(
     (v: AliveFilter) => {
       setAliveFilter(v);
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       params.set("filter", v);
-      router.replace(`/probability?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, "", `/probability?${params.toString()}`);
     },
-    [searchParams, router]
+    []
   );
 
   // Build path lookup by bracket name for expanded rows
@@ -427,15 +426,15 @@ export function ProbabilityClient({
               <thead>
                 <tr className="border-b border-outline">
                   <th className="w-8"></th>
-                  <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Bracket name and username">Bracket</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Championship chances tier">Tier</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 1st across 1,000 simulations" onClick={() => toggleFinishSort("probability")}><span className="border-b border-dotted border-on-surface-variant/40">Win %</span>{fSortIcon("probability")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 2nd" onClick={() => toggleFinishSort("pct_second")}><span className="border-b border-dotted border-on-surface-variant/40">2nd %</span>{fSortIcon("pct_second")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing 3rd" onClick={() => toggleFinishSort("pct_third")}><span className="border-b border-dotted border-on-surface-variant/40">3rd %</span>{fSortIcon("pct_third")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 10" onClick={() => toggleFinishSort("pct_top10")}><span className="border-b border-dotted border-on-surface-variant/40">Top 10</span>{fSortIcon("pct_top10")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Percentage finishing in top 25" onClick={() => toggleFinishSort("pct_top25")}><span className="border-b border-dotted border-on-surface-variant/40">Top 25</span>{fSortIcon("pct_top25")}</th>
-                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" title="Median finish position across simulations" onClick={() => toggleFinishSort("median_rank")}><span className="border-b border-dotted border-on-surface-variant/40">Median</span>{fSortIcon("median_rank")}</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default" title="Championship pick">Champion</th>
+                  <th className="sticky left-0 bg-surface-container z-10 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Bracket</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Tier</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("probability")}><span className="border-b border-dotted border-on-surface-variant/40">Win %</span>{fSortIcon("probability")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_second")}><span className="border-b border-dotted border-on-surface-variant/40">2nd %</span>{fSortIcon("pct_second")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_third")}><span className="border-b border-dotted border-on-surface-variant/40">3rd %</span>{fSortIcon("pct_third")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_top10")}><span className="border-b border-dotted border-on-surface-variant/40">Top 10</span>{fSortIcon("pct_top10")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_top25")}><span className="border-b border-dotted border-on-surface-variant/40">Top 25</span>{fSortIcon("pct_top25")}</th>
+                  <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("median_rank")}><span className="border-b border-dotted border-on-surface-variant/40">Median</span>{fSortIcon("median_rank")}</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Champion</th>
                 </tr>
               </thead>
               <tbody>
@@ -633,10 +632,10 @@ export function ProbabilityClient({
               <div className="flex gap-2 min-w-max">
                 {(
                   [
+                    ["all", "All Brackets"],
                     ["champion", "Champion Alive"],
                     ["ff3", "3+ Final Four"],
                     ["ff2", "2+ Final Four"],
-                    ["all", "All Brackets"],
                   ] as const
                 ).map(([key, label]) => (
                   <button

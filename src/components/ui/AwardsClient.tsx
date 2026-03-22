@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { AwardCard } from "@/components/ui/AwardCard";
 import AwardDetailSidebar from "@/components/ui/AwardDetailSidebar";
@@ -30,7 +30,6 @@ export function AwardsClient({
   pickRates,
 }: AwardsClientProps) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const validRounds = [...ROUND_ORDER, "ALL"];
   const paramRound = searchParams.get("round");
   const [selectedRound, setSelectedRound] = useState<string>(
@@ -45,9 +44,9 @@ export function AwardsClient({
 
   function changeRound(round: string) {
     setSelectedRound(round);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.set("round", round);
-    router.replace(`/awards?${params.toString()}`, { scroll: false });
+    window.history.replaceState(null, "", `/awards?${params.toString()}`);
   }
 
   const awards = awardsByRound[selectedRound] ?? [];

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
 import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
 import { RoundSelector } from "@/components/ui/RoundSelector";
@@ -42,7 +42,6 @@ export function PicksContent({
   champDistribution?: ChampDistEntry[];
 }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const eliminatedTeams = useMemo(() => {
     const set = new Set<string>();
@@ -63,9 +62,9 @@ export function PicksContent({
 
   function changePageTab(t: PageTab) {
     setPageTab(t);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.set("view", t);
-    router.replace(`?${params.toString()}`, { scroll: false });
+    window.history.replaceState(null, "", `?${params.toString()}`);
   }
 
   const VALID_ROUNDS: string[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP", "ALL"];
@@ -78,21 +77,14 @@ export function PicksContent({
 
   const isAllRounds = round === "ALL";
 
-  const updateUrl = useCallback(
-    (params: URLSearchParams) => {
-      router.replace(`?${params.toString()}`, { scroll: false });
-    },
-    [router]
-  );
-
   const changeRound = useCallback(
     (newRound: string) => {
       setRound(newRound);
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       params.set("round", newRound);
-      updateUrl(params);
+      window.history.replaceState(null, "", `?${params.toString()}`);
     },
-    [searchParams, updateUrl]
+    []
   );
 
   // Keep round in sync if user navigates back/forward
@@ -118,11 +110,11 @@ export function PicksContent({
   const changeStatusFilter = useCallback(
     (v: StatusFilter) => {
       setStatusFilter(v);
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       params.set("status", v);
-      updateUrl(params);
+      window.history.replaceState(null, "", `?${params.toString()}`);
     },
-    [searchParams, updateUrl]
+    []
   );
 
   // Games for single-round view

@@ -1,10 +1,7 @@
 import type { Meta, Bracket } from "@/lib/types";
-import { ROUND_LABELS } from "@/lib/constants";
 import MyBracketBadge from "./MyBracketBadge";
 
 export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: Bracket[] }) {
-  const roundLabel = meta ? ROUND_LABELS[meta.current_round] : "Loading...";
-
   let lastUpdated = "—";
   if (meta?.last_updated) {
     const updatedAt = new Date(meta.last_updated);
@@ -21,9 +18,6 @@ export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: 
         <h1 className="font-display text-lg font-bold text-on-surface">
           DoorDash AP 2026 Bracket Lab
         </h1>
-        <span className="rounded-card bg-surface-bright px-3 py-1 font-label text-xs text-secondary">
-          {roundLabel}
-        </span>
       </div>
       <div className="flex items-center gap-4 text-sm text-on-surface-variant">
         <MyBracketBadge brackets={brackets} />

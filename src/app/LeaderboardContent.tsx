@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
@@ -92,7 +92,6 @@ function LeaderboardContentInner({
   pathEntries = [],
 }: LeaderboardContentProps) {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const initialTab = isValidTab(searchParams.get("tab"))
     ? (searchParams.get("tab") as LeaderboardTab)
@@ -117,21 +116,14 @@ function LeaderboardContentInner({
     return brackets.filter((b) => idSet.has(b.id));
   }, [brackets, selectedSearchIds]);
 
-  const updateUrl = useCallback(
-    (params: URLSearchParams) => {
-      router.replace(`?${params.toString()}`, { scroll: false });
-    },
-    [router]
-  );
-
   const changeTab = useCallback(
     (newTab: LeaderboardTab) => {
       setTab(newTab);
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       params.set("tab", newTab);
-      updateUrl(params);
+      window.history.replaceState(null, "", `?${params.toString()}`);
     },
-    [searchParams, updateUrl]
+    []
   );
 
   // Keep tab in sync if user navigates back/forward
@@ -287,13 +279,9 @@ function LeaderboardContentInner({
                     {i + 1}
                   </span>
                   <div>
-                    <span className="text-on-surface font-body font-semibold">
-                      {gc.bracketName}
-                    </span>
+                    <div className="text-on-surface font-medium">{gc.bracketName}</div>
                     {gc.bracketFullName && gc.bracketFullName !== gc.bracketName && (
-                      <span className="text-xs text-on-surface-variant ml-2">
-                        {gc.bracketFullName}
-                      </span>
+                      <div className="text-xs text-on-surface-variant">{gc.bracketFullName}</div>
                     )}
                     <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
                       Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />

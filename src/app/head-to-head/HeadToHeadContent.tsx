@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { Bracket, Pick, Game, BracketAnalytics, Round, AwardRound, Team } from "@/lib/types";
 import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import { TeamPill } from "@/components/ui/TeamPill";
@@ -29,7 +29,6 @@ export function HeadToHeadContent({
   teams?: Team[];
 }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const initialDiffFilter = (searchParams.get("filter") as DiffFilter) || "all";
   const initialStatusFilter = (searchParams.get("status") as StatusFilter) || "all";
@@ -79,11 +78,11 @@ export function HeadToHeadContent({
 
   const updateUrl = useCallback(
     (key: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
       params.set(key, value);
-      router.replace(`?${params.toString()}`, { scroll: false });
+      window.history.replaceState(null, "", `?${params.toString()}`);
     },
-    [searchParams, router]
+    []
   );
 
   function changeDiffFilter(v: DiffFilter) {
