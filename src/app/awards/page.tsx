@@ -46,6 +46,7 @@ function computeAwards(
   function toWinner(b: Bracket, stat: string): AwardWinner {
     return {
       name: b.name,
+      fullName: b.full_name,
       bracketName: b.owner,
       bracketId: b.id,
       stat,

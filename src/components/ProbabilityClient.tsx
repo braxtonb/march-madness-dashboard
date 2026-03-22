@@ -9,13 +9,14 @@ import { GamesToWatch } from "@/components/GamesToWatch";
 import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
-import { ROUND_LABELS } from "@/lib/constants";
+import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
 interface ProbEntry {
   id: string;
   name: string;
   owner: string;
+  full_name: string;
   probability: number;
   champion: string;
   championSeed?: number;
@@ -46,6 +47,7 @@ interface PathPick {
 interface PathEntry {
   name: string;
   owner: string;
+  full_name: string;
   points: number;
   maxRemaining: number;
   champion: string;
@@ -58,6 +60,7 @@ interface PathEntry {
 interface AffectedBracket {
   name: string;
   owner: string;
+  full_name: string;
   champion: string;
 }
 
@@ -314,10 +317,10 @@ export function ProbabilityClient({
                         <CompareCheckbox bracketId={entry.id} />
                         <div className="min-w-0">
                           <div className={`font-body text-sm font-medium truncate ${tier.colorClass}`}>
-                            {entry.name}
+                            {displayName(entry)}
                           </div>
                           <div className="text-xs text-on-surface-variant truncate">
-                            {entry.owner}
+                            {entry.name}
                           </div>
                         </div>
                       </div>
@@ -389,8 +392,8 @@ export function ProbabilityClient({
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                           <div>
-                            <div className="text-on-surface text-xs">{d.name}</div>
-                            <div className="text-[10px] text-on-surface-variant">{d.owner}</div>
+                            <div className="text-on-surface text-xs">{displayName(d)}</div>
+                            <div className="text-[10px] text-on-surface-variant">{d.name}</div>
                           </div>
                         </div>
                       </td>
@@ -491,8 +494,8 @@ export function ProbabilityClient({
                   <div key={entry.name} className="rounded-card bg-surface-container p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-display text-sm font-semibold text-on-surface">{entry.name}</p>
-                        <p className="text-[10px] text-on-surface-variant">{entry.owner}</p>
+                        <p className="font-display text-sm font-semibold text-on-surface">{displayName(entry)}</p>
+                        <p className="text-[10px] text-on-surface-variant">{entry.name}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-label text-xs text-on-surface">{entry.points} pts <span className="text-on-surface-variant">+ {totalPossible} possible</span></p>

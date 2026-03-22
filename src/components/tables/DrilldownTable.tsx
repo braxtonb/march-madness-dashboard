@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
-import { ROUND_LABELS } from "@/lib/constants";
+import { ROUND_LABELS, displayName } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
 interface PathPick {
@@ -17,6 +17,7 @@ interface PathPick {
 interface PathEntry {
   name: string;
   owner: string;
+  full_name: string;
   points: number;
   maxRemaining: number;
   champion: string;
@@ -57,7 +58,7 @@ export function DrilldownTable({
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const list = brackets.filter(
-      (b) => b.owner.toLowerCase().includes(q) || b.name.toLowerCase().includes(q)
+      (b) => b.owner.toLowerCase().includes(q) || b.name.toLowerCase().includes(q) || (b.full_name || "").toLowerCase().includes(q)
     );
     return list.sort((a, b) => {
       const aA = analytics.get(a.id);
@@ -94,7 +95,8 @@ export function DrilldownTable({
       <div className="sm:hidden space-y-2">
         {filtered.map((b) => {
           const a = analytics.get(b.id);
-          const showOwner = b.owner !== b.name;
+          const primary = displayName(b);
+          const showSecondary = primary !== b.name;
           return (
             <div key={b.id} className="rounded-card bg-surface-container border border-outline-variant p-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
@@ -104,9 +106,9 @@ export function DrilldownTable({
                     <span className="font-label text-xs font-bold text-on-surface">{a?.rank ?? "—"}</span>
                   </div>
                   <div className="min-w-0">
-                    <p className="font-body text-sm text-on-surface font-medium truncate">{b.name}</p>
-                    {showOwner && (
-                      <p className="text-[11px] text-on-surface-variant truncate">{b.owner}</p>
+                    <p className="font-body text-sm text-on-surface font-medium truncate">{primary}</p>
+                    {showSecondary && (
+                      <p className="text-[11px] text-on-surface-variant truncate">{b.name}</p>
                     )}
                   </div>
                 </div>
@@ -160,8 +162,8 @@ export function DrilldownTable({
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                       <div>
-                        <div className="text-on-surface">{b.name}</div>
-                        <div className="text-xs text-on-surface-variant">{b.owner}</div>
+                        <div className="text-on-surface">{displayName(b)}</div>
+                        <div className="text-xs text-on-surface-variant">{b.name}</div>
                       </div>
                     </div>
                   </td>

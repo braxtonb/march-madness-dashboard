@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 BRACKETS_HEADERS = [
-    'id', 'name', 'owner', 'champion_pick', 'champion_seed',
+    'id', 'name', 'owner', 'full_name', 'champion_pick', 'champion_seed',
     'ff1', 'ff2', 'ff3', 'ff4',
     'points', 'prev_rank', 'max_remaining', 'pct',
     'r64_pts', 'r32_pts', 's16_pts', 'e8_pts', 'ff_pts', 'champ_pts',

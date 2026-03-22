@@ -2,6 +2,7 @@
 import { useCompare } from "./CompareProvider";
 import { useRouter } from "next/navigation";
 import type { Bracket } from "@/lib/types";
+import { displayName } from "@/lib/constants";
 
 interface CompareBarProps {
   brackets: Bracket[];
@@ -32,7 +33,7 @@ export default function CompareBar({ brackets }: CompareBarProps) {
               onClick={() => toggle(b.id)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-secondary/30 bg-secondary/10 text-secondary text-sm truncate max-w-[180px] cursor-pointer hover:bg-secondary/20 transition-colors"
             >
-              <span className="truncate">{b.name}</span>
+              <span className="truncate">{displayName(b)}</span>
               <span className="shrink-0 min-w-[20px] min-h-[20px] flex items-center justify-center">
                 ✕
               </span>

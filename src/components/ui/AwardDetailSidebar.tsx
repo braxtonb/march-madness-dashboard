@@ -4,7 +4,7 @@ import { useState } from "react";
 import BottomSheet from "./BottomSheet";
 import { TeamPill } from "./TeamPill";
 import type { Award, AwardWinner, Pick, Game, Team, Bracket, Round } from "@/lib/types";
-import { ROUND_ORDER, ROUND_LABELS, ROUND_POINTS } from "@/lib/constants";
+import { ROUND_ORDER, ROUND_LABELS, ROUND_POINTS, displayName as getDisplayName } from "@/lib/constants";
 
 interface AwardDetailSidebarProps {
   award: Award;
@@ -569,7 +569,8 @@ export default function AwardDetailSidebar({
   const hasNext = winnerIdx < total - 1;
 
   const titleSuffix = total > 1 ? ` (${winnerIdx + 1}/${total})` : "";
-  const title = `${award.title} \u2014 ${winner.name}${titleSuffix}`;
+  const winnerDisplayName = getDisplayName({ full_name: winner.fullName, name: winner.name, owner: winner.bracketName });
+  const title = `${award.title} \u2014 ${winnerDisplayName}${titleSuffix}`;
 
   function renderContent() {
     switch (award.title) {
@@ -651,8 +652,8 @@ export default function AwardDetailSidebar({
         {/* Winner info header */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-on-surface font-body font-medium">{winner.name}</p>
-            <p className="text-xs text-on-surface-variant">{winner.bracketName}</p>
+            <p className="text-on-surface font-body font-medium">{winnerDisplayName}</p>
+            <p className="text-xs text-on-surface-variant">{winner.name}</p>
           </div>
           {winner.championPick && (
             <TeamPill

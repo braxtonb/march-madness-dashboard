@@ -15,10 +15,10 @@ export default async function GroupPicksPage() {
   const pickSplits: Record<string, { team1Count: number; team2Count: number }> = {};
   const pickerDetailsMap: Record<string, PickerDetails> = {};
 
-  // Build bracket_id -> { name, owner } lookup
-  const bracketById = new Map<string, { name: string; owner: string }>();
+  // Build bracket_id -> { name, owner, full_name } lookup
+  const bracketById = new Map<string, { name: string; owner: string; full_name: string }>();
   for (const b of data.brackets) {
-    bracketById.set(b.id, { name: b.name, owner: b.owner });
+    bracketById.set(b.id, { name: b.name, owner: b.owner, full_name: b.full_name });
   }
 
   for (const game of data.games) {
@@ -31,10 +31,10 @@ export default async function GroupPicksPage() {
     ).length;
     pickSplits[game.game_id] = { team1Count, team2Count };
 
-    const team1Pickers: { bracketId: string; name: string; owner: string }[] = [];
-    const team2Pickers: { bracketId: string; name: string; owner: string }[] = [];
+    const team1Pickers: { bracketId: string; name: string; owner: string; full_name: string }[] = [];
+    const team2Pickers: { bracketId: string; name: string; owner: string; full_name: string }[] = [];
     for (const p of gamePicks) {
-      const bracket = bracketById.get(p.bracket_id) || { name: p.bracket_id, owner: "" };
+      const bracket = bracketById.get(p.bracket_id) || { name: p.bracket_id, owner: "", full_name: "" };
       if (p.team_picked === game.team1) {
         team1Pickers.push({ bracketId: p.bracket_id, ...bracket });
       } else if (p.team_picked === game.team2) {

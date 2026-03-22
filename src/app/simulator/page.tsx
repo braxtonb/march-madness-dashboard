@@ -3,13 +3,14 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { DashboardData, Game, Pick, Round } from "@/lib/types";
-import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
+import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 
 interface SimResult {
   id: string;
   name: string;
   owner: string;
+  full_name: string;
   baseRank: number;
   simRank: number;
   basePoints: number;
@@ -240,7 +241,7 @@ export default function SimulatorPage() {
             }
           }
         }
-        return { id: b.id, name: b.name, owner: b.owner, basePoints: b.points, simPoints: b.points + bonus };
+        return { id: b.id, name: b.name, owner: b.owner, full_name: b.full_name, basePoints: b.points, simPoints: b.points + bonus };
       });
 
       const baseRanked = [...d.brackets].sort((a, b) => b.points - a.points);
@@ -651,8 +652,8 @@ export default function SimulatorPage() {
                         <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
                         <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
-                          <div className="text-on-surface text-xs">{r.name}</div>
-                          <div className="text-[10px] text-on-surface-variant">{r.owner}</div>
+                          <div className="text-on-surface text-xs">{displayName(r)}</div>
+                          <div className="text-[10px] text-on-surface-variant">{r.name}</div>
                         </td>
                         <td className="px-3 py-2 font-label">
                           {delta > 0 && <span className="text-secondary">+{delta}</span>}

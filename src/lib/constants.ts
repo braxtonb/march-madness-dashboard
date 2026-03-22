@@ -52,6 +52,19 @@ export const ARCHETYPE_COLORS: Record<Archetype, string> = {
   Analyst: "#06b6d4",
 };
 
+/**
+ * Returns a display name for a bracket. Prefers `full_name` when it looks
+ * like a real person's name (not an ESPN-generated username like "ESPNFAN...").
+ * Falls back to the bracket's `name` field.
+ */
+export function displayName(b: { full_name?: string; name: string; owner?: string }): string {
+  const fn = b.full_name || "";
+  if (fn && fn !== b.owner && !fn.toUpperCase().startsWith("ESPNFAN")) {
+    return fn;
+  }
+  return b.name;
+}
+
 export const NAV_PAGES = [
   { path: "/", label: "Leaderboard", icon: "trophy" },
   { path: "/probability", label: "Probability", icon: "bar-chart" },

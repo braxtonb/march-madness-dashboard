@@ -5,11 +5,13 @@ import { TeamPill } from "./TeamPill";
 import { GameHeader } from "./GameHeader";
 import BottomSheet from "./BottomSheet";
 import CompareCheckbox from "./CompareCheckbox";
+import { displayName } from "@/lib/constants";
 
 export interface PickerInfo {
   bracketId: string; // bracket id for compare
-  name: string;   // bracket name (primary)
-  owner: string;  // username (secondary)
+  name: string;   // bracket name
+  owner: string;  // username
+  full_name: string; // real name from ESPN
 }
 
 export interface PickerDetails {
@@ -71,10 +73,10 @@ export function PicksDrawer({
                   <CompareCheckbox bracketId={picker.bracketId} />
                   <div>
                     <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
-                      {picker.name}{isCorrect && " \u2713"}
+                      {displayName(picker)}{isCorrect && " \u2713"}
                     </p>
-                    {picker.owner !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
+                    {displayName(picker) !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.name}</p>
                     )}
                   </div>
                 </div>
@@ -104,10 +106,10 @@ export function PicksDrawer({
                   <CompareCheckbox bracketId={picker.bracketId} />
                   <div>
                     <p className={`text-sm ${isCorrect ? "font-semibold" : "text-on-surface"}`}>
-                      {picker.name}{isCorrect && " \u2713"}
+                      {displayName(picker)}{isCorrect && " \u2713"}
                     </p>
-                    {picker.owner !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant">{picker.owner}</p>
+                    {displayName(picker) !== picker.name && (
+                      <p className="text-[10px] text-on-surface-variant">{picker.name}</p>
                     )}
                   </div>
                 </div>

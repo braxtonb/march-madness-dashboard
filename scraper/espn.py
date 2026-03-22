@@ -213,6 +213,7 @@ def parse_entries(
         name = entry.get('name', '')
         member = entry.get('member', {})
         owner = member.get('displayName', '') if isinstance(member, dict) else ''
+        full_name = (member.get('fullName', '') if isinstance(member, dict) else '') or owner
 
         # Champion pick
         final_pick = entry.get('finalPick', {})
@@ -267,6 +268,7 @@ def parse_entries(
             'id': entry_id,
             'name': name,
             'owner': owner,
+            'full_name': full_name,
             'champion_pick': champion_name,
             'champion_seed': champion_seed,
             'ff1': ff_picks[0],

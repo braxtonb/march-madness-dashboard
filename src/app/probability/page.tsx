@@ -18,6 +18,7 @@ export default async function ProbabilityPage() {
         id: b.id,
         name: b.name,
         owner: b.owner,
+        full_name: b.full_name,
         probability: sim ? (sim.wins / 1000) * 100 : 0,
         champion: b.champion_pick,
         championSeed: b.champion_seed,
@@ -97,6 +98,7 @@ export default async function ProbabilityPage() {
       return {
         name: b.name,
         owner: b.owner,
+        full_name: b.full_name,
         points: b.points,
         maxRemaining: b.max_remaining,
         champion: b.champion_pick,
@@ -156,6 +158,7 @@ export default async function ProbabilityPage() {
       const affectedNames = affectedBrackets.map((b) => ({
         name: b.name,
         owner: b.owner,
+        full_name: b.full_name,
         champion: b.champion_pick,
       }));
       return {

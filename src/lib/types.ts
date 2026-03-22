@@ -3,6 +3,7 @@ export interface Bracket {
   id: string;
   name: string;
   owner: string;
+  full_name: string;
   champion_pick: string;
   champion_seed: number;
   ff1: string;
@@ -81,7 +82,8 @@ export type Round = "R64" | "R32" | "S16" | "E8" | "FF" | "CHAMP";
 export type AwardRound = Round | "ALL";
 
 export interface AwardWinner {
-  name: string;        // bracket name (primary display)
+  name: string;        // bracket name
+  fullName: string;    // full name from ESPN (primary display)
   bracketName: string; // owner username (secondary)
   bracketId: string;
   stat: string;        // contextual stat (e.g., "8 of 8 correct")

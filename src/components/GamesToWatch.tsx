@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { TeamPill } from "@/components/ui/TeamPill";
+import { displayName } from "@/lib/constants";
 
 interface AffectedBracket {
   name: string;
   owner: string;
+  full_name: string;
   champion: string;
 }
 
@@ -66,11 +68,11 @@ export function GamesToWatch({ games, teamLogos = {} }: { games: GameToWatch[]; 
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-on-surface truncate">
-                        {b.name}
+                        {displayName(b)}
                       </p>
-                      {b.owner && b.owner !== b.name && (
+                      {displayName(b) !== b.name && (
                         <p className="text-xs text-on-surface-variant truncate">
-                          {b.owner}
+                          {b.name}
                         </p>
                       )}
                     </div>

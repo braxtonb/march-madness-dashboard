@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Bracket, Pick, Game, BracketAnalytics, Round, Team } from "@/lib/types";
-import { ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
+import { ROUND_LABELS, ROUND_ORDER, displayName } from "@/lib/constants";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { GameHeader } from "@/components/ui/GameHeader";
@@ -43,7 +43,8 @@ function BracketDropdown({
     return available.filter(
       (b) =>
         b.name.toLowerCase().includes(q) ||
-        b.owner.toLowerCase().includes(q)
+        b.owner.toLowerCase().includes(q) ||
+        (b.full_name || "").toLowerCase().includes(q)
     );
   }, [available, query]);
 
@@ -72,7 +73,7 @@ function BracketDropdown({
           <input
             ref={inputRef}
             type="text"
-            value={open ? query : selected ? selected.name : ""}
+            value={open ? query : selected ? displayName(selected) : ""}
             placeholder="Search brackets..."
             onFocus={() => { setOpen(true); setQuery(""); }}
             onChange={(e) => setQuery(e.target.value)}
@@ -80,7 +81,7 @@ function BracketDropdown({
           />
           {selected && !open && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant">
-              {selected.owner}
+              {selected.name}
             </span>
           )}
         </div>
@@ -101,8 +102,8 @@ function BracketDropdown({
                   b.id === value ? "bg-surface-bright border-l-primary" : "border-l-transparent"
                 }`}
               >
-                <div className="text-sm font-medium text-on-surface">{b.name}</div>
-                <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
+                <div className="text-sm font-medium text-on-surface">{displayName(b)}</div>
+                <div className="text-[10px] text-on-surface-variant">{b.name}</div>
               </button>
             ))}
           </div>
@@ -314,8 +315,8 @@ export function HeadToHeadContent({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-on-surface truncate">{b1.name}</p>
-                <p className="font-label text-[10px] text-on-surface-variant">{b1.owner}</p>
+                <p className="font-display text-sm font-bold text-on-surface truncate">{displayName(b1)}</p>
+                <p className="font-label text-[10px] text-on-surface-variant">{b1.name}</p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">
@@ -332,8 +333,8 @@ export function HeadToHeadContent({
 
             <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
               <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-on-surface truncate">{b2.name}</p>
-                <p className="font-label text-[10px] text-on-surface-variant">{b2.owner}</p>
+                <p className="font-display text-sm font-bold text-on-surface truncate">{displayName(b2)}</p>
+                <p className="font-label text-[10px] text-on-surface-variant">{b2.name}</p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">
@@ -499,7 +500,7 @@ export function HeadToHeadContent({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-md px-2.5 py-2 ${pick1Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface">{b1?.name}</p>
+            <p className="text-[10px] font-semibold text-on-surface">{b1 ? displayName(b1) : ""}</p>
             {pick1 ? (
               <div className="mt-1">
                 <TeamPill name={pick1} seed={teamSeeds.get(pick1)} logo={teamLogos[pick1]} eliminated={eliminatedTeams.has(pick1)} showStatus />
@@ -514,7 +515,7 @@ export function HeadToHeadContent({
             )}
           </div>
           <div className={`rounded-md px-2.5 py-2 ${pick2Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface">{b2?.name}</p>
+            <p className="text-[10px] font-semibold text-on-surface">{b2 ? displayName(b2) : ""}</p>
             {pick2 ? (
               <div className="mt-1">
                 <TeamPill name={pick2} seed={teamSeeds.get(pick2)} logo={teamLogos[pick2]} eliminated={eliminatedTeams.has(pick2)} showStatus />

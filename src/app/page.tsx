@@ -89,6 +89,7 @@ export default async function LeaderboardPage() {
     return {
       name: b.name,
       owner: b.owner,
+      full_name: b.full_name,
       points: b.points,
       skill: skillDen > 0 ? Math.round((skillNum / skillDen) * 100) : 50,
       fortune:
@@ -113,6 +114,7 @@ export default async function LeaderboardPage() {
     .map((gc) => ({
       bracketName: gc.bracket!.name,
       bracketOwner: gc.bracket!.owner,
+      bracketFullName: gc.bracket!.full_name,
       teamPicked: gc.pick.team_picked,
       seedPicked: gc.pick.seed_picked,
       rate: gc.rate,
