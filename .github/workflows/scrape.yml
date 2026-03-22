@@ -5,7 +5,13 @@ on:
     # Every hour, 4pm-5am UTC (covers noon-1am ET during game windows)
     # Hourly to stay within Vercel's 100 deploys/day limit
     - cron: '0 16-23,0-5 * 3-4 *'
+  push:
+    branches:
+      - main
   workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
 
 jobs:
   scrape:
@@ -31,9 +37,12 @@ jobs:
         run: python -m scraper.scrape
 
       - name: Commit data.json if changed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/braxtonb/march-madness-dashboard.git
           git add public/data.json
           if git diff --cached --quiet; then
             echo "No data changes"

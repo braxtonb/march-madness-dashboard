@@ -647,10 +647,10 @@ export default function SimulatorPage() {
                   {simResults.map((r) => {
                     const delta = r.baseRank - r.simRank;
                     return (
-                      <tr key={r.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                      <tr key={r.id} className="group border-b border-outline hover:bg-surface-bright transition-colors">
                         <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                         <td className="px-3 py-2 font-label">{r.simRank}</td>
-                        <td className="sticky left-0 bg-surface-container px-3 py-2">
+                        <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
                           <div className="text-on-surface text-xs">{r.name}</div>
                           <div className="text-[10px] text-on-surface-variant">{r.owner}</div>
                         </td>

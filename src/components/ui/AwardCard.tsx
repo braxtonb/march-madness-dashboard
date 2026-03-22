@@ -73,9 +73,23 @@ export function AwardCard({
         <p className="text-sm text-on-surface-variant italic">
           {award.description.startsWith("No winner") ? award.description : "No winner yet"}
         </p>
+      ) : isTie ? (
+        <>
+          {/* Tied winners: show compact label only */}
+          <p className="text-sm text-on-surface-variant">
+            {award.winners.length} brackets tied &mdash; {firstWinner.stat}
+          </p>
+
+          {/* Click hint */}
+          {onClick && (
+            <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
+              Click for details &rarr;
+            </p>
+          )}
+        </>
       ) : (
         <>
-          {/* First / primary winner */}
+          {/* Single winner */}
           <div>
             <p className="font-body text-on-surface font-medium">{firstWinner.name}</p>
             <p className="text-xs text-on-surface-variant">{firstWinner.bracketName}</p>
@@ -85,23 +99,6 @@ export function AwardCard({
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
               Champion: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} eliminated={firstWinner.championEliminated} showStatus />
             </p>
-          )}
-
-          {/* Additional tied winners */}
-          {isTie && (
-            <div className="border-t border-on-surface-variant/10 pt-2 space-y-2">
-              {award.winners.slice(1).map((w) => (
-                <div key={w.bracketId} className="flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-on-surface font-medium">{w.name}</span>
-                    <span className="text-on-surface-variant ml-1.5">{w.bracketName}</span>
-                  </div>
-                  {w.championPick && (
-                    <TeamPill name={w.championPick} seed={w.championSeed} eliminated={w.championEliminated} showStatus />
-                  )}
-                </div>
-              ))}
-            </div>
           )}
 
           {/* Click hint */}

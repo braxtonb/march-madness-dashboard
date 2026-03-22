@@ -1,9 +1,30 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import type { Bracket, BracketAnalytics } from "@/lib/types";
+import React, { useState, useMemo } from "react";
+import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
+import { ROUND_LABELS } from "@/lib/constants";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+
+interface PathPick {
+  round: string;
+  team: string;
+  seed: number;
+  pts: number;
+  logo: string;
+}
+
+interface PathEntry {
+  name: string;
+  owner: string;
+  points: number;
+  maxRemaining: number;
+  champion: string;
+  championLogo: string;
+  championAlive: boolean;
+  remainingPicks: PathPick[];
+  eliminatedPickCount: number;
+}
 
 type SortKey = "rank" | "points" | "max_remaining";
 
@@ -12,15 +33,26 @@ export function DrilldownTable({
   analytics,
   eliminatedTeams,
   teamLogos = {},
+  pathData = [],
 }: {
   brackets: Bracket[];
   analytics: Map<string, BracketAnalytics>;
   eliminatedTeams: Set<string>;
   teamLogos?: Record<string, string>;
+  pathData?: PathEntry[];
 }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const pathByName = useMemo(() => {
+    const map = new Map<string, PathEntry>();
+    for (const p of pathData) {
+      map.set(p.name, p);
+    }
+    return map;
+  }, [pathData]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -109,13 +141,29 @@ export function DrilldownTable({
           <tbody>
             {filtered.map((b) => {
               const a = analytics.get(b.id);
+              const isExpanded = expandedIds.has(b.id);
+              const path = pathByName.get(b.name);
               return (
-                <tr key={b.id} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                <React.Fragment key={b.id}>
+                <tr
+                  className={`border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                  onClick={() => setExpandedIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(b.id)) next.delete(b.id);
+                    else next.add(b.id);
+                    return next;
+                  })}
+                >
                   <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={b.id} /></td>
                   <td className="px-3 py-2 font-label">{a?.rank ?? "—"}</td>
                   <td className="px-3 py-2">
-                    <div className="text-on-surface">{b.name}</div>
-                    <div className="text-xs text-on-surface-variant">{b.owner}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
+                      <div>
+                        <div className="text-on-surface">{b.name}</div>
+                        <div className="text-xs text-on-surface-variant">{b.owner}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-3 py-2">
                     <TeamPill name={b.champion_pick} seed={b.champion_seed} eliminated={eliminatedTeams.has(b.champion_pick)} logo={teamLogos[b.champion_pick]} showStatus />
@@ -123,6 +171,49 @@ export function DrilldownTable({
                   <td className="px-3 py-2 font-label">{b.points}</td>
                   <td className="px-3 py-2 font-label text-on-surface-variant">{b.max_remaining}</td>
                 </tr>
+                {isExpanded && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-3 bg-surface-bright/50">
+                      <div className="space-y-2">
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                          Path to victory — {path ? path.remainingPicks.length : 0} alive picks remaining
+                          {path && path.eliminatedPickCount > 0 && (
+                            <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                          )}
+                        </p>
+                        {!path || path.remainingPicks.length === 0 ? (
+                          <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {["R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
+                              const picks = path.remainingPicks.filter((p) => p.round === round);
+                              if (picks.length === 0) return null;
+                              return (
+                                <div key={round} className="flex items-center gap-2">
+                                  <span className="font-label text-[10px] text-on-surface-variant w-28 shrink-0">
+                                    {ROUND_LABELS[round as Round] || round}
+                                    <span className="ml-1 text-secondary">+{picks.reduce((s, p) => s + p.pts, 0)}</span>
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {picks.map((p) => (
+                                      <TeamPill
+                                        key={`${round}-${p.team}`}
+                                        name={p.team}
+                                        seed={p.seed}
+                                        logo={p.logo}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               );
             })}
           </tbody>

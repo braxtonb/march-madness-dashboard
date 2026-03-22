@@ -72,12 +72,18 @@ export default async function GroupPicksPage() {
       );
     }
   }
+  // Build team seed lookup
+  const teamSeeds: Record<string, number> = Object.fromEntries(
+    data.teams.map((t) => [t.name, t.seed])
+  );
+
   const champDistribution = [...champCounts.entries()]
     .map(([name, count]) => ({
       name,
       count,
       alive: !eliminatedTeams.has(name),
       logo: teamLogos[name] || "",
+      seed: teamSeeds[name] || 0,
     }))
     .sort((a, b) => b.count - a.count);
 

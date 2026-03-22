@@ -13,6 +13,7 @@ interface ChampDistEntry {
   count: number;
   alive: boolean;
   logo: string;
+  seed: number;
 }
 
 export function PicksContent({
@@ -257,7 +258,7 @@ export function PicksContent({
       {pageTab === "champions" && champDistribution.length > 0 && (
         <div className="space-y-4">
           <p className="text-xs text-on-surface-variant">
-            How many brackets picked each team to win the championship. Green dot = still alive.
+            How many brackets picked each team to win the championship.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {champDistribution.map((entry) => (
@@ -267,6 +268,7 @@ export function PicksContent({
               >
                 <TeamPill
                   name={entry.name}
+                  seed={entry.seed}
                   logo={entry.logo}
                   eliminated={!entry.alive}
                   showStatus

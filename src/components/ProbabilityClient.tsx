@@ -9,7 +9,8 @@ import { GamesToWatch } from "@/components/GamesToWatch";
 import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
-import type { Bracket, BracketAnalytics } from "@/lib/types";
+import { ROUND_LABELS } from "@/lib/constants";
+import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
 interface ProbEntry {
   id: string;
@@ -196,6 +197,15 @@ export function ProbabilityClient({
     },
     [searchParams, router]
   );
+
+  // Build path lookup by bracket name for expanded rows
+  const pathByName = useMemo(() => {
+    const map = new Map<string, PathEntry>();
+    for (const p of pathData) {
+      map.set(p.name, p);
+    }
+    return map;
+  }, [pathData]);
 
   // Group brackets by tier
   const tierGroups = new Map<TierKey, ProbEntry[]>();
@@ -403,34 +413,51 @@ export function ProbabilityClient({
                         <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
                       </td>
                     </tr>
-                    {isExpanded && (
-                      <tr>
-                        <td colSpan={finishColSpan} className="px-4 py-3 bg-surface-bright/50">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <div>
-                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Champion Pick</p>
-                              <div className="mt-1">
-                                <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
-                              </div>
-                            </div>
-                            <div>
-                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Status</p>
-                              <p className={`text-xs mt-1 font-semibold ${eliminatedTeamsSet.has(d.champion) ? "text-on-surface-variant" : "text-secondary"}`}>
-                                {eliminatedTeamsSet.has(d.champion) ? "Champion eliminated" : "Champion still alive"}
+                    {isExpanded && (() => {
+                      const path = pathByName.get(d.name);
+                      return (
+                        <tr>
+                          <td colSpan={finishColSpan} className="px-4 py-3 bg-surface-bright/50">
+                            <div className="space-y-2">
+                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                                Path to victory — {path ? path.remainingPicks.length : 0} alive picks remaining
+                                {path && path.eliminatedPickCount > 0 && (
+                                  <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                                )}
                               </p>
+                              {!path || path.remainingPicks.length === 0 ? (
+                                <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
+                              ) : (
+                                <div className="space-y-1.5">
+                                  {["R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
+                                    const picks = path.remainingPicks.filter((p) => p.round === round);
+                                    if (picks.length === 0) return null;
+                                    return (
+                                      <div key={round} className="flex items-center gap-2">
+                                        <span className="font-label text-[10px] text-on-surface-variant w-28 shrink-0">
+                                          {ROUND_LABELS[round as Round] || round}
+                                          <span className="ml-1 text-secondary">+{picks.reduce((s, p) => s + p.pts, 0)}</span>
+                                        </span>
+                                        <div className="flex flex-wrap gap-1">
+                                          {picks.map((p) => (
+                                            <TeamPill
+                                              key={`${round}-${p.team}`}
+                                              name={p.team}
+                                              seed={p.seed}
+                                              logo={p.logo}
+                                            />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
-                            <div>
-                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Max Remaining</p>
-                              <p className="text-xs mt-1 text-on-surface font-semibold">{d.max_remaining}</p>
-                            </div>
-                            <div>
-                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Median Finish</p>
-                              <p className="text-xs mt-1 text-on-surface font-semibold">#{d.median_rank} <span className="text-on-surface-variant font-normal">/ {d.best_rank} best</span></p>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+                          </td>
+                        </tr>
+                      );
+                    })()}
                     </React.Fragment>
                   );
                 })}
@@ -565,6 +592,7 @@ export function ProbabilityClient({
               analytics={new Map(Object.entries(aliveData.analyticsObj))}
               eliminatedTeams={new Set(aliveData.eliminatedArr)}
               teamLogos={teamLogos}
+              pathData={pathData}
             />
           </div>
         </div>

@@ -23,19 +23,20 @@ export default function CompareBar({ brackets }: CompareBarProps) {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 glass border-t border-outline-variant animate-[bottom-sheet-slide-up_0.2s_ease-out]">
+    <div className="fixed bottom-0 left-0 right-0 z-[9999] glass border-t border-outline-variant animate-[bottom-sheet-slide-up_0.2s_ease-out]">
       <div className="max-w-5xl mx-auto px-4 py-3 sm:py-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {selectedBrackets.map((b) => b && (
-            <span key={b.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-secondary/30 bg-secondary/10 text-secondary text-sm truncate max-w-[180px]">
+            <button
+              key={b.id}
+              onClick={() => toggle(b.id)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-secondary/30 bg-secondary/10 text-secondary text-sm truncate max-w-[180px] cursor-pointer hover:bg-secondary/20 transition-colors"
+            >
               <span className="truncate">{b.name}</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); toggle(b.id); }}
-                className="shrink-0 hover:text-on-surface min-w-[20px] min-h-[20px] flex items-center justify-center"
-              >
+              <span className="shrink-0 min-w-[20px] min-h-[20px] flex items-center justify-center">
                 ✕
-              </button>
-            </span>
+              </span>
+            </button>
           ))}
           {selected.length === 1 && (
             <span className="text-on-surface-variant text-sm hidden sm:inline">Select one more to compare</span>
