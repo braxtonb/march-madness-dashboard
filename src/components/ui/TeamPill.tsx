@@ -10,6 +10,15 @@ export function TeamPill({
   eliminated?: boolean;
   logo?: string;
 }) {
+  // Empty/unsubmitted bracket — show N/A
+  if (!name) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-surface-bright px-2.5 py-1 text-xs font-label text-on-surface-variant/50 italic">
+        N/A
+      </span>
+    );
+  }
+
   return (
     <span
       className={`
@@ -27,7 +36,7 @@ export function TeamPill({
           className="inline-block rounded-sm"
         />
       )}
-      {seed != null && (
+      {seed != null && seed > 0 && (
         <span className="text-on-surface-variant">{seed}</span>
       )}
       <span>{name}</span>
