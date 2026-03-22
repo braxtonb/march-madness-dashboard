@@ -732,7 +732,7 @@ export default function SimulatorPage() {
                         >
                           <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                           <td className="px-3 py-2 font-label">{r.simRank}</td>
-                          <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors px-3 py-2">
+                          <td className={`sticky left-0 z-10 transition-colors ${isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"} px-3 py-2`}>
                             <div className="flex items-center gap-1.5">
                               <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "\u2212" : "+"}</span>
                               <div>

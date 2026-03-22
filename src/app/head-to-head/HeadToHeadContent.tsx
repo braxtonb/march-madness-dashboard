@@ -406,65 +406,82 @@ export function HeadToHeadContent({
             )}
             {isAllRounds ? (
               /* Group by round with collapsible round headers */
-              ROUND_ORDER.map((round) => {
-                const roundIds = filteredGameIds.filter((gid) => {
-                  const g = gameMap.get(gid);
-                  return g?.round === round;
-                });
-                if (roundIds.length === 0) return null;
-                const stats = roundStats[round];
-                const roundCompleted = roundIds.filter((gid) => gameMap.get(gid)?.completed);
-                const roundScheduled = roundIds.filter((gid) => !gameMap.get(gid)?.completed);
-                const isCollapsed = collapsedRounds.has(round);
-                return (
-                  <div key={round} className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleRoundCollapse(round)}
-                      className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
-                    >
-                      <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
-                      <p className="font-label text-xs font-semibold text-on-surface">
-                        {ROUND_LABELS[round]}
-                      </p>
-                      {stats && id1 && id2 && stats.total > 0 && (
-                        <span className="text-[10px] text-on-surface-variant">
-                          {stats.agree} agree / {stats.diff} differ
-                        </span>
-                      )}
-                      {isCollapsed && (
-                        <span className="text-[10px] text-on-surface-variant/50 ml-auto">
-                          {roundIds.length} game{roundIds.length !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </button>
-                    {!isCollapsed && (
-                      <>
-                        {roundCompleted.length > 0 && statusFilter !== "scheduled" && (
-                          <>
-                            <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                              Completed ({roundCompleted.length})
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {roundCompleted.map((gid) => renderGameCard(gid))}
-                            </div>
-                          </>
-                        )}
-                        {roundScheduled.length > 0 && statusFilter !== "completed" && (
-                          <>
-                            <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
-                              Scheduled ({roundScheduled.length})
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {roundScheduled.map((gid) => renderGameCard(gid))}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
+              (() => {
+                const roundsWithData = ROUND_ORDER.filter((round) =>
+                  filteredGameIds.some((gid) => gameMap.get(gid)?.round === round)
                 );
-              })
+                const showRoundHeaders = roundsWithData.length > 1;
+                return ROUND_ORDER.map((round) => {
+                  const roundIds = filteredGameIds.filter((gid) => {
+                    const g = gameMap.get(gid);
+                    return g?.round === round;
+                  });
+                  if (roundIds.length === 0) return null;
+                  const stats = roundStats[round];
+                  const roundCompleted = roundIds.filter((gid) => gameMap.get(gid)?.completed);
+                  const roundScheduled = roundIds.filter((gid) => !gameMap.get(gid)?.completed);
+                  const isCollapsed = collapsedRounds.has(round);
+
+                  const renderRoundContent = () => (
+                    <>
+                      {roundCompleted.length > 0 && statusFilter !== "scheduled" && (
+                        <>
+                          <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                            Completed ({roundCompleted.length})
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {roundCompleted.map((gid) => renderGameCard(gid))}
+                          </div>
+                        </>
+                      )}
+                      {roundScheduled.length > 0 && statusFilter !== "completed" && (
+                        <>
+                          <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-1">
+                            Scheduled ({roundScheduled.length})
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {roundScheduled.map((gid) => renderGameCard(gid))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+
+                  if (!showRoundHeaders) {
+                    return (
+                      <div key={round} className="space-y-2">
+                        {renderRoundContent()}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={round} className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleRoundCollapse(round)}
+                        className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+                      >
+                        <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
+                        <p className="font-label text-xs font-semibold text-on-surface">
+                          {ROUND_LABELS[round]}
+                        </p>
+                        {stats && id1 && id2 && stats.total > 0 && (
+                          <span className="text-[10px] text-on-surface-variant">
+                            {stats.agree} agree / {stats.diff} differ
+                          </span>
+                        )}
+                        {isCollapsed && (
+                          <span className="text-[10px] text-on-surface-variant/50 ml-auto">
+                            {roundIds.length} game{roundIds.length !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </button>
+                      {!isCollapsed && renderRoundContent()}
+                    </div>
+                  );
+                });
+              })()
             ) : (
               /* Single round: group by status */
               <>

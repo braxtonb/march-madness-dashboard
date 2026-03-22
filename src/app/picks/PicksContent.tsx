@@ -234,90 +234,111 @@ export function PicksContent({
       {/* All Rounds view: grouped by round with collapsible sections */}
       {isAllRounds ? (
         <div className="space-y-3">
-          {ROUND_ORDER.map((r) => {
-            const rGames = games.filter((g) => g.round === r);
-            if (rGames.length === 0) return null;
-            const rCompleted = rGames.filter((g) => g.completed);
-            const rScheduled = rGames.filter((g) => !g.completed);
-            const isCollapsed = collapsedRounds.has(r);
+          {(() => {
+            const roundsWithData = ROUND_ORDER.filter((r) => {
+              const rGames = games.filter((g) => g.round === r);
+              if (rGames.length === 0) return false;
+              if (statusFilter === "completed") return rGames.some((g) => g.completed);
+              if (statusFilter === "scheduled") return rGames.some((g) => !g.completed);
+              return true;
+            });
+            const showRoundHeaders = roundsWithData.length > 1;
 
-            // Apply status filter
-            const rFiltered = statusFilter === "completed"
-              ? rCompleted
-              : statusFilter === "scheduled"
-                ? rScheduled
-                : rGames;
-            if (rFiltered.length === 0 && statusFilter !== "all") return null;
+            return ROUND_ORDER.map((r) => {
+              const rGames = games.filter((g) => g.round === r);
+              if (rGames.length === 0) return null;
+              const rCompleted = rGames.filter((g) => g.completed);
+              const rScheduled = rGames.filter((g) => !g.completed);
+              const isCollapsed = collapsedRounds.has(r);
 
-            return (
-              <div key={r} className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => toggleRoundCollapse(r)}
-                  className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
-                >
-                  <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
-                  <p className="font-label text-xs font-semibold text-on-surface">
-                    {ROUND_LABELS[r]}
-                  </p>
-                  <span className="text-[10px] text-on-surface-variant">
-                    {rCompleted.length} completed / {rScheduled.length} scheduled
-                  </span>
-                  {isCollapsed && (
-                    <span className="text-[10px] text-on-surface-variant/50 ml-auto">
-                      {rGames.length} game{rGames.length !== 1 ? "s" : ""}
-                    </span>
+              // Apply status filter
+              const rFiltered = statusFilter === "completed"
+                ? rCompleted
+                : statusFilter === "scheduled"
+                  ? rScheduled
+                  : rGames;
+              if (rFiltered.length === 0 && statusFilter !== "all") return null;
+
+              const renderRoundContent = () => (
+                <>
+                  {(statusFilter === "all" || statusFilter === "completed") && rCompleted.length > 0 && (
+                    <>
+                      <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                        Completed ({rCompleted.length})
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {rCompleted.map((game) => (
+                          <GameCard
+                            key={game.game_id}
+                            game={game}
+                            pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                            totalBrackets={totalBrackets}
+                            pickerDetails={pickerDetailsMap[game.game_id]}
+                            teamLogos={teamLogos}
+                            onOpenDrawer={() => openDrawer(game.game_id)}
+                            eliminatedTeams={eliminatedTeams}
+                          />
+                        ))}
+                      </div>
+                    </>
                   )}
-                </button>
-                {!isCollapsed && (
-                  <>
-                    {(statusFilter === "all" || statusFilter === "completed") && rCompleted.length > 0 && (
-                      <>
-                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                          Completed ({rCompleted.length})
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {rCompleted.map((game) => (
-                            <GameCard
-                              key={game.game_id}
-                              game={game}
-                              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                              totalBrackets={totalBrackets}
-                              pickerDetails={pickerDetailsMap[game.game_id]}
-                              teamLogos={teamLogos}
-                              onOpenDrawer={() => openDrawer(game.game_id)}
-                              eliminatedTeams={eliminatedTeams}
-                            />
-                          ))}
-                        </div>
-                      </>
+                  {(statusFilter === "all" || statusFilter === "scheduled") && rScheduled.length > 0 && (
+                    <>
+                      <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
+                        Scheduled ({rScheduled.length})
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {rScheduled.map((game) => (
+                          <GameCard
+                            key={game.game_id}
+                            game={game}
+                            pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+                            totalBrackets={totalBrackets}
+                            pickerDetails={pickerDetailsMap[game.game_id]}
+                            teamLogos={teamLogos}
+                            onOpenDrawer={() => openDrawer(game.game_id)}
+                            eliminatedTeams={eliminatedTeams}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+
+              if (!showRoundHeaders) {
+                return (
+                  <div key={r} className="space-y-2">
+                    {renderRoundContent()}
+                  </div>
+                );
+              }
+
+              return (
+                <div key={r} className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleRoundCollapse(r)}
+                    className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+                  >
+                    <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
+                    <p className="font-label text-xs font-semibold text-on-surface">
+                      {ROUND_LABELS[r]}
+                    </p>
+                    <span className="text-[10px] text-on-surface-variant">
+                      {rCompleted.length} completed / {rScheduled.length} scheduled
+                    </span>
+                    {isCollapsed && (
+                      <span className="text-[10px] text-on-surface-variant/50 ml-auto">
+                        {rGames.length} game{rGames.length !== 1 ? "s" : ""}
+                      </span>
                     )}
-                    {(statusFilter === "all" || statusFilter === "scheduled") && rScheduled.length > 0 && (
-                      <>
-                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
-                          Scheduled ({rScheduled.length})
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {rScheduled.map((game) => (
-                            <GameCard
-                              key={game.game_id}
-                              game={game}
-                              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                              totalBrackets={totalBrackets}
-                              pickerDetails={pickerDetailsMap[game.game_id]}
-                              teamLogos={teamLogos}
-                              onOpenDrawer={() => openDrawer(game.game_id)}
-                              eliminatedTeams={eliminatedTeams}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            );
-          })}
+                  </button>
+                  {!isCollapsed && renderRoundContent()}
+                </div>
+              );
+            });
+          })()}
         </div>
       ) : (
         <>

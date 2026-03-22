@@ -154,22 +154,28 @@ function OracleContent({
       </p>
       {groupByRound ? (
         <div className="space-y-2">
-          {rounds.map((round) => {
-            const roundFilteredGames = rGames.filter((g) => g.round === round);
-            return (
-              <CollapsibleRound
-                key={round}
-                round={round}
-                label={ROUND_LABELS[round as Round]}
-                defaultCollapsed={completedRounds.has(round)}
-                gameCount={roundFilteredGames.length}
-              >
-                <div className="space-y-2">
-                  {roundFilteredGames.map(renderGame)}
-                </div>
-              </CollapsibleRound>
-            );
-          })}
+          {rounds.length === 1 ? (
+            <div className="space-y-2">
+              {rGames.filter((g) => g.round === rounds[0]).map(renderGame)}
+            </div>
+          ) : (
+            rounds.map((round) => {
+              const roundFilteredGames = rGames.filter((g) => g.round === round);
+              return (
+                <CollapsibleRound
+                  key={round}
+                  round={round}
+                  label={ROUND_LABELS[round as Round]}
+                  defaultCollapsed={completedRounds.has(round)}
+                  gameCount={roundFilteredGames.length}
+                >
+                  <div className="space-y-2">
+                    {roundFilteredGames.map(renderGame)}
+                  </div>
+                </CollapsibleRound>
+              );
+            })
+          )}
         </div>
       ) : (
         <div className="space-y-2">
@@ -242,6 +248,11 @@ function TrendsetterContent({
   }
 
   if (groupByRound && rounds) {
+    if (rounds.length === 1) {
+      return (
+        <div className="space-y-3">{uniquePicks.filter((p) => p.round === rounds[0]).map(renderPick)}</div>
+      );
+    }
     return (
       <div className="space-y-2">
         {rounds.map((round) => {
@@ -423,6 +434,13 @@ function HotStreakContent({
   }
 
   if (groupByRound && rounds) {
+    if (rounds.length === 1) {
+      return (
+        <div className="space-y-2">
+          {best.map((p, i) => renderStreakItem(p, i))}
+        </div>
+      );
+    }
     return (
       <div className="space-y-2">
         {rounds.map((round) => {
@@ -618,22 +636,28 @@ function PeoplesChampionContent({
       </p>
 
       {groupByRound ? (
-        rounds.map((round) => {
-          const roundFilteredGames = rGames.filter((g) => g.round === round);
-          return (
-            <CollapsibleRound
-              key={round}
-              round={round}
-              label={ROUND_LABELS[round as Round]}
-              defaultCollapsed={completedRounds.has(round)}
-              gameCount={roundFilteredGames.length}
-            >
-              <div className="space-y-2">
-                {roundFilteredGames.map(renderGameCard)}
-              </div>
-            </CollapsibleRound>
-          );
-        })
+        rounds.length === 1 ? (
+          <div className="space-y-2">
+            {rGames.filter((g) => g.round === rounds[0]).map(renderGameCard)}
+          </div>
+        ) : (
+          rounds.map((round) => {
+            const roundFilteredGames = rGames.filter((g) => g.round === round);
+            return (
+              <CollapsibleRound
+                key={round}
+                round={round}
+                label={ROUND_LABELS[round as Round]}
+                defaultCollapsed={completedRounds.has(round)}
+                gameCount={roundFilteredGames.length}
+              >
+                <div className="space-y-2">
+                  {roundFilteredGames.map(renderGameCard)}
+                </div>
+              </CollapsibleRound>
+            );
+          })
+        )
       ) : (
         rounds.map((round) => {
           const roundFilteredGames = rGames.filter((g) =>
