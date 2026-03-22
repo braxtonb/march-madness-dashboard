@@ -50,7 +50,7 @@ function SearchDropdown({
   label,
   placeholder,
 }: {
-  options: { value: string; label: string; sublabel?: string }[];
+  options: { value: string; label: string; sublabel?: string; logo?: string }[];
   value: string;
   onChange: (v: string) => void;
   label: string;
@@ -91,11 +91,8 @@ function SearchDropdown({
           placeholder={placeholder}
           onFocus={() => { setOpen(true); setQuery(""); }}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-card bg-surface-container border border-outline px-3 py-2 pl-9 text-xs text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant"
+          className="w-full rounded-card bg-surface-container border border-outline px-3 py-2 pl-9 pr-3 text-xs text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant truncate"
         />
-        {selected && !open && selected.sublabel && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant">{selected.sublabel}</span>
-        )}
         {open && (
           <div className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-card bg-surface-container border border-outline shadow-2xl shadow-black/30">
             <button
@@ -112,8 +109,14 @@ function SearchDropdown({
                 onClick={() => { onChange(o.value); setOpen(false); setQuery(""); inputRef.current?.blur(); }}
                 className={`w-full text-left px-3 py-2 hover:bg-surface-bright transition-colors border-l-2 ${o.value === value ? "bg-surface-bright border-l-primary" : "border-l-transparent"}`}
               >
-                <div className="text-xs font-medium text-on-surface">{o.label}</div>
-                {o.sublabel && <div className="text-[10px] text-on-surface-variant">{o.sublabel}</div>}
+                <div className="flex items-center gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {o.logo && <img src={o.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px]" />}
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-on-surface truncate">{o.label}</div>
+                    {o.sublabel && <div className="text-[10px] text-on-surface-variant truncate">{o.sublabel}</div>}
+                  </div>
+                </div>
               </button>
             ))}
           </div>
@@ -155,9 +158,9 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   );
 
   const championOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const d of data) if (d.champion) set.add(d.champion);
-    return [...set].sort().map((c) => ({ value: c, label: c }));
+    const map = new Map<string, string>();
+    for (const d of data) if (d.champion) map.set(d.champion, d.logo || "");
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([c, logo]) => ({ value: c, label: c, logo }));
   }, [data]);
 
   // Apply filters
@@ -222,16 +225,23 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
         </div>
         <div className="space-y-1.5">
           <label className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Points</label>
-          <div className="flex gap-1">
-            <select
-              value={pointsOp}
-              onChange={(e) => changePointsOp(e.target.value as PointsOp)}
-              className="rounded-card bg-surface-container border border-outline px-2 py-2 text-xs text-on-surface outline-none focus:border-primary/50 transition-colors w-14"
-            >
-              <option value="gte">&ge;</option>
-              <option value="lte">&le;</option>
-              <option value="eq">=</option>
-            </select>
+          <div className="flex gap-1 items-center">
+            <div className="flex rounded-card bg-surface-container border border-outline overflow-hidden">
+              {([["gte", "\u2265"], ["lte", "\u2264"], ["eq", "="]] as const).map(([op, symbol]) => (
+                <button
+                  key={op}
+                  type="button"
+                  onClick={() => changePointsOp(op)}
+                  className={`px-2.5 py-2 text-xs font-label transition-colors ${
+                    pointsOp === op
+                      ? "bg-primary/15 text-primary"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {symbol}
+                </button>
+              ))}
+            </div>
             <input
               type="text"
               inputMode="numeric"
