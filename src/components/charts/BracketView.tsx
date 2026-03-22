@@ -22,9 +22,9 @@ interface BracketViewProps {
 /* ------------------------------------------------------------------ */
 
 const GAME_H = 56;
-const GAME_W = 144; // w-36
-const BASE_GAP = 4;
-const CONNECTOR_W = 24; // w-6
+const GAME_W = 140;
+const BASE_GAP = 8;
+const CONNECTOR_W = 16; // tighter connectors for less horizontal spread
 
 /** Region codes to display labels */
 const REGION_NAMES: Record<string, string> = {
@@ -140,7 +140,7 @@ function GameCell({
   return (
     <button
       onClick={onClick}
-      className={`rounded border border-outline-variant/30 bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"}`}
+      className={`rounded border border-on-surface-variant/40 bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"}`}
       style={{ width: GAME_W }}
     >
       {/* Team 1 */}
@@ -261,22 +261,22 @@ function ConnectorColumn({
             /* RTL: horizontal stub on left, then bracket on right */
             <>
               <div className="flex items-center">
-                <div className="h-px bg-outline-variant/30" style={{ width: CONNECTOR_W / 2 }} />
+                <div className="h-px bg-on-surface-variant/40" style={{ width: CONNECTOR_W / 2 }} />
               </div>
               <div className="flex flex-col" style={{ width: CONNECTOR_W / 2 }}>
-                <div className="flex-1 border-t border-l border-outline-variant/30 rounded-tl" />
-                <div className="flex-1 border-b border-l border-outline-variant/30 rounded-bl" />
+                <div className="flex-1 border-t border-l border-on-surface-variant/40 rounded-tl" />
+                <div className="flex-1 border-b border-l border-on-surface-variant/40 rounded-bl" />
               </div>
             </>
           ) : (
             /* LTR: bracket on left, horizontal stub on right */
             <>
               <div className="flex flex-col" style={{ width: CONNECTOR_W / 2 }}>
-                <div className="flex-1 border-t border-r border-outline-variant/30 rounded-tr" />
-                <div className="flex-1 border-b border-r border-outline-variant/30 rounded-br" />
+                <div className="flex-1 border-t border-r border-on-surface-variant/40 rounded-tr" />
+                <div className="flex-1 border-b border-r border-on-surface-variant/40 rounded-br" />
               </div>
               <div className="flex items-center">
-                <div className="h-px bg-outline-variant/30" style={{ width: CONNECTOR_W / 2 }} />
+                <div className="h-px bg-on-surface-variant/40" style={{ width: CONNECTOR_W / 2 }} />
               </div>
             </>
           )}
@@ -525,10 +525,10 @@ export function BracketView({
         )}
       </div>
 
-      {/* Horizontally scrollable bracket */}
-      <div ref={scrollRef} className="overflow-x-auto no-scrollbar pb-4">
-        {/* Column Headers */}
-        <div className="flex items-end sticky top-0 z-10 bg-surface/95 backdrop-blur-sm pb-1 border-b border-outline-variant/10 mb-2">
+      {/* Horizontally scrollable bracket — no inner vertical scroll */}
+      <div ref={scrollRef} className="overflow-x-auto pb-4">
+        {/* Column Headers — sticky to page top (52px navbar) */}
+        <div className="flex items-end sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-1 border-b border-on-surface-variant/10 mb-2">
           {/* Left side headers: R64 → R32 → S16 → E8 */}
           <div className="flex items-end">
             {leftRounds.map((round, i) => (
