@@ -165,7 +165,7 @@ function LeaderboardContentInner({
       {/* ===== Tab 1: Standings ===== */}
       {tab === "standings" && (
         <div className="space-y-section">
-          {/* Top-3 Podium */}
+          {/* Top-3 Stepped Podium */}
           {(() => {
             const sorted = [...brackets].sort((a, b) => {
               const aA = analytics.get(a.id);
@@ -174,43 +174,41 @@ function LeaderboardContentInner({
               return aA.rank - bA.rank;
             });
             const top3 = sorted.slice(0, 3);
-            const medals = [
-              { emoji: "🥇", label: "1st Place", borderClass: "border-yellow-400/50", bgClass: "bg-yellow-400/10", textClass: "text-yellow-400" },
-              { emoji: "🥈", label: "2nd Place", borderClass: "border-on-surface-variant/30", bgClass: "bg-surface-container", textClass: "text-on-surface-variant" },
-              { emoji: "🥉", label: "3rd Place", borderClass: "border-orange-400/50", bgClass: "bg-orange-400/10", textClass: "text-orange-400" },
-            ];
             if (top3.length === 0) return null;
-            // Reorder for podium display: 2nd, 1st, 3rd
-            const podiumOrder = [1, 0, 2];
+
+            const podium = [
+              { idx: 1, height: "h-32 sm:h-36", color: "bg-on-surface-variant/8", border: "border-on-surface-variant/20", accent: "text-on-surface-variant", label: "2nd", emoji: "🥈" },
+              { idx: 0, height: "h-40 sm:h-48", color: "bg-yellow-400/10", border: "border-yellow-400/40", accent: "text-yellow-400", label: "1st", emoji: "🥇" },
+              { idx: 2, height: "h-28 sm:h-32", color: "bg-orange-400/8", border: "border-orange-400/30", accent: "text-orange-400", label: "3rd", emoji: "🥉" },
+            ];
+
             return (
-              <div className="grid grid-cols-3 gap-3 items-end">
-                {podiumOrder.map((idx) => {
-                  const b = top3[idx];
-                  if (!b) return <div key={idx} />;
-                  const m = medals[idx];
-                  const a = analytics.get(b.id);
+              <div className="flex items-end justify-center gap-2 sm:gap-3 max-w-2xl mx-auto">
+                {podium.map((p) => {
+                  const b = top3[p.idx];
+                  if (!b) return <div key={p.idx} className="flex-1" />;
                   return (
-                    <div
-                      key={b.id}
-                      className={`rounded-card border p-4 text-center space-y-2 ${m.bgClass} ${m.borderClass} ${idx === 0 ? "pb-6 pt-6" : ""}`}
-                    >
-                      <div className="text-3xl">{m.emoji}</div>
-                      <p className={`font-label text-xs uppercase tracking-wider ${m.textClass}`}>
-                        {m.label}
-                      </p>
-                      <p className="font-display text-base font-bold text-on-surface leading-tight">
-                        {b.name}
-                      </p>
-                      {b.full_name && b.full_name !== b.name && <p className="text-xs text-on-surface-variant">{b.full_name}</p>}
-                      <p className={`font-display text-2xl font-black ${m.textClass}`}>
-                        {b.points}
-                        <span className="text-xs font-label ml-1">pts</span>
-                      </p>
-                      {b.champion_pick && (
-                        <div className="text-xs text-on-surface-variant flex items-center justify-center gap-1">
-                          Champion: <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
-                        </div>
-                      )}
+                    <div key={b.id} className="flex-1 flex flex-col items-center">
+                      {/* Bracket info above the podium block */}
+                      <div className="text-center mb-2 space-y-1 min-w-0 w-full px-1">
+                        <div className="text-2xl">{p.emoji}</div>
+                        <p className="font-display text-sm sm:text-base font-bold text-on-surface leading-tight truncate">{b.name}</p>
+                        {b.full_name && b.full_name !== b.name && (
+                          <p className="text-[10px] text-on-surface-variant truncate">{b.full_name}</p>
+                        )}
+                        <p className={`font-display text-lg sm:text-2xl font-black ${p.accent}`}>
+                          {b.points}<span className="text-[10px] font-label ml-0.5">pts</span>
+                        </p>
+                        {b.champion_pick && (
+                          <div className="flex items-center justify-center">
+                            <TeamPill name={b.champion_pick} seed={b.champion_seed} logo={teamLogos[b.champion_pick]} eliminated={eliminatedTeams.has(b.champion_pick)} showStatus />
+                          </div>
+                        )}
+                      </div>
+                      {/* Podium block */}
+                      <div className={`w-full ${p.height} rounded-t-xl border-t-2 border-x ${p.color} ${p.border} flex items-start justify-center pt-3`}>
+                        <span className={`font-display text-xl sm:text-2xl font-black ${p.accent} opacity-30`}>{p.label}</span>
+                      </div>
                     </div>
                   );
                 })}
