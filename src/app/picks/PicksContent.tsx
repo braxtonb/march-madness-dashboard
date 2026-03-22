@@ -75,8 +75,8 @@ export function PicksContent({
   );
 
   const changeRound = useCallback(
-    (newRound: Round) => {
-      setRound(newRound);
+    (newRound: string) => {
+      setRound(newRound as Round);
       const params = new URLSearchParams(searchParams.toString());
       params.set("round", newRound);
       updateUrl(params);

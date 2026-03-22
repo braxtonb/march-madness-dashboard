@@ -2,38 +2,34 @@ import { fetchDashboardData } from "@/lib/sheets";
 import { computePickRates } from "@/lib/analytics";
 import { ROUND_ORDER } from "@/lib/constants";
 import { AwardsClient } from "@/components/ui/AwardsClient";
-import type { Award } from "@/components/ui/AwardsClient";
-import type { Bracket, Pick, Round } from "@/lib/types";
+import type { Award, AwardRound, AwardWinner, Round, Bracket, Pick, Game, Team } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const AWARD_DEFINITIONS: { title: string; tier: "gold" | "silver" | "bronze" }[] = [
-  { title: "The Oracle", tier: "gold" },
-  { title: "The Trendsetter", tier: "gold" },
-  { title: "The Faithful", tier: "silver" },
-  { title: "Hot Streak", tier: "silver" },
-  { title: "Diamond in the Rough", tier: "bronze" },
-  { title: "The People's Champion", tier: "bronze" },
+const AWARD_DEFINITIONS: { title: string; description: string; icon: string; tier: "gold" | "silver" | "bronze" }[] = [
+  { title: "The Oracle", description: "Most correct picks", icon: "oracle", tier: "gold" },
+  { title: "The Trendsetter", description: "Most unique correct picks", icon: "trendsetter", tier: "gold" },
+  { title: "The Faithful", description: "Highest scorer whose champion is still alive", icon: "faithful", tier: "silver" },
+  { title: "Hot Streak", description: "Most consecutive correct picks", icon: "streak", tier: "silver" },
+  { title: "Diamond in the Rough", description: "Single best pick almost nobody else made", icon: "diamond", tier: "bronze" },
+  { title: "The People's Champion", description: "Most aligned with group consensus", icon: "people", tier: "bronze" },
 ];
-
-function emptyAward(def: { title: string; tier: "gold" | "silver" | "bronze" }): Award {
-  return {
-    title: def.title,
-    winner: "No winner yet",
-    bracketName: "",
-    stat: "Awaiting results",
-    tier: def.tier,
-  };
-}
 
 function computeAwards(
   brackets: Bracket[],
   picks: Pick[],
-  round: Round,
+  games: Game[],
+  teams: Team[],
+  round: AwardRound,
   totalBrackets: number
 ): Award[] {
   const pickRates = computePickRates(picks, totalBrackets);
-  const roundPicks = picks.filter((p) => p.round === round);
+
+  const roundGames = round === "ALL"
+    ? games.filter((g) => g.completed)
+    : games.filter((g) => g.round === round && g.completed);
+  const roundGameIds = new Set(roundGames.map((g) => g.game_id));
+  const roundPicks = picks.filter((p) => roundGameIds.has(p.game_id));
 
   const picksByBracket = new Map<string, Pick[]>();
   for (const p of roundPicks) {
@@ -42,79 +38,141 @@ function computeAwards(
   }
 
   const bracketMap = new Map(brackets.map((b) => [b.id, b]));
-  const sorted = [...brackets].sort((a, b) => b.points - a.points);
+  const eliminatedTeams = new Set(teams.filter((t) => t.eliminated).map((t) => t.name));
 
   const awards: Award[] = [];
 
-  // 1. The Oracle — most correct picks this round
-  let oracleBest = { id: "", count: 0 };
-  for (const [bid, bPicks] of picksByBracket) {
-    const correct = bPicks.filter((p) => p.correct).length;
-    if (correct > oracleBest.count) oracleBest = { id: bid, count: correct };
-  }
-  if (oracleBest.id && oracleBest.count > 0) {
-    const b = bracketMap.get(oracleBest.id)!;
-    awards.push({ title: "The Oracle", winner: b.name, bracketName: b.owner, stat: `${oracleBest.count} correct picks this round`, tier: "gold" });
+  // Helper to build AwardWinner from a bracket
+  function toWinner(b: Bracket, stat: string): AwardWinner {
+    return {
+      name: b.name,
+      bracketName: b.owner,
+      bracketId: b.id,
+      stat,
+      championPick: b.champion_pick,
+      championSeed: b.champion_seed,
+      championEliminated: teams.find((t) => t.name === b.champion_pick)?.eliminated ?? false,
+    };
   }
 
-  // 2. The Trendsetter — most unique correct picks
-  let trendBest = { id: "", count: 0 };
-  for (const [bid, bPicks] of picksByBracket) {
+  // 1. The Oracle — most correct picks
+  const correctCounts = new Map<string, number>();
+  for (const b of brackets) {
+    const bPicks = roundPicks.filter((p) => p.bracket_id === b.id);
+    const correct = bPicks.filter((p) => p.correct).length;
+    correctCounts.set(b.id, correct);
+  }
+  const maxCorrect = Math.max(...correctCounts.values(), 0);
+  if (maxCorrect > 0) {
+    const oracleWinners: AwardWinner[] = brackets
+      .filter((b) => correctCounts.get(b.id) === maxCorrect)
+      .map((b) => toWinner(b, `${maxCorrect} of ${roundGames.length} correct`));
+    awards.push({ title: "The Oracle", description: "Most correct picks", icon: "oracle", tier: "gold", winners: oracleWinners });
+  } else {
+    awards.push({ title: "The Oracle", description: "Most correct picks", icon: "oracle", tier: "gold", winners: [] });
+  }
+
+  // 2. The Trendsetter — most unique correct picks (picked by <30% of the group)
+  const uniqueCorrectCounts = new Map<string, number>();
+  for (const b of brackets) {
+    const bPicks = roundPicks.filter((p) => p.bracket_id === b.id);
     const uniqueCorrect = bPicks.filter((p) => {
       if (!p.correct) return false;
       const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 1;
       return rate < 0.3;
     }).length;
-    if (uniqueCorrect > trendBest.count) trendBest = { id: bid, count: uniqueCorrect };
+    uniqueCorrectCounts.set(b.id, uniqueCorrect);
   }
-  if (trendBest.id && trendBest.count > 0) {
-    const b = bracketMap.get(trendBest.id)!;
-    awards.push({ title: "The Trendsetter", winner: b.name, bracketName: b.owner, stat: `${trendBest.count} unique correct picks`, tier: "gold" });
+  const maxUniqueCorrect = Math.max(...uniqueCorrectCounts.values(), 0);
+  if (maxUniqueCorrect > 0) {
+    const trendWinners: AwardWinner[] = brackets
+      .filter((b) => uniqueCorrectCounts.get(b.id) === maxUniqueCorrect)
+      .map((b) => toWinner(b, `${maxUniqueCorrect} unique correct picks`));
+    awards.push({ title: "The Trendsetter", description: "Most unique correct picks", icon: "trendsetter", tier: "gold", winners: trendWinners });
+  } else {
+    awards.push({ title: "The Trendsetter", description: "Most unique correct picks", icon: "trendsetter", tier: "gold", winners: [] });
   }
 
   // 3. The Faithful — highest scorer whose champion is still alive
-  const faithful = sorted.find((b) => b.champion_pick !== "");
-  if (faithful) {
-    awards.push({ title: "The Faithful", winner: faithful.name, bracketName: faithful.owner, stat: `${faithful.points} pts`, tier: "silver", championName: faithful.champion_pick, championSeed: faithful.champion_seed });
+  const faithfulCandidates = brackets
+    .filter((b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick))
+    .sort((a, b) => b.points - a.points);
+
+  if (faithfulCandidates.length > 0) {
+    const topPoints = faithfulCandidates[0].points;
+    const faithfulWinners: AwardWinner[] = faithfulCandidates
+      .filter((b) => b.points === topPoints)
+      .map((b) => toWinner(b, `${b.points} pts`));
+    awards.push({ title: "The Faithful", description: "Highest scorer whose champion is still alive", icon: "faithful", tier: "silver", winners: faithfulWinners });
+  } else {
+    awards.push({ title: "The Faithful", description: "No winner — all champions eliminated", icon: "faithful", tier: "silver", winners: [] });
   }
 
   // 4. Hot Streak — most consecutive correct picks
-  let streakBest = { id: "", count: 0 };
-  for (const [bid, bPicks] of picksByBracket) {
+  const streakCounts = new Map<string, number>();
+  for (const b of brackets) {
+    const bPicks = [...(picksByBracket.get(b.id) || [])];
+    if (round === "ALL") {
+      bPicks.sort((a, bp) => {
+        const ri = ROUND_ORDER.indexOf(a.round as Round) - ROUND_ORDER.indexOf(bp.round as Round);
+        if (ri !== 0) return ri;
+        return a.game_id.localeCompare(bp.game_id);
+      });
+    }
     let streak = 0, maxStreak = 0;
     for (const p of bPicks) {
       if (p.correct) { streak++; maxStreak = Math.max(maxStreak, streak); }
       else streak = 0;
     }
-    if (maxStreak > streakBest.count) streakBest = { id: bid, count: maxStreak };
+    streakCounts.set(b.id, maxStreak);
   }
-  if (streakBest.id && streakBest.count > 0) {
-    const b = bracketMap.get(streakBest.id)!;
-    awards.push({ title: "Hot Streak", winner: b.name, bracketName: b.owner, stat: `${streakBest.count} consecutive correct picks`, tier: "silver" });
+  const maxStreak = Math.max(...streakCounts.values(), 0);
+  if (maxStreak > 0) {
+    const streakWinners: AwardWinner[] = brackets
+      .filter((b) => streakCounts.get(b.id) === maxStreak)
+      .map((b) => toWinner(b, `${maxStreak} consecutive correct picks`));
+    awards.push({ title: "Hot Streak", description: "Most consecutive correct picks", icon: "streak", tier: "silver", winners: streakWinners });
+  } else {
+    awards.push({ title: "Hot Streak", description: "Most consecutive correct picks", icon: "streak", tier: "silver", winners: [] });
   }
 
   // 5. Diamond in the Rough — single best pick that almost nobody else made and was correct
-  let diamondBest = { id: "", team: "", rate: 1.0, seed: 0 };
-  for (const [bid, bPicks] of picksByBracket) {
+  const diamondScores = new Map<string, { rate: number; team: string; seed: number }>();
+  for (const b of brackets) {
+    const bPicks = roundPicks.filter((p) => p.bracket_id === b.id);
+    let bestRate = 1.0;
+    let bestTeam = "";
+    let bestSeed = 0;
     for (const p of bPicks) {
       if (!p.correct) continue;
       const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 1;
-      if (rate < diamondBest.rate) {
-        diamondBest = { id: bid, team: p.team_picked, rate, seed: p.seed_picked };
+      if (rate < bestRate) {
+        bestRate = rate;
+        bestTeam = p.team_picked;
+        bestSeed = p.seed_picked;
       }
     }
+    if (bestRate < 1) {
+      diamondScores.set(b.id, { rate: bestRate, team: bestTeam, seed: bestSeed });
+    }
   }
-  if (diamondBest.id && diamondBest.rate < 1) {
-    const b = bracketMap.get(diamondBest.id)!;
-    awards.push({ title: "Diamond in the Rough", winner: b.name, bracketName: b.owner, stat: `Picked ${diamondBest.team} — only ${Math.round(diamondBest.rate * 100)}% of the group agreed`, tier: "bronze" });
+  const minDiamondRate = Math.min(...[...diamondScores.values()].map((d) => d.rate), 1);
+  if (minDiamondRate < 1) {
+    const diamondWinners: AwardWinner[] = brackets
+      .filter((b) => diamondScores.get(b.id)?.rate === minDiamondRate)
+      .map((b) => {
+        const d = diamondScores.get(b.id)!;
+        return toWinner(b, `Picked ${d.team} — only ${Math.round(d.rate * 100)}% of the group agreed`);
+      });
+    awards.push({ title: "Diamond in the Rough", description: "Single best pick almost nobody else made", icon: "diamond", tier: "bronze", winners: diamondWinners });
+  } else {
+    awards.push({ title: "Diamond in the Rough", description: "Single best pick almost nobody else made", icon: "diamond", tier: "bronze", winners: [] });
   }
 
-  // 6. The People's Champion — most aligned with group consensus across ALL bracket picks for this round
-  // For each game, the "consensus pick" is the team picked by the MOST brackets (plurality, not majority).
-  // The People's Champion is whoever matched the plurality pick on the most games.
-  const allRoundPicks = picks.filter((p) => p.round === round);
+  // 6. The People's Champion — most aligned with group consensus
+  // For each game, the "consensus pick" is the team picked by the MOST brackets (plurality)
+  const allRoundPicks = roundPicks; // already filtered to this round's games
 
-  // Find the plurality (most popular) pick for each game
   const pluralityPick = new Map<string, string>();
   const gamePickCounts = new Map<string, Map<string, number>>();
   for (const p of allRoundPicks) {
@@ -131,29 +189,28 @@ function computeAwards(
     pluralityPick.set(gid, bestTeam);
   }
 
-  // Count how many plurality picks each bracket matched
-  const allPicksByBracket = new Map<string, typeof allRoundPicks>();
+  const allPicksByBracket = new Map<string, Pick[]>();
   for (const p of allRoundPicks) {
     if (!allPicksByBracket.has(p.bracket_id)) allPicksByBracket.set(p.bracket_id, []);
     allPicksByBracket.get(p.bracket_id)!.push(p);
   }
 
-  let peopleBest = { id: "", count: 0, total: 0 };
+  const peopleCounts = new Map<string, { matched: number; total: number }>();
   for (const [bid, bPicks] of allPicksByBracket) {
     const matched = bPicks.filter((p) => pluralityPick.get(p.game_id) === p.team_picked).length;
-    if (matched > peopleBest.count) peopleBest = { id: bid, count: matched, total: bPicks.length };
+    peopleCounts.set(bid, { matched, total: bPicks.length });
   }
-  if (peopleBest.id && peopleBest.count > 0) {
-    const b = bracketMap.get(peopleBest.id)!;
-    awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count}/${peopleBest.total} picks matched the group's most popular choice`, tier: "bronze" });
-  }
-
-  // Ensure all 6 awards are present. Fill in missing ones with "No winner yet".
-  const awardTitles = new Set(awards.map((a) => a.title));
-  for (const def of AWARD_DEFINITIONS) {
-    if (!awardTitles.has(def.title)) {
-      awards.push(emptyAward(def));
-    }
+  const maxPeopleMatched = Math.max(...[...peopleCounts.values()].map((p) => p.matched), 0);
+  if (maxPeopleMatched > 0) {
+    const peopleWinners: AwardWinner[] = brackets
+      .filter((b) => peopleCounts.get(b.id)?.matched === maxPeopleMatched)
+      .map((b) => {
+        const pc = peopleCounts.get(b.id)!;
+        return toWinner(b, `${pc.matched}/${pc.total} picks matched the group's most popular choice`);
+      });
+    awards.push({ title: "The People's Champion", description: "Most aligned with group consensus", icon: "people", tier: "bronze", winners: peopleWinners });
+  } else {
+    awards.push({ title: "The People's Champion", description: "Most aligned with group consensus", icon: "people", tier: "bronze", winners: [] });
   }
 
   // Sort by the canonical order
@@ -167,46 +224,18 @@ export default async function AwardsPage() {
   const data = await fetchDashboardData();
   const currentRound = data.meta.current_round;
 
-  // Show ALL rounds in the selector, including future ones
-  const allRounds: Round[] = [...ROUND_ORDER];
-
-  // Compute awards for every round — future rounds with no picks get empty awards
+  // Compute awards for every round including "ALL"
   const awardsByRound: Record<string, Award[]> = {};
-  for (const round of allRounds) {
-    const hasPicks = data.picks.some((p) => p.round === round);
-    if (hasPicks) {
-      awardsByRound[round] = computeAwards(data.brackets, data.picks, round, data.brackets.length);
-    } else {
-      // No completed games for this round — show all 6 empty award cards
-      awardsByRound[round] = AWARD_DEFINITIONS.map((def) => emptyAward(def));
-    }
+  for (const round of ROUND_ORDER) {
+    awardsByRound[round] = computeAwards(data.brackets, data.picks, data.games, data.teams, round, data.brackets.length);
   }
+  awardsByRound["ALL"] = computeAwards(data.brackets, data.picks, data.games, data.teams, "ALL", data.brackets.length);
 
-  // Default to the current round from meta data
-  const defaultRound = currentRound;
-
-  // Build team logo lookup, seed lookup, and eliminated set
-  const teamLogos: Record<string, string> = Object.fromEntries(
-    data.teams.map((t) => [t.name, t.logo])
-  );
-  const teamSeeds: Record<string, number> = Object.fromEntries(
-    data.teams.map((t) => [t.name, t.seed])
-  );
-  const eliminatedTeams = new Set(
-    data.teams.filter((t) => t.eliminated).map((t) => t.name)
-  );
-  for (const awards of Object.values(awardsByRound)) {
-    for (const award of awards) {
-      if (award.championName) {
-        if (teamLogos[award.championName]) {
-          award.championLogo = teamLogos[award.championName];
-        }
-        if (teamSeeds[award.championName]) {
-          award.championSeed = teamSeeds[award.championName];
-        }
-        award.championEliminated = eliminatedTeams.has(award.championName);
-      }
-    }
+  // Serialize pickRates for client (Map cannot cross server/client boundary)
+  const pickRatesMap = computePickRates(data.picks, data.brackets.length);
+  const pickRatesObj: Record<string, Record<string, number>> = {};
+  for (const [gid, teamMap] of pickRatesMap) {
+    pickRatesObj[gid] = Object.fromEntries(teamMap);
   }
 
   return (
@@ -220,8 +249,13 @@ export default async function AwardsPage() {
 
       <AwardsClient
         awardsByRound={awardsByRound}
-        completedRounds={allRounds}
-        currentRound={defaultRound}
+        completedRounds={[...ROUND_ORDER]}
+        currentRound={currentRound}
+        picks={data.picks}
+        games={data.games}
+        teams={data.teams}
+        brackets={data.brackets}
+        pickRates={pickRatesObj}
       />
     </div>
   );

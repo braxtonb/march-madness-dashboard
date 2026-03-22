@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { TeamPill } from "@/components/ui/TeamPill";
+import type { Award } from "@/lib/types";
 
 const AWARD_DESCRIPTIONS: Record<string, string> = {
   "The Oracle": "Most correct picks this round — seeing the future clearly",
@@ -21,60 +22,92 @@ const AWARD_ICONS: Record<string, string> = {
 };
 
 export function AwardCard({
-  title,
-  winner,
-  bracketName,
-  stat,
-  tier,
-  championName,
-  championLogo,
-  championSeed,
-  championEliminated,
+  award,
+  onClick,
 }: {
-  title: string;
-  winner: string;
-  bracketName: string;
-  stat: string;
-  tier: "gold" | "silver" | "bronze";
-  championName?: string;
-  championLogo?: string;
-  championSeed?: number;
-  championEliminated?: boolean;
+  award: Award;
+  onClick?: () => void;
 }) {
   const tierColors = {
     gold: "text-achievement",
     silver: "text-on-surface-variant",
     bronze: "text-action",
   };
-  const tierFallback = { gold: String.fromCodePoint(0x1F947), silver: String.fromCodePoint(0x1F948), bronze: String.fromCodePoint(0x1F949) };
-  const icon = AWARD_ICONS[title] || tierFallback[tier];
-  const description = AWARD_DESCRIPTIONS[title] || "";
-  const isAwaiting = winner === "No winner yet" || !winner;
+  const tierFallback = {
+    gold: String.fromCodePoint(0x1F947),
+    silver: String.fromCodePoint(0x1F948),
+    bronze: String.fromCodePoint(0x1F949),
+  };
+
+  const icon = AWARD_ICONS[award.title] || tierFallback[award.tier];
+  const description = AWARD_DESCRIPTIONS[award.title] || award.description;
+  const hasWinners = award.winners.length > 0;
+  const isTie = award.winners.length > 1;
+  const firstWinner = award.winners[0];
 
   return (
-    <div className="rounded-card bg-surface-container p-5 space-y-3 hover:bg-surface-bright transition-colors">
+    <div
+      className={`rounded-card bg-surface-container p-5 space-y-3 transition-colors ${
+        hasWinners && onClick ? "hover:bg-surface-bright cursor-pointer group" : "hover:bg-surface-bright"
+      }`}
+      onClick={hasWinners ? onClick : undefined}
+    >
       <div className="flex items-center gap-2">
         <span className="text-2xl">{icon}</span>
-        <div>
-          <h4 className={`font-display font-semibold ${tierColors[tier]}`}>
-            {title}
-          </h4>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className={`font-display font-semibold ${tierColors[award.tier]}`}>
+              {award.title}
+            </h4>
+            {isTie && (
+              <span className="rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-label whitespace-nowrap">
+                {award.winners.length}-way tie
+              </span>
+            )}
+          </div>
           <p className="text-[10px] text-on-surface-variant">{description}</p>
         </div>
       </div>
 
-      {isAwaiting ? (
-        <p className="text-sm text-on-surface-variant italic">Awaiting results</p>
+      {!hasWinners ? (
+        <p className="text-sm text-on-surface-variant italic">
+          {award.description.startsWith("No winner") ? award.description : "No winner yet"}
+        </p>
       ) : (
         <>
+          {/* First / primary winner */}
           <div>
-            <p className="font-body text-on-surface font-medium">{winner}</p>
-            <p className="text-xs text-on-surface-variant">{bracketName}</p>
+            <p className="font-body text-on-surface font-medium">{firstWinner.name}</p>
+            <p className="text-xs text-on-surface-variant">{firstWinner.bracketName}</p>
           </div>
-          <p className="text-sm text-on-surface-variant">{stat}</p>
-          {championName && (
+          <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
+          {firstWinner.championPick && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1">
-              Champion: <TeamPill name={championName} seed={championSeed} logo={championLogo} eliminated={championEliminated} showStatus />
+              Champion: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} eliminated={firstWinner.championEliminated} showStatus />
+            </p>
+          )}
+
+          {/* Additional tied winners */}
+          {isTie && (
+            <div className="border-t border-on-surface-variant/10 pt-2 space-y-2">
+              {award.winners.slice(1).map((w) => (
+                <div key={w.bracketId} className="flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-on-surface font-medium">{w.name}</span>
+                    <span className="text-on-surface-variant ml-1.5">{w.bracketName}</span>
+                  </div>
+                  {w.championPick && (
+                    <TeamPill name={w.championPick} seed={w.championSeed} eliminated={w.championEliminated} showStatus />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Click hint */}
+          {onClick && (
+            <p className="text-[10px] text-on-surface-variant/50 opacity-0 group-hover:opacity-100 transition-opacity">
+              Click for details &rarr;
             </p>
           )}
         </>

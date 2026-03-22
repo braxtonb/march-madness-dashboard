@@ -39,6 +39,11 @@ export const SEED_WIN_RATES: Record<number, Record<Round, number>> = {
   16: { R64: 0.01, R32: 0.002, S16: 0.0005, E8: 0.0001, FF: 0.00003, CHAMP: 0.00001 },
 };
 
+export const AWARD_ROUND_LABELS: Record<string, string> = {
+  ...ROUND_LABELS,
+  ALL: "All Rounds",
+};
+
 export const ARCHETYPE_COLORS: Record<Archetype, string> = {
   Strategist: "#3b82f6",
   Visionary: "#a78bfa",

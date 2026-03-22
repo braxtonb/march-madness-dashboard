@@ -78,6 +78,26 @@ export interface Meta {
 
 export type Round = "R64" | "R32" | "S16" | "E8" | "FF" | "CHAMP";
 
+export type AwardRound = Round | "ALL";
+
+export interface AwardWinner {
+  name: string;        // bracket name (primary display)
+  bracketName: string; // owner username (secondary)
+  bracketId: string;
+  stat: string;        // contextual stat (e.g., "8 of 8 correct")
+  championPick: string;
+  championSeed: number;
+  championEliminated: boolean;
+}
+
+export interface Award {
+  title: string;
+  description: string;
+  icon: string;
+  tier: "gold" | "silver" | "bronze";
+  winners: AwardWinner[];
+}
+
 export type Archetype = "Strategist" | "Visionary" | "Scout" | "Original" | "Analyst";
 
 /** Computed per-bracket analytics added at render time */
