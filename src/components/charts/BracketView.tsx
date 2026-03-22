@@ -79,12 +79,14 @@ function GameCell({
   totalBrackets,
   eliminatedTeams,
   onClick,
+  mirror = false,
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
   totalBrackets: number;
   eliminatedTeams?: Set<string>;
   onClick?: () => void;
+  mirror?: boolean;
 }) {
   const total = pickSplit.team1Count + pickSplit.team2Count;
   const pct1 = total > 0 ? Math.round((pickSplit.team1Count / total) * 100) : 50;
@@ -116,11 +118,11 @@ function GameCell({
   return (
     <button
       onClick={onClick}
-      className="w-40 rounded border border-outline-variant/30 bg-surface-container hover:bg-surface-bright transition-colors text-left cursor-pointer"
+      className={`w-40 rounded border border-outline-variant/30 bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer ${mirror ? "text-right" : "text-left"}`}
     >
       {/* Team 1 */}
       <div
-        className={`flex items-center justify-between px-2 py-1 text-xs border-b border-outline-variant/20 ${
+        className={`flex items-center justify-between px-2 py-1 text-xs border-b border-outline-variant/20 ${mirror ? "flex-row-reverse" : ""} ${
           team1IsWinner
             ? "text-on-surface font-semibold"
             : team1Eliminated
@@ -129,14 +131,17 @@ function GameCell({
         }`}
       >
         <span className="truncate">
-          <span className="text-on-surface-variant/60 mr-1">{game.seed1 || ""}</span>
-          {shortName(game.team1)}
+          {mirror ? (
+            <>{shortName(game.team1)} <span className="text-on-surface-variant/60 ml-1">{game.seed1 || ""}</span></>
+          ) : (
+            <><span className="text-on-surface-variant/60 mr-1">{game.seed1 || ""}</span>{shortName(game.team1)}</>
+          )}
         </span>
-        <span className="text-[10px] ml-1 shrink-0">{pct1}%</span>
+        <span className="text-[10px] shrink-0">{pct1}%</span>
       </div>
       {/* Team 2 */}
       <div
-        className={`flex items-center justify-between px-2 py-1 text-xs ${
+        className={`flex items-center justify-between px-2 py-1 text-xs ${mirror ? "flex-row-reverse" : ""} ${
           team2IsWinner
             ? "text-on-surface font-semibold"
             : team2Eliminated
@@ -145,10 +150,13 @@ function GameCell({
         }`}
       >
         <span className="truncate">
-          <span className="text-on-surface-variant/60 mr-1">{game.seed2 || ""}</span>
-          {shortName(game.team2)}
+          {mirror ? (
+            <>{shortName(game.team2)} <span className="text-on-surface-variant/60 ml-1">{game.seed2 || ""}</span></>
+          ) : (
+            <><span className="text-on-surface-variant/60 mr-1">{game.seed2 || ""}</span>{shortName(game.team2)}</>
+          )}
         </span>
-        <span className="text-[10px] ml-1 shrink-0">{pct2}%</span>
+        <span className="text-[10px] shrink-0">{pct2}%</span>
       </div>
       {/* Mini pick split bar */}
       <div className="flex h-1">
@@ -242,6 +250,7 @@ function RegionBracket({
                       totalBrackets={totalBrackets}
                       eliminatedTeams={eliminatedTeams}
                       onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
+                      mirror={direction === "rtl"}
                     />
                     {/* Connector line to next round */}
                     {naturalIdx < activeRounds.length - 1 && (
@@ -292,66 +301,75 @@ function FinalRoundsBracket({
 
   if (ffGames.length === 0 && champGames.length === 0) return null;
 
-  return (
-    <div className="space-y-2">
-      <h3 className="font-display text-sm font-semibold text-on-surface px-1">
-        Final Four &amp; Championship
-      </h3>
-      <div className="flex items-center gap-0">
-        {/* Final Four column */}
-        {ffGames.length > 0 && (
-          <div className="flex flex-col items-stretch shrink-0">
-            <div className="text-center mb-1">
-              <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
-                {ROUND_LABELS["FF"]}
-              </span>
-            </div>
-            <div className="flex flex-col justify-around" style={{ gap: "16px" }}>
-              {ffGames.map((game) => (
-                <div key={game.game_id} className="flex items-center">
-                  <GameCell
-                    game={game}
-                    pickSplit={
-                      pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
-                    }
-                    totalBrackets={totalBrackets}
-                    eliminatedTeams={eliminatedTeams}
-                    onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
-                  />
-                  {champGames.length > 0 && (
-                    <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+  // Split FF games: first feeds from left side, second from right side
+  const ffLeft = ffGames[0];
+  const ffRight = ffGames[1];
 
-        {/* Championship column */}
-        {champGames.length > 0 && (
-          <div className="flex flex-col items-stretch shrink-0">
-            <div className="text-center mb-1">
-              <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
-                {ROUND_LABELS["CHAMP"]}
-              </span>
-            </div>
-            <div className="flex flex-col justify-around" style={{ gap: "16px" }}>
-              {champGames.map((game) => (
-                <GameCell
-                  key={game.game_id}
-                  game={game}
-                  pickSplit={
-                    pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }
-                  }
-                  totalBrackets={totalBrackets}
-                  eliminatedTeams={eliminatedTeams}
-                  onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
-                />
-              ))}
-            </div>
+  return (
+    <div className="flex items-center gap-0">
+      {/* FF from left side (East/South winner) */}
+      {ffLeft && (
+        <div className="flex flex-col items-stretch shrink-0">
+          <div className="text-center mb-1">
+            <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
+              {ROUND_LABELS["FF"]}
+            </span>
           </div>
-        )}
-      </div>
+          <div className="flex items-center">
+            <GameCell
+              game={ffLeft}
+              pickSplit={pickSplits[ffLeft.game_id] || { team1Count: 0, team2Count: 0 }}
+              totalBrackets={totalBrackets}
+              eliminatedTeams={eliminatedTeams}
+              onClick={onGameClick ? () => onGameClick(ffLeft.game_id) : undefined}
+            />
+            <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
+          </div>
+        </div>
+      )}
+
+      {/* Championship in center */}
+      {champGames.length > 0 && (
+        <div className="flex flex-col items-stretch shrink-0">
+          <div className="text-center mb-1">
+            <span className="text-[9px] font-label text-primary uppercase tracking-wider font-semibold">
+              {ROUND_LABELS["CHAMP"]}
+            </span>
+          </div>
+          {champGames.map((game) => (
+            <GameCell
+              key={game.game_id}
+              game={game}
+              pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
+              totalBrackets={totalBrackets}
+              eliminatedTeams={eliminatedTeams}
+              onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* FF from right side (West/Midwest winner) */}
+      {ffRight && (
+        <div className="flex flex-col items-stretch shrink-0">
+          <div className="text-center mb-1">
+            <span className="text-[9px] font-label text-on-surface-variant/60 uppercase tracking-wider">
+              {ROUND_LABELS["FF"]}
+            </span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-px bg-outline-variant/30 shrink-0" />
+            <GameCell
+              game={ffRight}
+              pickSplit={pickSplits[ffRight.game_id] || { team1Count: 0, team2Count: 0 }}
+              totalBrackets={totalBrackets}
+              eliminatedTeams={eliminatedTeams}
+              onClick={onGameClick ? () => onGameClick(ffRight.game_id) : undefined}
+              mirror
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
