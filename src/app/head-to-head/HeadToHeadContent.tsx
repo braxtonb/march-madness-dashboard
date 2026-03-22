@@ -204,6 +204,29 @@ export function HeadToHeadContent({
     return new Map(games.map((g) => [g.game_id, g]));
   }, [games]);
 
+  // Team seed lookup from picks
+  const teamSeeds = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of picks) {
+      if (p.team_picked && p.seed_picked && !map.has(p.team_picked)) {
+        map.set(p.team_picked, p.seed_picked);
+      }
+    }
+    return map;
+  }, [picks]);
+
+  // Eliminated teams set
+  const eliminatedTeams = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of games) {
+      if (g.completed && g.winner) {
+        if (g.team1 && g.team1 !== g.winner) set.add(g.team1);
+        if (g.team2 && g.team2 !== g.winner) set.add(g.team2);
+      }
+    }
+    return set;
+  }, [games]);
+
   // Get unique game_ids from picks data for the selected round (fixes S16/E8 empty issue)
   const roundGameIds = useMemo(() => {
     const ids = new Set<string>();
@@ -296,7 +319,7 @@ export function HeadToHeadContent({
                 </div>
                 <div>
                   <p className="font-label text-[10px] text-on-surface-variant uppercase">Champ</p>
-                  <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} />
+                  <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} eliminated={eliminatedTeams.has(b1.champion_pick)} showStatus />
                 </div>
                 <div>
                   <p className="font-label text-[10px] text-on-surface-variant uppercase">Win %</p>
@@ -322,7 +345,7 @@ export function HeadToHeadContent({
                 </div>
                 <div>
                   <p className="font-label text-[10px] text-on-surface-variant uppercase">Champ</p>
-                  <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} />
+                  <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} eliminated={eliminatedTeams.has(b2.champion_pick)} showStatus />
                 </div>
                 <div>
                   <p className="font-label text-[10px] text-on-surface-variant uppercase">Win %</p>
@@ -462,6 +485,7 @@ export function HeadToHeadContent({
       >
         <div className="mb-2">
           <GameHeader
+            eliminatedTeams={eliminatedTeams}
             game={{
               team1: g?.team1 || "",
               seed1: g?.seed1 ?? 0,
@@ -478,7 +502,7 @@ export function HeadToHeadContent({
             <p className="text-[10px] font-semibold text-on-surface">{b1?.name}</p>
             {pick1 ? (
               <div className="mt-1">
-                <TeamPill name={pick1} logo={teamLogos[pick1]} />
+                <TeamPill name={pick1} seed={teamSeeds.get(pick1)} logo={teamLogos[pick1]} eliminated={eliminatedTeams.has(pick1)} showStatus />
                 {isComplete && (
                   <p className={`text-[10px] mt-0.5 ${pick1Correct ? "text-secondary" : "text-on-surface-variant"}`}>
                     {pick1Correct ? "Correct" : "Incorrect"}
@@ -493,7 +517,7 @@ export function HeadToHeadContent({
             <p className="text-[10px] font-semibold text-on-surface">{b2?.name}</p>
             {pick2 ? (
               <div className="mt-1">
-                <TeamPill name={pick2} logo={teamLogos[pick2]} />
+                <TeamPill name={pick2} seed={teamSeeds.get(pick2)} logo={teamLogos[pick2]} eliminated={eliminatedTeams.has(pick2)} showStatus />
                 {isComplete && (
                   <p className={`text-[10px] mt-0.5 ${pick2Correct ? "text-secondary" : "text-on-surface-variant"}`}>
                     {pick2Correct ? "Correct" : "Incorrect"}

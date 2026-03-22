@@ -445,23 +445,45 @@ export default function SimulatorPage() {
             Clear
           </button>
         </div>
-        {selections.size > 0 && (
-          <div className="flex gap-2 flex-wrap items-center">
-            <span className="text-[10px] text-on-surface-variant">Fill remaining:</span>
-            <button
-              onClick={() => fillRemaining("favorites")}
-              className="rounded-card bg-surface-bright px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors border border-outline"
-            >
-              + Chalk the rest
-            </button>
-            <button
-              onClick={() => fillRemaining("underdogs")}
-              className="rounded-card bg-surface-bright px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors border border-outline"
-            >
-              + Upset the rest
-            </button>
-          </div>
-        )}
+        {(() => {
+          const allFilled = selections.size >= totalPending;
+          const nonePicked = selections.size === 0;
+          const disabled = nonePicked || allFilled;
+          const tooltip = nonePicked
+            ? "Pick at least one game first"
+            : allFilled
+              ? "All games are already picked"
+              : "Fill remaining unpicked games";
+          return (
+            <div className="flex gap-2 flex-wrap items-center">
+              <span className="text-[10px] text-on-surface-variant">Fill remaining:</span>
+              <button
+                onClick={() => fillRemaining("favorites")}
+                disabled={disabled}
+                title={tooltip}
+                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors border border-outline ${
+                  disabled
+                    ? "opacity-30 cursor-not-allowed text-on-surface-variant"
+                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                + Chalk the rest
+              </button>
+              <button
+                onClick={() => fillRemaining("underdogs")}
+                disabled={disabled}
+                title={tooltip}
+                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors border border-outline ${
+                  disabled
+                    ? "opacity-30 cursor-not-allowed text-on-surface-variant"
+                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                + Upset the rest
+              </button>
+            </div>
+          );
+        })()}
         <p className="text-[10px] text-on-surface-variant">
           Favorites = lower seed wins. Same seed tiebreak: alphabetical.
         </p>

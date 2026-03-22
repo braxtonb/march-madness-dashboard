@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
 import { RoundSelector } from "@/components/ui/RoundSelector";
@@ -34,6 +34,17 @@ export function PicksContent({
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const eliminatedTeams = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of games) {
+      if (g.completed && g.winner) {
+        if (g.team1 && g.team1 !== g.winner) set.add(g.team1);
+        if (g.team2 && g.team2 !== g.winner) set.add(g.team2);
+      }
+    }
+    return set;
+  }, [games]);
 
   type PageTab = "results" | "champions";
   const initialPageTab = (searchParams.get("view") as PageTab) || "results";
@@ -187,6 +198,7 @@ export function PicksContent({
                 pickerDetails={pickerDetailsMap[game.game_id]}
                 teamLogos={teamLogos}
                 onOpenDrawer={() => openDrawer(game.game_id)}
+                eliminatedTeams={eliminatedTeams}
               />
             ))}
           </div>
@@ -209,6 +221,7 @@ export function PicksContent({
                 pickerDetails={pickerDetailsMap[game.game_id]}
                 teamLogos={teamLogos}
                 onOpenDrawer={() => openDrawer(game.game_id)}
+                eliminatedTeams={eliminatedTeams}
               />
             ))}
           </div>

@@ -3,9 +3,11 @@ import { TeamPill } from "./TeamPill";
 export function GameHeader({
   game,
   teamLogos = {},
+  eliminatedTeams,
 }: {
   game: { team1: string; seed1: number; team2: string; seed2: number; completed: boolean; winner: string };
   teamLogos?: Record<string, string>;
+  eliminatedTeams?: Set<string>;
 }) {
   const hasTeams = game.team1 && game.team2;
   return (
@@ -13,9 +15,21 @@ export function GameHeader({
       <div>
         {hasTeams ? (
           <div className="flex items-center gap-1.5">
-            <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} />
+            <TeamPill
+              name={game.team1}
+              seed={game.seed1}
+              logo={teamLogos[game.team1]}
+              eliminated={eliminatedTeams?.has(game.team1)}
+              showStatus={!!eliminatedTeams}
+            />
             <span className="text-[10px] text-on-surface-variant">vs</span>
-            <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} />
+            <TeamPill
+              name={game.team2}
+              seed={game.seed2}
+              logo={teamLogos[game.team2]}
+              eliminated={eliminatedTeams?.has(game.team2)}
+              showStatus={!!eliminatedTeams}
+            />
           </div>
         ) : (
           <span className="text-xs text-on-surface-variant font-label">Matchup TBD</span>

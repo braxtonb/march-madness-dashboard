@@ -179,6 +179,7 @@ export function GameCard({
   pickerDetails,
   teamLogos = {},
   onOpenDrawer,
+  eliminatedTeams,
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
@@ -186,6 +187,7 @@ export function GameCard({
   pickerDetails?: PickerDetails;
   teamLogos?: Record<string, string>;
   onOpenDrawer?: () => void;
+  eliminatedTeams?: Set<string>;
 }) {
 
   const isTBD = !game.team1 && !game.team2;
@@ -224,7 +226,7 @@ export function GameCard({
   return (
     <>
       <div className="rounded-card bg-surface-container p-4 space-y-3">
-        <GameHeader game={game} teamLogos={teamLogos} />
+        <GameHeader game={game} teamLogos={teamLogos} eliminatedTeams={eliminatedTeams} />
 
         <div className="flex h-3 rounded-full overflow-hidden bg-surface-bright">
           <div
