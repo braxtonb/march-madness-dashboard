@@ -309,11 +309,6 @@ export function HeadToHeadContent({
                   }`}
                 >
                   <span>{ROUND_LABELS[round]}</span>
-                  {stats && id1 && id2 && (
-                    <span className="ml-1 text-[9px] opacity-70">
-                      {stats.agree}={stats.diff}
-                    </span>
-                  )}
                 </button>
               );
             })}
@@ -423,7 +418,7 @@ export function HeadToHeadContent({
       <div
         key={gid}
         className={`rounded-card p-3 border-l-4 ${
-          same ? "border-l-teal-500/30 bg-surface/60" : "border-l-orange-400/30 bg-surface/60"
+          same ? "border-l-teal-500/30 bg-surface-container" : "border-l-orange-400/30 bg-surface-container"
         }`}
       >
         <div className="mb-2 flex items-center justify-between">

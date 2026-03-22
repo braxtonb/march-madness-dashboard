@@ -75,7 +75,7 @@ export function ProbabilityClient({
   const router = useRouter();
   const initialTab = (searchParams.get("tab") as ProbTab) || "chances";
   const [tab, setTab] = useState<ProbTab>(initialTab);
-  const [showExact, setShowExact] = useState(false);
+  const [showExact, setShowExact] = useState(true);
 
   function changeTab(t: ProbTab) {
     setTab(t);
@@ -111,9 +111,7 @@ export function ProbabilityClient({
         <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
           Simulated Finishes
         </button>
-        <button onClick={() => changeTab("journey")} className={tab === "journey" ? TAB_ACTIVE : TAB_INACTIVE}>
-          Probability Journey
-        </button>
+        {/* Probability Journey tab hidden until snapshot data is meaningful */}
       </div>
 
       {/* Championship Chances tab */}

@@ -289,58 +289,61 @@ export default function SimulatorPage() {
     }
   }
 
-  // All favorites: cascade through all rounds
-  function setAllFavorites() {
+  /**
+   * Deterministically fill all rounds with favorites or underdogs.
+   * Processes round by round: for each pending game, resolve teams from
+   * completed results or prior selections in this batch, then pick by seed.
+   * Same seed tiebreak: alphabetical by team name (deterministic).
+   */
+  function fillAllRounds(mode: "favorites" | "underdogs") {
     if (!data) return;
     const next = new Map<string, string>();
-    // Process round by round, using resolved data
+
+    // Build a map of game_id → game for quick lookup
+    const gMap = new Map(data.games.map((g) => [g.game_id, g]));
+
     for (const round of ROUND_ORDER) {
-      const roundGames = resolvedGames.filter((g) => g.round === round);
+      const roundGames = data.games.filter((g) => g.round === round);
       for (const g of roundGames) {
-        if (g.completed) continue;
-        const t1 = g.team1 || resolveTeamFromSelection(g.game_id, next, 1);
-        const t2 = g.team2 || resolveTeamFromSelection(g.game_id, next, 2);
-        const s1 = g.seed1 || (t1 ? getTeamSeed(data.picks, t1) : 99);
-        const s2 = g.seed2 || (t2 ? getTeamSeed(data.picks, t2) : 99);
+        if (g.completed) continue; // skip completed games
+
+        // Resolve teams: from game data, or from completed feeders, or from our picks in `next`
+        let t1 = g.team1;
+        let s1 = g.seed1;
+        let t2 = g.team2;
+        let s2 = g.seed2;
+
+        if (!t1 || !t2) {
+          const gameFeeders = feeders.get(g.game_id) || [];
+          if (!t1 && gameFeeders[0]) {
+            const feeder = gMap.get(gameFeeders[0]);
+            t1 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[0]) || "");
+            if (t1) s1 = getTeamSeed(data.picks, t1);
+          }
+          if (!t2 && gameFeeders[1]) {
+            const feeder = gMap.get(gameFeeders[1]);
+            t2 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[1]) || "");
+            if (t2) s2 = getTeamSeed(data.picks, t2);
+          }
+        }
+
         if (t1 && t2) {
-          next.set(g.game_id, s1 <= s2 ? t1 : t2);
+          let winner: string;
+          if (s1 === s2) {
+            // Same seed tiebreak: alphabetical (deterministic)
+            winner = mode === "favorites"
+              ? (t1 < t2 ? t1 : t2)
+              : (t1 > t2 ? t1 : t2);
+          } else {
+            winner = mode === "favorites"
+              ? (s1 <= s2 ? t1 : t2)  // lower seed = favorite
+              : (s1 > s2 ? t1 : t2);  // higher seed = underdog
+          }
+          next.set(g.game_id, winner);
         }
       }
     }
     setSelections(next);
-  }
-
-  function setAllUnderdogs() {
-    if (!data) return;
-    const next = new Map<string, string>();
-    for (const round of ROUND_ORDER) {
-      const roundGames = resolvedGames.filter((g) => g.round === round);
-      for (const g of roundGames) {
-        if (g.completed) continue;
-        const t1 = g.team1 || resolveTeamFromSelection(g.game_id, next, 1);
-        const t2 = g.team2 || resolveTeamFromSelection(g.game_id, next, 2);
-        const s1 = g.seed1 || (t1 ? getTeamSeed(data.picks, t1) : 0);
-        const s2 = g.seed2 || (t2 ? getTeamSeed(data.picks, t2) : 0);
-        if (t1 && t2) {
-          next.set(g.game_id, s1 > s2 ? t1 : t2);
-        }
-      }
-    }
-    setSelections(next);
-  }
-
-  function resolveTeamFromSelection(
-    gameId: string,
-    sel: Map<string, string>,
-    slot: 1 | 2
-  ): string {
-    const gameFeeders = feeders.get(gameId) || [];
-    const feeder = gameFeeders[slot - 1];
-    if (!feeder) return "";
-    // Check if feeder game has a completed result
-    const feederGame = data?.games.find((g) => g.game_id === feeder);
-    if (feederGame?.completed) return feederGame.winner;
-    return sel.get(feeder) || "";
   }
 
   function toggleRoundCollapse(round: string) {
@@ -374,15 +377,15 @@ export default function SimulatorPage() {
         </p>
       </div>
 
-      <div className="relative z-50 flex gap-2 flex-wrap">
+      <div className="relative z-50 flex gap-2 flex-wrap items-center">
         <button
-          onClick={setAllFavorites}
+          onClick={() => fillAllRounds("favorites")}
           className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
         >
           All favorites
         </button>
         <button
-          onClick={setAllUnderdogs}
+          onClick={() => fillAllRounds("underdogs")}
           className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
         >
           All underdogs
@@ -393,6 +396,9 @@ export default function SimulatorPage() {
         >
           Clear
         </button>
+        <span className="text-[10px] text-on-surface-variant">
+          Favorites = lower seed wins. Same seed tiebreak: alphabetical.
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-section lg:items-start">

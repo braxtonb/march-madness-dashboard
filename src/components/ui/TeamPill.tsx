@@ -33,7 +33,8 @@ export function TeamPill({
           alt=""
           width={16}
           height={16}
-          className="inline-block rounded-sm bg-white/90 p-[1px]"
+          className="inline-block rounded-full bg-on-surface/10 p-[2px]"
+          style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }}
         />
       )}
       {seed != null && seed > 0 && (
