@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
 import { TeamPill } from "@/components/ui/TeamPill";
-import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import BracketSearch from "@/components/ui/BracketSearch";
 import { ROUND_LABELS, displayName } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
@@ -99,17 +98,13 @@ function LeaderboardContentInner({
     : "standings";
 
   const [tab, setTab] = useState<LeaderboardTab>(initialTab);
-  const [search, setSearch] = useState("");
+  const [selectedSearchIds, setSelectedSearchIds] = useState<string[]>([]);
 
-  const filteredBrackets = brackets.filter((b) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      b.name.toLowerCase().includes(q) ||
-      b.owner.toLowerCase().includes(q) ||
-      (b.full_name && b.full_name.toLowerCase().includes(q))
-    );
-  });
+  const filteredBrackets = useMemo(() => {
+    if (selectedSearchIds.length === 0) return brackets;
+    const idSet = new Set(selectedSearchIds);
+    return brackets.filter((b) => idSet.has(b.id));
+  }, [brackets, selectedSearchIds]);
 
   const updateUrl = useCallback(
     (params: URLSearchParams) => {
@@ -194,9 +189,8 @@ function LeaderboardContentInner({
                   return (
                     <div
                       key={b.id}
-                      className={`group rounded-card border p-4 text-center space-y-2 ${m.bgClass} ${m.borderClass} ${idx === 0 ? "pb-6 pt-6" : ""}`}
+                      className={`rounded-card border p-4 text-center space-y-2 ${m.bgClass} ${m.borderClass} ${idx === 0 ? "pb-6 pt-6" : ""}`}
                     >
-                      <div className="flex justify-end"><CompareCheckbox bracketId={b.id} /></div>
                       <div className="text-3xl">{m.emoji}</div>
                       <p className={`font-label text-xs uppercase tracking-wider ${m.textClass}`}>
                         {m.label}
@@ -233,16 +227,16 @@ function LeaderboardContentInner({
               Tap &#9675; to compare brackets
             </p>
           </div>
-          <div className="w-full sm:w-64 mb-3">
+          <div className="w-full sm:w-72 mb-3">
             <BracketSearch
               brackets={brackets}
-              mode="filter"
-              value={search}
-              onChange={setSearch}
+              mode="filter-multi"
+              selectedIds={selectedSearchIds}
+              onSelectedIdsChange={setSelectedSearchIds}
               placeholder="Search brackets..."
             />
           </div>
-          {search && (
+          {selectedSearchIds.length > 0 && (
             <p className="text-xs text-on-surface-variant mb-2">
               Showing {filteredBrackets.length} of {brackets.length} brackets
             </p>

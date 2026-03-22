@@ -6,7 +6,7 @@ import type { Bracket } from "@/lib/types";
 
 interface BracketSearchProps {
   brackets: Bracket[];
-  mode: "filter" | "select";
+  mode: "filter" | "select" | "filter-multi";
   // Filter mode
   value?: string;
   onChange?: (query: string) => void;
@@ -14,6 +14,9 @@ interface BracketSearchProps {
   selectedId?: string;
   onSelect?: (id: string) => void;
   onClear?: () => void;
+  // Filter-multi mode
+  selectedIds?: string[];
+  onSelectedIdsChange?: (ids: string[]) => void;
   // Shared
   placeholder?: string;
   className?: string;
@@ -42,6 +45,8 @@ export default function BracketSearch({
   selectedId,
   onSelect,
   onClear,
+  selectedIds = [],
+  onSelectedIdsChange,
   placeholder = "Search brackets...",
   className = "",
   excludeId,
@@ -53,6 +58,13 @@ export default function BracketSearch({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selected = mode === "select" ? brackets.find((b) => b.id === selectedId) : null;
+
+  // For filter-multi mode: resolve selected brackets
+  const selectedMultiBrackets = useMemo(() => {
+    if (mode !== "filter-multi") return [];
+    const idSet = new Set(selectedIds);
+    return brackets.filter((b) => idSet.has(b.id));
+  }, [mode, brackets, selectedIds]);
 
   // In filter mode, keep query synced with external value
   useEffect(() => {
@@ -105,6 +117,12 @@ export default function BracketSearch({
       if (selected) return displayName(selected);
       return "";
     }
+    if (mode === "filter-multi") {
+      if (open) return query;
+      if (selectedMultiBrackets.length === 0) return "";
+      if (selectedMultiBrackets.length === 1) return displayName(selectedMultiBrackets[0]);
+      return `${displayName(selectedMultiBrackets[0])} +${selectedMultiBrackets.length - 1} more`;
+    }
     // filter mode
     return query;
   })();
@@ -123,7 +141,7 @@ export default function BracketSearch({
 
   const handleFocus = useCallback(() => {
     setOpen(true);
-    if (mode === "select") {
+    if (mode === "select" || mode === "filter-multi") {
       setQuery("");
     }
   }, [mode]);
@@ -135,6 +153,17 @@ export default function BracketSearch({
         setOpen(false);
         setQuery("");
         inputRef.current?.blur();
+      } else if (mode === "filter-multi") {
+        // Toggle: add or remove from selected set
+        const isAlreadySelected = selectedIds.includes(b.id);
+        if (isAlreadySelected) {
+          onSelectedIdsChange?.(selectedIds.filter((id) => id !== b.id));
+        } else {
+          onSelectedIdsChange?.([...selectedIds, b.id]);
+        }
+        // Keep dropdown open, clear query for next search
+        setQuery("");
+        inputRef.current?.focus();
       } else {
         // filter mode: fill the input with the bracket's display name
         const name = displayName(b);
@@ -144,22 +173,25 @@ export default function BracketSearch({
         inputRef.current?.blur();
       }
     },
-    [mode, onSelect, onChange]
+    [mode, onSelect, onChange, selectedIds, onSelectedIdsChange]
   );
 
   const handleClear = useCallback(() => {
     setQuery("");
     if (mode === "select") {
       onClear?.();
+    } else if (mode === "filter-multi") {
+      onSelectedIdsChange?.([]);
     } else {
       onChange?.("");
     }
     inputRef.current?.focus();
-  }, [mode, onClear, onChange]);
+  }, [mode, onClear, onChange, onSelectedIdsChange]);
 
   const showClear =
     (mode === "select" && selected && !open) ||
-    (mode === "filter" && query.length > 0);
+    (mode === "filter" && query.length > 0) ||
+    (mode === "filter-multi" && selectedIds.length > 0 && !open);
 
   return (
     <div className={`space-y-1 ${className}`} ref={containerRef}>
@@ -232,7 +264,32 @@ export default function BracketSearch({
         {/* Dropdown */}
         {open && (
           <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto rounded-card bg-surface-container border border-outline shadow-2xl shadow-black/30">
-            <div className="sticky top-0 bg-surface-container px-3 py-1.5 border-b border-outline">
+            {/* Selected pills for filter-multi mode */}
+            {mode === "filter-multi" && selectedMultiBrackets.length > 0 && (
+              <div className="sticky top-0 bg-surface-container px-3 py-2 border-b border-outline z-10 flex flex-wrap gap-1">
+                {selectedMultiBrackets.map((b) => (
+                  <span
+                    key={b.id}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[10px] font-label"
+                  >
+                    {displayName(b)}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectedIdsChange?.(selectedIds.filter((id) => id !== b.id));
+                      }}
+                      className="hover:text-primary/70 transition-colors"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className={`sticky ${mode === "filter-multi" && selectedMultiBrackets.length > 0 ? "" : "top-0"} bg-surface-container px-3 py-1.5 border-b border-outline`}>
               <span className="text-[10px] text-on-surface-variant">
                 {filtered.length} bracket{filtered.length !== 1 ? "s" : ""}
               </span>
@@ -245,25 +302,43 @@ export default function BracketSearch({
             {filtered.map((b) => {
               const primary = displayName(b);
               const isActive = mode === "select" && b.id === selectedId;
+              const isMultiSelected = mode === "filter-multi" && selectedIds.includes(b.id);
               return (
                 <button
                   key={b.id}
                   type="button"
                   onClick={() => handleSelect(b)}
                   className={`w-full text-left px-3 py-2.5 hover:bg-surface-bright transition-colors border-l-2 ${
-                    isActive
+                    isActive || isMultiSelected
                       ? "bg-surface-bright border-l-primary"
                       : "border-l-transparent"
                   }`}
                 >
-                  <div className="text-sm font-medium text-on-surface">
-                    {highlightMatch(primary, query)}
-                  </div>
-                  {b.name !== primary && (
-                    <div className="text-[10px] text-on-surface-variant">
-                      {highlightMatch(b.name, query)}
+                  <div className="flex items-center gap-2">
+                    {mode === "filter-multi" && (
+                      <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
+                        isMultiSelected
+                          ? "bg-primary border-primary"
+                          : "border-on-surface-variant/40"
+                      }`}>
+                        {isMultiSelected && (
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 8L6.5 11.5L13 4.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </span>
+                    )}
+                    <div>
+                      <div className="text-sm font-medium text-on-surface">
+                        {highlightMatch(primary, query)}
+                      </div>
+                      {b.name !== primary && (
+                        <div className="text-[10px] text-on-surface-variant">
+                          {highlightMatch(b.name, query)}
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </button>
               );
             })}

@@ -97,24 +97,26 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
       )}
 
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-72 bg-surface-container border border-outline-variant rounded-lg shadow-2xl shadow-black/30 z-50 flex flex-col overflow-hidden">
+        <div className="absolute top-full right-0 mt-1 w-72 z-50">
           <BracketSearch
             brackets={brackets}
             mode="select"
             selectedId={myBracketId ?? undefined}
             onSelect={handleSelect}
             onClear={handleClear}
-            placeholder="Search brackets..."
+            placeholder="Find your bracket..."
           />
           {/* Clear my bracket */}
           {pinned && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface border-t border-outline-variant transition-colors"
-            >
-              Clear my bracket
-            </button>
+            <div className="mt-1 rounded-card bg-surface-container border border-outline-variant">
+              <button
+                type="button"
+                onClick={handleClear}
+                className="w-full px-3 py-2 text-[10px] font-label text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                Clear my bracket
+              </button>
+            </div>
           )}
         </div>
       )}

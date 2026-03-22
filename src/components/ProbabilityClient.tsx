@@ -372,6 +372,12 @@ export function ProbabilityClient({
         <div className="rounded-card bg-surface-container p-5">
           <div className="mb-4">
             <h3 className="font-display text-lg font-semibold">Simulated Finishes</h3>
+            <p className="hidden sm:block text-xs text-on-surface-variant mt-1">
+              Click any row to see details &middot; Hover any row to compare brackets
+            </p>
+            <p className="sm:hidden text-xs text-on-surface-variant mt-1">
+              Tap any row for details &middot; Tap &#9675; to compare brackets
+            </p>
           </div>
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <table className="min-w-[850px] w-full text-sm">
@@ -407,7 +413,7 @@ export function ProbabilityClient({
                       })}
                     >
                       <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={d.id} /></td>
-                      <td className="sticky left-0 bg-surface-container group-hover:bg-surface-bright transition-colors z-10 px-2 py-2">
+                      <td className={`sticky left-0 z-10 transition-colors px-2 py-2 ${isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"}`}>
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                           <div>
@@ -609,6 +615,14 @@ export function ProbabilityClient({
               </div>
             </div>
 
+            <div>
+              <p className="hidden sm:block text-xs text-on-surface-variant mb-1">
+                Click any row to see details &middot; Hover any row to compare brackets
+              </p>
+              <p className="sm:hidden text-xs text-on-surface-variant mb-1">
+                Tap any row for details &middot; Tap &#9675; to compare brackets
+              </p>
+            </div>
             <DrilldownTable
               brackets={aliveFiltered}
               analytics={new Map(Object.entries(aliveData.analyticsObj))}
