@@ -6,8 +6,21 @@ import { fetchDashboardData } from "@/lib/sheets";
 
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
-  description: "March Madness bracket analytics dashboard",
+  description: "March Madness bracket analytics for a 75-person pool. Live standings, group picks, win probability, head-to-head comparisons, and scenario simulator.",
   icons: { icon: "/favicon.svg" },
+  openGraph: {
+    title: "DoorDash AP 2026 Bracket Lab",
+    description: "March Madness bracket analytics for a 75-person pool. Live standings, group picks, win probability, and more.",
+    siteName: "Bracket Lab",
+    type: "website",
+    url: "https://march-madness-dashboard-six.vercel.app",
+    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "Bracket Lab — March Madness Analytics" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "DoorDash AP 2026 Bracket Lab",
+    description: "March Madness bracket analytics for a 75-person pool.",
+  },
 };
 
 export default async function RootLayout({
