@@ -54,7 +54,7 @@ export function PicksDrawer({
         onClick={onClose}
       />
       {/* Drawer panel */}
-      <div className="relative w-full max-w-md bg-surface-container shadow-xl drawer-slide-in overflow-y-auto">
+      <div className="relative w-full max-w-md h-full bg-surface-container shadow-xl drawer-slide-in overflow-y-auto">
         <div className="sticky top-0 bg-surface-container z-10 p-5 border-b border-surface-bright">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">

@@ -88,6 +88,8 @@ export default async function LeaderboardPage() {
 
     return {
       name: b.name,
+      owner: b.owner,
+      points: b.points,
       skill: skillDen > 0 ? Math.round((skillNum / skillDen) * 100) : 50,
       fortune:
         fortuneDen > 0 ? Math.round((fortuneNum / fortuneDen) * 100) : 50,
