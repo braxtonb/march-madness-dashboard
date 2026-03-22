@@ -91,6 +91,8 @@ export default async function LeaderboardPage() {
       skill: skillDen > 0 ? Math.round((skillNum / skillDen) * 100) : 50,
       fortune:
         fortuneDen > 0 ? Math.round((fortuneNum / fortuneDen) * 100) : 50,
+      champion: b.champion_pick,
+      logo: teamLogos[b.champion_pick] || "",
     };
   });
 

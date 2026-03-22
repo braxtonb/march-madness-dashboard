@@ -1,27 +1,71 @@
 "use client";
 
-import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, Label } from "recharts";
+import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Label } from "recharts";
 
 interface ScatterPoint {
   name: string;
   skill: number;
   fortune: number;
+  champion?: string;
+  logo?: string;
 }
 
-const COLORS = [
-  "#2dd4bf", "#a78bfa", "#fbbf24", "#fb923c", "#3b82f6",
-  "#06b6d4", "#84cc16", "#f472b6",
-];
+function CustomDot(props: Record<string, unknown>) {
+  const { cx, cy, payload } = props as { cx: number; cy: number; payload: ScatterPoint };
+  if (!cx || !cy) return null;
+
+  const logo = payload?.logo;
+  const name = payload?.name || "";
+
+  return (
+    <g>
+      {logo ? (
+        <image
+          x={cx - 10}
+          y={cy - 10}
+          width={20}
+          height={20}
+          href={logo}
+          clipPath="circle(10px)"
+        />
+      ) : (
+        <circle cx={cx} cy={cy} r={5} fill="#00f4fe" />
+      )}
+      <text
+        x={cx}
+        y={cy + 18}
+        textAnchor="middle"
+        fill="#a7abb2"
+        fontSize={9}
+        fontFamily="Inter"
+      >
+        {name.length > 15 ? name.slice(0, 14) + "…" : name}
+      </text>
+    </g>
+  );
+}
 
 export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-        <XAxis type="number" dataKey="skill" name="Chalk Score" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
-          <Label value="Chalk Score" position="bottom" fill="#8b95a5" fontSize={12} />
+    <ResponsiveContainer width="100%" height={Math.max(450, data.length * 3)}>
+      <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 30 }}>
+        <XAxis
+          type="number"
+          dataKey="skill"
+          name="Chalk Score"
+          domain={[0, 100]}
+          tick={{ fill: "#a7abb2", fontSize: 11, fontFamily: "Space Grotesk" }}
+        >
+          <Label value="Chalk Score →" position="bottom" fill="#a7abb2" fontSize={12} offset={-5} />
         </XAxis>
-        <YAxis type="number" dataKey="fortune" name="Upset Score" domain={[0, 100]} tick={{ fill: "#8b95a5", fontSize: 11, fontFamily: "Space Grotesk" }}>
-          <Label value="Upset Score" angle={-90} position="left" fill="#8b95a5" fontSize={12} />
+        <YAxis
+          type="number"
+          dataKey="fortune"
+          name="Upset Score"
+          domain={[0, 100]}
+          tick={{ fill: "#a7abb2", fontSize: 11, fontFamily: "Space Grotesk" }}
+        >
+          <Label value="↑ Upset Score" angle={-90} position="left" fill="#a7abb2" fontSize={12} offset={-10} />
         </YAxis>
         <ReferenceLine x={50} stroke="#252d35" />
         <ReferenceLine y={50} stroke="#252d35" />
@@ -41,11 +85,11 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
             return point?.name || "";
           }}
         />
-        <Scatter data={data} fill="#2dd4bf">
-          {data.map((entry, i) => (
-            <Cell key={entry.name} fill={COLORS[i % COLORS.length]} />
-          ))}
-        </Scatter>
+        <Scatter
+          data={data}
+          fill="#00f4fe"
+          shape={<CustomDot />}
+        />
       </ScatterChart>
     </ResponsiveContainer>
   );

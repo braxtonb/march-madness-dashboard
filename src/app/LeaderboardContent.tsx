@@ -202,21 +202,6 @@ function LeaderboardContentInner({
             );
           })()}
 
-          {/* Hero stats bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Brackets" value={brackets.length} />
-            <StatCard
-              label="Games Completed"
-              value={`${gamesCompleted}/63`}
-            />
-            <StatCard label="Current Round" value={currentRound} />
-            <StatCard
-              label="Top Champion Pick"
-              value={topChamp ? topChamp[0] : "\u2014"}
-              subtitle={topChamp ? `${topChamp[1]} brackets` : undefined}
-            />
-          </div>
-
           {/* Leaderboard table */}
           <LeaderboardTable
             brackets={brackets}

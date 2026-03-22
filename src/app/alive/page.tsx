@@ -26,14 +26,15 @@ export default async function AliveBoardPage() {
     (b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick)
   ).length;
 
-  // Build a map of bracket_id -> set of FF-round picked teams from picks data.
-  // This is more reliable than ff1-ff4 fields which may have empty strings.
+  // Build a map of bracket_id -> set of Final Four teams from E8 picks.
+  // The 4 Final Four participants = the 4 E8 game winners.
+  // E8 picks tell us who each bracket predicts to reach the Final Four.
   const bracketFFPicks = new Map<string, Set<string>>();
   for (const p of picks) {
-    if (p.round === "FF" || p.round === "CHAMP") {
+    if (p.round === "E8") {
       if (!bracketFFPicks.has(p.bracket_id))
         bracketFFPicks.set(p.bracket_id, new Set());
-      bracketFFPicks.get(p.bracket_id)!.add(p.team_picked);
+      if (p.team_picked) bracketFFPicks.get(p.bracket_id)!.add(p.team_picked);
     }
   }
 
