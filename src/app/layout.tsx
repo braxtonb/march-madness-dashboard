@@ -3,6 +3,8 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { fetchDashboardData } from "@/lib/sheets";
+import CompareProvider from "@/components/ui/CompareProvider";
+import CompareBar from "@/components/ui/CompareBar";
 
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
@@ -29,9 +31,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   let meta = null;
+  let brackets: import("@/lib/types").Bracket[] = [];
   try {
     const data = await fetchDashboardData();
     meta = data.meta;
+    brackets = data.brackets;
   } catch {
     // Layout still renders without data — pages handle their own errors
   }
@@ -45,13 +49,16 @@ export default async function RootLayout({
         />
       </head>
       <body className="bg-surface text-on-surface font-body antialiased">
-        <Navbar meta={meta} />
-        <div className="flex">
-          <Sidebar />
-          <main className="ml-0 md:ml-56 w-full min-h-[calc(100vh-52px)] p-6">
-            {children}
-          </main>
-        </div>
+        <CompareProvider>
+          <Navbar meta={meta} />
+          <div className="flex">
+            <Sidebar />
+            <main className="ml-0 md:ml-56 w-full min-h-[calc(100vh-52px)] p-6">
+              {children}
+            </main>
+          </div>
+          <CompareBar brackets={brackets} />
+        </CompareProvider>
       </body>
     </html>
   );
