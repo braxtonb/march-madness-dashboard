@@ -61,7 +61,7 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
     <div className="space-y-3">
       {/* Legend */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] text-on-surface-variant font-label">Group Accuracy:</span>
+        <span className="text-[10px] text-on-surface-variant font-label" title="Percentage of completed games where the group's most popular pick was correct">Group Accuracy:</span>
         <div className="flex items-center gap-0.5">
           <div className="w-5 h-3 rounded-sm bg-red-600/70" />
           <div className="w-5 h-3 rounded-sm bg-red-500/50" />

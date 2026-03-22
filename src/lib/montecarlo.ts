@@ -16,6 +16,19 @@ export interface SimResult {
 }
 
 /**
+ * Seeded PRNG (Park-Miller LCG) for deterministic Monte Carlo simulation.
+ * Ensures the same data always produces the same results, preventing
+ * hydration mismatches and UI jumping between renders.
+ */
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return s / 2147483647;
+  };
+}
+
+/**
  * Run Monte Carlo simulation: simulate remaining games N times,
  * score all brackets, count how often each finishes first.
  */
@@ -29,6 +42,11 @@ export function runMonteCarlo(
     games.filter((g) => g.completed).map((g) => g.game_id)
   );
   const remainingGames = games.filter((g) => !g.completed);
+
+  // Create a deterministic seed based on game state so results are stable
+  // for the same data but change as games complete
+  const dataSeed = brackets.length * 1000 + completedGames.size * 7 + remainingGames.length * 31;
+  const random = seededRandom(dataSeed);
 
   // Group picks by bracket
   const picksByBracket = new Map<string, Map<string, string>>();
@@ -57,11 +75,11 @@ export function runMonteCarlo(
   }
 
   for (let i = 0; i < iterations; i++) {
-    // Simulate remaining games
+    // Simulate remaining games using seeded PRNG for determinism
     const simWinners = new Map<string, string>();
     for (const g of remainingGames) {
       const seed1Rate = SEED_WIN_RATES[g.seed1]?.[g.round as Round] ?? 0.5;
-      const team1Wins = Math.random() < seed1Rate;
+      const team1Wins = random() < seed1Rate;
       simWinners.set(g.game_id, team1Wins ? g.team1 : g.team2);
     }
 

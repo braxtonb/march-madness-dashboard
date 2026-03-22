@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useMyBracketState } from "./MyBracketProvider";
 
 /* -- types -- */
 
@@ -78,6 +79,7 @@ function MultiSelectSearchInner({
   inputLabel,
   searchable = true,
 }: MultiSelectSearchProps) {
+  const { myBracketId } = useMyBracketState();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -355,6 +357,7 @@ function MultiSelectSearchInner({
                   ? selectedSet.has(o.value)
                   : o.value === selectedId;
                 const isHighlighted = idx === highlightedIndex;
+                const isMyBracketOption = o.value === myBracketId;
                 return (
                   <button
                     key={o.value}
@@ -364,7 +367,9 @@ function MultiSelectSearchInner({
                     className={`w-full text-left px-3 py-2.5 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors border-l-2 ${
                       isItemSelected
                         ? "bg-surface-bright border-l-primary"
-                        : "border-l-transparent"
+                        : isMyBracketOption
+                          ? "bg-secondary/5 border-l-secondary"
+                          : "border-l-transparent"
                     } ${isHighlighted && !isItemSelected ? "bg-surface-bright" : ""}`}
                   >
                     {/* Checkbox: orange for multi-select filtering */}

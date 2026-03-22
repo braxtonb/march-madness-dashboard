@@ -1,6 +1,6 @@
 import { fetchDashboardData } from "@/lib/sheets";
 import { computePickRates } from "@/lib/analytics";
-import { ROUND_ORDER } from "@/lib/constants";
+import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
 import { AwardsClient } from "@/components/ui/AwardsClient";
 import type { Award, AwardRound, AwardWinner, Round, Bracket, Pick, Game, Team } from "@/lib/types";
 
@@ -138,12 +138,13 @@ function computeAwards(
   }
 
   // 5. Diamond in the Rough — single best pick that almost nobody else made and was correct
-  const diamondScores = new Map<string, { rate: number; team: string; seed: number }>();
+  const diamondScores = new Map<string, { rate: number; team: string; seed: number; round: string }>();
   for (const b of brackets) {
     const bPicks = roundPicks.filter((p) => p.bracket_id === b.id);
     let bestRate = 1.0;
     let bestTeam = "";
     let bestSeed = 0;
+    let bestRound = "";
     for (const p of bPicks) {
       if (!p.correct) continue;
       const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 1;
@@ -151,10 +152,11 @@ function computeAwards(
         bestRate = rate;
         bestTeam = p.team_picked;
         bestSeed = p.seed_picked;
+        bestRound = p.round;
       }
     }
     if (bestRate < 1) {
-      diamondScores.set(b.id, { rate: bestRate, team: bestTeam, seed: bestSeed });
+      diamondScores.set(b.id, { rate: bestRate, team: bestTeam, seed: bestSeed, round: bestRound });
     }
   }
   const minDiamondRate = Math.min(...[...diamondScores.values()].map((d) => d.rate), 1);
@@ -163,7 +165,8 @@ function computeAwards(
       .filter((b) => diamondScores.get(b.id)?.rate === minDiamondRate)
       .map((b) => {
         const d = diamondScores.get(b.id)!;
-        return toWinner(b, `Picked ${d.team} — only ${Math.round(d.rate * 100)}% of the group agreed`);
+        const roundLabel = ROUND_LABELS[d.round as Round] || d.round;
+        return toWinner(b, `Picked ${d.team} in ${roundLabel} — only ${Math.round(d.rate * 100)}% of the group agreed`);
       });
     awards.push({ title: "Diamond in the Rough", description: "Single best pick almost nobody else made", icon: "diamond", tier: "bronze", winners: diamondWinners });
   } else {

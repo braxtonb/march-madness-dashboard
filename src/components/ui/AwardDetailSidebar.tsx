@@ -525,12 +525,20 @@ function DiamondContent({
 
   const g = gameMap.get(bestPick.game_id);
   const pctLabel = Math.round(bestRate * 100);
+  const roundLabel = g ? (ROUND_LABELS[g.round as Round] || g.round) : bestPick.round ? (ROUND_LABELS[bestPick.round as Round] || bestPick.round) : "";
 
   return (
     <div className="space-y-4">
       {g && (
         <div className="rounded-lg bg-surface-bright/50 px-3 py-3 space-y-2">
-          <p className="text-xs text-on-surface-variant">Game</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-on-surface-variant">Game</p>
+            {roundLabel && (
+              <span className="inline-block rounded-card px-2 py-0.5 font-label text-[10px] bg-tertiary/15 text-tertiary">
+                {roundLabel}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-1.5 flex-wrap">
             <TeamPill
               name={g.team1}
@@ -836,7 +844,7 @@ export default function AwardDetailSidebar({
           {winner.championPick && (
             <div className="flex items-center gap-1.5">
               <span className="text-xs">&#127942;</span>
-              <span className="text-xs text-on-surface-variant">Champion:</span>
+              <span className="text-xs text-on-surface-variant inline-flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion:</span>
               <TeamPill
                 name={winner.championPick}
                 seed={winner.championSeed}

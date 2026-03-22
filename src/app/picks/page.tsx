@@ -115,25 +115,30 @@ export default async function GroupPicksPage() {
       </div>
 
       {/* Group accuracy report card */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-          Group Accuracy:
-        </span>
-        {roundAccuracy.map((r) => (
-          <span
-            key={r.round}
-            className={`font-label text-xs px-2 py-1 rounded-card ${
-              r.total > 0 ? "bg-surface-container text-on-surface" : "text-on-surface-variant/50"
-            }`}
-          >
-            {r.round} {r.total > 0 ? `${r.correct}/${r.total}` : "—"}
+      <div className="space-y-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+            Group Accuracy:
           </span>
-        ))}
-        {overallTotal > 0 && (
-          <span className="font-label text-xs text-secondary font-semibold ml-1">
-            Overall: {overallCorrect}/{overallTotal} ({Math.round((overallCorrect / overallTotal) * 100)}%)
-          </span>
-        )}
+          {roundAccuracy.map((r) => (
+            <span
+              key={r.round}
+              className={`font-label text-xs px-2 py-1 rounded-card ${
+                r.total > 0 ? "bg-surface-container text-on-surface" : "text-on-surface-variant/50"
+              }`}
+            >
+              {r.round} {r.total > 0 ? `${r.correct}/${r.total}` : "—"}
+            </span>
+          ))}
+          {overallTotal > 0 && (
+            <span className="font-label text-xs text-secondary font-semibold ml-1">
+              Overall: {overallCorrect}/{overallTotal} ({Math.round((overallCorrect / overallTotal) * 100)}%)
+            </span>
+          )}
+        </div>
+        <p className="text-[10px] text-on-surface-variant/70">
+          Percentage of completed games where the group&apos;s most popular pick was correct
+        </p>
       </div>
 
       <PicksContent

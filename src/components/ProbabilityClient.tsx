@@ -434,7 +434,7 @@ export function ProbabilityClient({
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_top10")}><span className="border-b border-dotted border-on-surface-variant/40">Top 10</span>{fSortIcon("pct_top10")}</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("pct_top25")}><span className="border-b border-dotted border-on-surface-variant/40">Top 25</span>{fSortIcon("pct_top25")}</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none" onClick={() => toggleFinishSort("median_rank")}><span className="border-b border-dotted border-on-surface-variant/40">Median</span>{fSortIcon("median_rank")}</th>
-                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default">Champion</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-default"><span className="inline-flex items-center gap-1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>Champion</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -455,7 +455,7 @@ export function ProbabilityClient({
                       })}
                     >
                       <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={d.id} /></td>
-                      <td className={`sticky left-0 z-10 transition-colors px-2 py-2 ${isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"}`}>
+                      <td className={`sticky left-0 z-10 transition-colors px-2 py-2 ${isMyBracket(d.id) ? "bg-secondary/5" : isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"}`}>
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                           <div>
