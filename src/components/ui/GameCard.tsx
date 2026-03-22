@@ -179,11 +179,11 @@ export function GameCard({
 
         <div className="flex h-3 rounded-full overflow-hidden bg-surface-bright">
           <div
-            className="bg-secondary transition-all"
+            className="bg-primary transition-all"
             style={{ width: `${team1Pct}%` }}
           />
           <div
-            className="bg-tertiary transition-all"
+            className="bg-[#64748b] transition-all"
             style={{ width: `${team2Pct}%` }}
           />
         </div>
@@ -201,8 +201,8 @@ export function GameCard({
           <div
             className={`rounded-card px-3 py-1.5 text-xs text-center ${
               consensusCorrect
-                ? "bg-secondary/10 text-secondary"
-                : "bg-tertiary/10 text-tertiary"
+                ? "bg-primary/10 text-primary"
+                : "bg-on-surface-variant/10 text-on-surface-variant"
             }`}
           >
             {consensusCorrect
@@ -223,8 +223,10 @@ export function GameCard({
           >
             Show individual picks
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant/60">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M15 3v18" />
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
           </button>
         )}
