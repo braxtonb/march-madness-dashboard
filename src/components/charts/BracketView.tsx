@@ -158,7 +158,21 @@ function GameCell({
         </span>
         <span className="text-[10px] shrink-0">{pct2}%</span>
       </div>
-      {/* Mini pick split bar */}
+      {/* ESPN link + pick split bar */}
+      <div className="flex items-center justify-between px-2 pt-0.5 pb-1">
+        {game.espn_url && isCompleted ? (
+          <a
+            href={game.espn_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-[9px] text-on-surface-variant/50 hover:text-secondary transition-colors"
+          >
+            ESPN
+          </a>
+        ) : <span />}
+        {isCompleted && <span className="text-[9px] text-on-surface-variant/40">Final</span>}
+      </div>
       <div className="flex h-1">
         <div className="bg-primary transition-all" style={{ width: `${pct1}%` }} />
         <div className="bg-secondary transition-all" style={{ width: `${pct2}%` }} />
@@ -209,8 +223,9 @@ function RegionBracket({
   }, [regionGames]);
 
   const activeRounds = REGION_ROUNDS.filter((r) => roundGameMap[r]);
-  // For RTL regions (West, Midwest), reverse the round order so R64 is on the right
-  const displayRounds = direction === "rtl" ? [...activeRounds].reverse() : activeRounds;
+  // For RTL regions (West, Midwest): keep round order as-is but use flex-row-reverse on container
+  // This puts R64 on the right and E8 on the left (flowing toward center)
+  const displayRounds = activeRounds;
 
   if (activeRounds.length === 0) return null;
 
