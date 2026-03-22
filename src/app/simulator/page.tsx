@@ -27,6 +27,7 @@ interface ResolvedGame {
   completed: boolean;
   winner: string;
   simulated: boolean; // true if teams were derived from user picks
+  espn_url?: string;
 }
 
 /**
@@ -158,6 +159,7 @@ export default function SimulatorPage() {
         completed: g.completed,
         winner: g.winner,
         simulated: false,
+        espn_url: g.espn_url,
       });
     }
 
@@ -533,6 +535,18 @@ export default function SimulatorPage() {
                                 {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
                                 {g.seed2} {g.team2}{g.winner === g.team2 && " \u2713"}
                               </span>
+                              {g.espn_url && (
+                                <a
+                                  href={g.espn_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[9px] font-label text-on-surface-variant/50 hover:text-primary transition-colors shrink-0"
+                                  title="View on ESPN"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  ESPN ↗
+                                </a>
+                              )}
                             </div>
                           </div>
                         );

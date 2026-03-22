@@ -247,6 +247,7 @@ export function PicksContent({
           teamLogos={teamLogos}
           onPrev={drawerIdx > 0 ? () => navigateDrawer(-1) : undefined}
           onNext={drawerIdx < filteredGames.length - 1 ? () => navigateDrawer(1) : undefined}
+          eliminatedTeams={eliminatedTeams}
         />
       )}
       </div>

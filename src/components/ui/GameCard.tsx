@@ -24,6 +24,7 @@ export function PicksDrawer({
   teamLogos = {},
   onPrev,
   onNext,
+  eliminatedTeams,
 }: {
   game: Game;
   pickerDetails: PickerDetails;
@@ -31,6 +32,7 @@ export function PicksDrawer({
   teamLogos?: Record<string, string>;
   onPrev?: () => void;
   onNext?: () => void;
+  eliminatedTeams?: Set<string>;
 }) {
   return (
     <BottomSheet
@@ -41,9 +43,9 @@ export function PicksDrawer({
       onNext={onNext}
     >
       <div className="flex items-center justify-between mb-4">
-        <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} />
+        <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} eliminated={eliminatedTeams?.has(game.team1)} showStatus={!!eliminatedTeams} />
         <span className="text-xs text-on-surface-variant">vs</span>
-        <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} />
+        <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} eliminated={eliminatedTeams?.has(game.team2)} showStatus={!!eliminatedTeams} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

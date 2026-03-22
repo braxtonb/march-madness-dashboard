@@ -371,7 +371,7 @@ export function HeadToHeadContent({
                 >
                   <span>{ROUND_LABELS[round]}</span>
                   {stats && id1 && id2 && stats.total > 0 && (
-                    <span className="ml-1.5 text-[10px] opacity-70">{stats.agree}={stats.diff}</span>
+                    <span className="ml-1.5 text-[10px] opacity-70">{stats.agree}-{stats.diff}</span>
                   )}
                 </button>
               );
@@ -406,19 +406,19 @@ export function HeadToHeadContent({
                 onClick={() => changeStatusFilter("all")}
                 className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "all" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
-                All status
+                All ({(roundStats[selectedRound]?.completed ?? 0) + (roundStats[selectedRound]?.scheduled ?? 0)})
               </button>
               <button
                 onClick={() => changeStatusFilter("completed")}
                 className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "completed" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
-                Completed
+                Completed ({roundStats[selectedRound]?.completed ?? 0})
               </button>
               <button
                 onClick={() => changeStatusFilter("scheduled")}
                 className={`rounded-card px-2.5 py-1 text-[10px] font-label transition-colors ${statusFilter === "scheduled" ? "bg-primary/15 text-primary border border-primary/30" : "text-on-surface-variant hover:text-on-surface"}`}
               >
-                Scheduled
+                Scheduled ({roundStats[selectedRound]?.scheduled ?? 0})
               </button>
             </div>
           </div>
@@ -492,6 +492,7 @@ export function HeadToHeadContent({
               seed2: g?.seed2 ?? 0,
               completed: isComplete,
               winner: g?.winner || "",
+              espn_url: g?.espn_url,
             }}
             teamLogos={teamLogos}
           />

@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 import { DrilldownTable } from "@/components/tables/DrilldownTable";
@@ -150,12 +150,13 @@ export function ProbabilityClient({
   })();
 
   const [tab, setTab] = useState<ProbTab>(initialTab);
-  const [showExact, setShowExact] = useState(true);
+  const [showExact, setShowExact] = useState(false);
 
   // Sort state for simulated finishes table
   type FinishSort = "probability" | "pct_second" | "pct_third" | "pct_top10" | "pct_top25" | "median_rank";
   const [finishSortKey, setFinishSortKey] = useState<FinishSort>("probability");
   const [finishSortAsc, setFinishSortAsc] = useState(false);
+  const [expandedFinishIds, setExpandedFinishIds] = useState<Set<string>>(new Set());
 
   const sortedProbData = useMemo(() => {
     return [...probData].sort((a, b) => {
@@ -360,12 +361,28 @@ export function ProbabilityClient({
                 {sortedProbData.map((d) => {
                   const tierKey = getTierKey(d.probability);
                   const tier = TIERS.find((t) => t.key === tierKey)!;
+                  const isExpanded = expandedFinishIds.has(d.id);
+                  const finishColSpan = showExact ? 10 : 8;
                   return (
-                    <tr key={d.name} className="border-b border-outline hover:bg-surface-bright transition-colors">
+                    <React.Fragment key={d.id}>
+                    <tr
+                      className={`border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                      onClick={() => setExpandedFinishIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(d.id)) next.delete(d.id);
+                        else next.add(d.id);
+                        return next;
+                      })}
+                    >
                       <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={d.id} /></td>
                       <td className="sticky left-0 bg-surface-container z-10 px-2 py-2">
-                        <div className="text-on-surface text-xs">{d.name}</div>
-                        <div className="text-[10px] text-on-surface-variant">{d.owner}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
+                          <div>
+                            <div className="text-on-surface text-xs">{d.name}</div>
+                            <div className="text-[10px] text-on-surface-variant">{d.owner}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-2 py-2">
                         <span className={`inline-block rounded-card px-2 py-0.5 font-label text-[10px] ${tier.badgeClass}`}>
@@ -386,6 +403,35 @@ export function ProbabilityClient({
                         <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
                       </td>
                     </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={finishColSpan} className="px-4 py-3 bg-surface-bright/50">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div>
+                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Champion Pick</p>
+                              <div className="mt-1">
+                                <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
+                              </div>
+                            </div>
+                            <div>
+                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Status</p>
+                              <p className={`text-xs mt-1 font-semibold ${eliminatedTeamsSet.has(d.champion) ? "text-on-surface-variant" : "text-secondary"}`}>
+                                {eliminatedTeamsSet.has(d.champion) ? "Champion eliminated" : "Champion still alive"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Max Remaining</p>
+                              <p className="text-xs mt-1 text-on-surface font-semibold">{d.max_remaining}</p>
+                            </div>
+                            <div>
+                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">Median Finish</p>
+                              <p className="text-xs mt-1 text-on-surface font-semibold">#{d.median_rank} <span className="text-on-surface-variant font-normal">/ {d.best_rank} best</span></p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
