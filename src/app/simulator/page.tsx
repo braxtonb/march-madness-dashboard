@@ -751,7 +751,7 @@ export default function SimulatorPage() {
                       <>
                         <tr
                           key={r.id}
-                          className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                          className={`group border-b border-outline transition-colors cursor-pointer ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
                           onClick={() => setExpandedId(isExpanded ? null : r.id)}
                         >
                           <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>

@@ -142,7 +142,7 @@ export function DrilldownTable({
         {filtered.map((b) => {
           const a = analytics.get(b.id);
           return (
-            <div key={b.id} className={`group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}>
+            <div key={b.id} className={`group rounded-card border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : "bg-surface-container"}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <CompareCheckbox bracketId={b.id} />
@@ -192,7 +192,7 @@ export function DrilldownTable({
               return (
                 <React.Fragment key={b.id}>
                 <tr
-                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                  className={`group border-b border-outline transition-colors cursor-pointer ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
                   onClick={() => setExpandedIds((prev) => {
                     const next = new Set(prev);
                     if (next.has(b.id)) next.delete(b.id);

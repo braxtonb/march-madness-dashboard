@@ -175,7 +175,7 @@ export function LeaderboardTable({
               <>
                 <tr
                   key={b.id}
-                  className={`group border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                  className={`group border-b border-outline transition-colors cursor-pointer ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
                   onClick={() => setExpandedIds((prev) => {
                     const next = new Set(prev);
                     if (next.has(b.id)) next.delete(b.id);

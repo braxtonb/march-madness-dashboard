@@ -35,7 +35,7 @@ export default function MobileCard({
 
   return (
     <div
-      className={`group rounded-card bg-surface-container border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+      className={`group rounded-card border border-outline-variant p-3 space-y-2 ${isMyBracket(b.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : "bg-surface-container"}`}
       onClick={() => setExpanded((prev) => !prev)}
     >
       {/* Top row: rank, name, points */}

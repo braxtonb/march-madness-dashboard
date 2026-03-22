@@ -367,7 +367,7 @@ export function ProbabilityClient({
                   {entries.map((entry) => (
                     <div
                       key={entry.name}
-                      className={`group flex items-center justify-between rounded-card bg-surface-bright/50 px-3 py-2 overflow-hidden ${isMyBracket(entry.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                      className={`group flex items-center justify-between rounded-card px-3 py-2 overflow-hidden ${isMyBracket(entry.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : "bg-surface-bright/50"}`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <CompareCheckbox bracketId={entry.id} />
@@ -448,7 +448,7 @@ export function ProbabilityClient({
                   return (
                     <React.Fragment key={d.id}>
                     <tr
-                      className={`group border-b border-outline-variant transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"} ${isMyBracket(d.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : ""}`}
+                      className={`group border-b border-outline-variant transition-colors cursor-pointer ${isMyBracket(d.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
                       onClick={() => setExpandedFinishIds((prev) => {
                         const next = new Set(prev);
                         if (next.has(d.id)) next.delete(d.id);
