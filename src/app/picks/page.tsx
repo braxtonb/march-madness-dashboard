@@ -41,6 +41,10 @@ export default async function GroupPicksPage() {
         team2Pickers.push(bracket);
       }
     }
+    // Sort pickers by points descending
+    const pointsById = new Map(data.brackets.map((b) => [b.name, b.points]));
+    team1Pickers.sort((a, b) => (pointsById.get(b.name) || 0) - (pointsById.get(a.name) || 0));
+    team2Pickers.sort((a, b) => (pointsById.get(b.name) || 0) - (pointsById.get(a.name) || 0));
     pickerDetailsMap[game.game_id] = { team1Pickers, team2Pickers };
   }
 

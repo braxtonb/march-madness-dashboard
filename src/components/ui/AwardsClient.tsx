@@ -27,14 +27,8 @@ export function AwardsClient({ awardsByRound, completedRounds, currentRound }: A
   const searchParams = useSearchParams();
   const router = useRouter();
   const paramRound = searchParams.get("round") as Round | null;
-  // Default to most recent completed round (one before current), or current if R64
-  const defaultRound = (() => {
-    const currentIdx = ROUND_ORDER.indexOf(currentRound);
-    if (currentIdx > 0) return ROUND_ORDER[currentIdx - 1]; // previous round (just completed)
-    return currentRound;
-  })();
   const [selectedRound, setSelectedRound] = useState<Round>(
-    paramRound && ROUND_ORDER.includes(paramRound) ? paramRound : defaultRound
+    paramRound && ROUND_ORDER.includes(paramRound) ? paramRound : currentRound
   );
 
   function changeRound(round: Round) {

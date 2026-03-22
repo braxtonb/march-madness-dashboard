@@ -146,7 +146,20 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
     router.replace(`?${params.toString()}`, { scroll: false });
   }
 
-  function changeNameFilter(v: string) { setNameFilter(v); updateUrl("search", v); }
+  function changeNameFilter(v: string) {
+    setNameFilter(v);
+    updateUrl("search", v);
+    // When selecting a sheet, auto-set champion to their pick and reset points filter
+    if (v) {
+      const match = data.find((d) => d.name === v);
+      if (match?.champion) {
+        setChampionFilter(match.champion);
+        updateUrl("champion", match.champion);
+      }
+      setPointsFilter("");
+      updateUrl("pts", "");
+    }
+  }
   function changeChampionFilter(v: string) { setChampionFilter(v); updateUrl("champion", v); }
   function changePointsFilter(v: string) { setPointsFilter(v); updateUrl("pts", v); }
   function changePointsOp(v: PointsOp) { setPointsOp(v); updateUrl("ptsOp", v); }

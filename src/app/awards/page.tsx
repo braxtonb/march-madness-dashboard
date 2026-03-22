@@ -104,18 +104,26 @@ function computeAwards(
     awards.push({ title: "Momentum Builder", winner: b.name, bracketName: b.owner, stat: `Climbed ${momentumBest.delta} ranks this round`, tier: "bronze" });
   }
 
-  // 6. The People's Champion — most aligned with consensus
-  let peopleBest = { id: "", count: 0 };
-  for (const [bid, bPicks] of picksByBracket) {
+  // 6. The People's Champion — most aligned with consensus across ALL bracket picks for this round
+  // Uses all picks (not just completed games) to measure consensus alignment
+  const allRoundPicks = picks.filter((p) => p.round === round);
+  const allPicksByBracket = new Map<string, typeof allRoundPicks>();
+  for (const p of allRoundPicks) {
+    if (!allPicksByBracket.has(p.bracket_id)) allPicksByBracket.set(p.bracket_id, []);
+    allPicksByBracket.get(p.bracket_id)!.push(p);
+  }
+
+  let peopleBest = { id: "", count: 0, total: 0 };
+  for (const [bid, bPicks] of allPicksByBracket) {
     const consensus = bPicks.filter((p) => {
       const rate = pickRates.get(p.game_id)?.get(p.team_picked) ?? 0;
       return rate > 0.5;
     }).length;
-    if (consensus > peopleBest.count) peopleBest = { id: bid, count: consensus };
+    if (consensus > peopleBest.count) peopleBest = { id: bid, count: consensus, total: bPicks.length };
   }
   if (peopleBest.id && peopleBest.count > 0) {
     const b = bracketMap.get(peopleBest.id)!;
-    awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count} picks aligned with group consensus`, tier: "bronze" });
+    awards.push({ title: "The People's Champion", winner: b.name, bracketName: b.owner, stat: `${peopleBest.count}/${peopleBest.total} picks aligned with group consensus`, tier: "bronze" });
   }
 
   // Ensure all 6 awards are present. Fill in missing ones with "No winner yet".
@@ -152,11 +160,8 @@ export default async function AwardsPage() {
     }
   }
 
-  // Default to the latest round that has picks, or the current round
-  const roundsWithPicks = allRounds.filter((r) => data.picks.some((p) => p.round === r));
-  const defaultRound = roundsWithPicks.length > 0
-    ? roundsWithPicks[roundsWithPicks.length - 1]
-    : currentRound;
+  // Default to the current round from meta data
+  const defaultRound = currentRound;
 
   // Build team logo lookup and inject logos into awards that have championName
   const teamLogos: Record<string, string> = Object.fromEntries(
