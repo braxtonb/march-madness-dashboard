@@ -67,6 +67,7 @@ interface LeaderboardContentProps {
   roundAccuracy: RoundAccuracy[];
   submittedCount: number;
   teamLogos?: Record<string, string>;
+  pathEntries?: { bracketId: string; remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }[];
 }
 
 function LeaderboardContentInner({
@@ -84,6 +85,7 @@ function LeaderboardContentInner({
   roundAccuracy,
   submittedCount,
   teamLogos = {},
+  pathEntries = [],
 }: LeaderboardContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -207,6 +209,7 @@ function LeaderboardContentInner({
             analytics={analytics}
             eliminatedTeams={eliminatedTeams}
             teamLogos={teamLogos}
+            pathEntries={pathEntries}
           />
 
           {/* Contention counter */}

@@ -230,9 +230,7 @@ export function ProbabilityClient({
         <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
           Simulated Finishes
         </button>
-        <button onClick={() => changeTab("path")} className={tab === "path" ? TAB_ACTIVE : TAB_INACTIVE}>
-          Path to Victory
-        </button>
+        {/* Path to Victory moved to leaderboard table (expandable rows) */}
         {aliveData && (
           <button onClick={() => changeTab("alive")} className={tab === "alive" ? TAB_ACTIVE : TAB_INACTIVE}>
             Who&apos;s Still Alive

@@ -139,6 +139,27 @@ export default async function LeaderboardPage() {
     return { round, correct, total: roundGames.length };
   });
 
+  // Path to victory per bracket
+  const ROUND_PTS: Record<string, number> = { R64: 10, R32: 20, S16: 40, E8: 80, FF: 160, CHAMP: 320 };
+  const completedGameIds = new Set(games.filter((g) => g.completed).map((g) => g.game_id));
+
+  const pathEntries = brackets.map((b) => {
+    const bPicks = picks.filter((p) => p.bracket_id === b.id);
+    const remainingPicks = bPicks
+      .filter((p) => !completedGameIds.has(p.game_id) && p.team_picked && !eliminatedTeams.has(p.team_picked))
+      .map((p) => ({
+        round: p.round,
+        team: p.team_picked,
+        seed: p.seed_picked,
+        pts: ROUND_PTS[p.round] || 0,
+        logo: teamLogos[p.team_picked] || "",
+      }));
+    const eliminatedPickCount = bPicks
+      .filter((p) => !completedGameIds.has(p.game_id) && p.team_picked && eliminatedTeams.has(p.team_picked))
+      .length;
+    return { bracketId: b.id, remainingPicks, eliminatedPickCount };
+  });
+
   return (
     <LeaderboardContent
       brackets={brackets}
@@ -155,6 +176,7 @@ export default async function LeaderboardPage() {
       roundAccuracy={roundAccuracy}
       submittedCount={submittedCount}
       teamLogos={teamLogos}
+      pathEntries={pathEntries}
     />
   );
 }

@@ -3,22 +3,43 @@
 import { useState } from "react";
 import type { Bracket, BracketAnalytics } from "@/lib/types";
 import { TeamPill } from "@/components/ui/TeamPill";
+import { ROUND_LABELS } from "@/lib/constants";
+import type { Round } from "@/lib/types";
 
 type SortKey = "rank" | "points" | "max" | "r64" | "r32" | "s16" | "e8" | "ff" | "champ";
+
+interface PathPick {
+  round: string;
+  team: string;
+  seed: number;
+  pts: number;
+  logo: string;
+}
+
+interface PathEntry {
+  bracketId: string;
+  remainingPicks: PathPick[];
+  eliminatedPickCount: number;
+}
 
 export function LeaderboardTable({
   brackets,
   analytics,
   eliminatedTeams,
   teamLogos = {},
+  pathEntries = [],
 }: {
   brackets: Bracket[];
   analytics: Map<string, BracketAnalytics>;
   eliminatedTeams: Set<string>;
   teamLogos?: Record<string, string>;
+  pathEntries?: PathEntry[];
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortAsc, setSortAsc] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const pathMap = new Map(pathEntries.map((p) => [p.bracketId, p]));
 
   const sorted = [...brackets].sort((a, b) => {
     const aA = analytics.get(a.id);
@@ -53,6 +74,7 @@ export function LeaderboardTable({
   const hdr = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant cursor-pointer hover:text-on-surface select-none whitespace-nowrap";
   const hdrStatic = "px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant whitespace-nowrap";
   const arrow = (key: SortKey) => sortKey === key ? (sortAsc ? " ↑" : " ↓") : "";
+  const colCount = 11;
 
   return (
     <div className="overflow-x-auto rounded-card bg-surface-container">
@@ -78,59 +100,92 @@ export function LeaderboardTable({
             if (!a) return null;
             const champEliminated = eliminatedTeams.has(b.champion_pick);
             const maxOverall = b.points + b.max_remaining;
+            const isExpanded = expandedId === b.id;
+            const path = pathMap.get(b.id);
 
             return (
-              <tr
-                key={b.id}
-                className="border-b border-outline transition-colors hover:bg-surface-bright"
-              >
-                <td className="px-2 py-2 font-label">
-                  <span className="text-on-surface">{a.rank}</span>
-                  {a.rank_delta > 0 && (
-                    <span className="ml-1 text-secondary text-xs">+{a.rank_delta}</span>
-                  )}
-                  {a.rank_delta === 0 && (
-                    <span className="ml-1 text-on-surface-variant text-xs">—</span>
-                  )}
-                </td>
-                <td className="px-2 py-2">
-                  <div className="font-body text-on-surface text-xs">{b.name}</div>
-                  <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
-                </td>
-                <td className="px-2 py-2">
-                  <TeamPill
-                    name={b.champion_pick}
-                    seed={b.champion_seed}
-                    eliminated={champEliminated}
-                    logo={teamLogos[b.champion_pick]}
-                    showStatus
-                  />
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface font-semibold">
-                  {b.points}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant">
-                  {maxOverall}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant text-xs">
-                  {b.r64_pts || "—"}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant text-xs">
-                  {b.r32_pts || "—"}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant text-xs">
-                  {b.s16_pts || "—"}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant text-xs">
-                  {b.e8_pts || "—"}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant text-xs">
-                  {b.ff_pts || "—"}
-                </td>
-                <td className="px-2 py-2 font-label text-on-surface-variant text-xs">
-                  {b.champ_pts || "—"}
-                </td>
-              </tr>
+              <>
+                <tr
+                  key={b.id}
+                  className={`border-b border-outline transition-colors cursor-pointer ${isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                  onClick={() => setExpandedId(isExpanded ? null : b.id)}
+                >
+                  <td className="px-2 py-2 font-label">
+                    <span className="text-on-surface">{a.rank}</span>
+                    {a.rank_delta > 0 && (
+                      <span className="ml-1 text-secondary text-xs">+{a.rank_delta}</span>
+                    )}
+                    {a.rank_delta === 0 && (
+                      <span className="ml-1 text-on-surface-variant text-xs">—</span>
+                    )}
+                  </td>
+                  <td className="px-2 py-2">
+                    <div className="font-body text-on-surface text-xs">{b.name}</div>
+                    <div className="text-[10px] text-on-surface-variant">{b.owner}</div>
+                  </td>
+                  <td className="px-2 py-2">
+                    <TeamPill
+                      name={b.champion_pick}
+                      seed={b.champion_seed}
+                      eliminated={champEliminated}
+                      logo={teamLogos[b.champion_pick]}
+                      showStatus
+                    />
+                  </td>
+                  <td className="px-2 py-2 font-label text-on-surface font-semibold">{b.points}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant">{maxOverall}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant text-xs">{b.r64_pts || "—"}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant text-xs">{b.r32_pts || "—"}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant text-xs">{b.s16_pts || "—"}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant text-xs">{b.e8_pts || "—"}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant text-xs">{b.ff_pts || "—"}</td>
+                  <td className="px-2 py-2 font-label text-on-surface-variant text-xs">{b.champ_pts || "—"}</td>
+                </tr>
+                {isExpanded && path && (
+                  <tr key={`${b.id}-path`}>
+                    <td colSpan={colCount} className="px-4 py-3 bg-surface-bright/50">
+                      <div className="space-y-2">
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
+                          Path to victory — {path.remainingPicks.length} alive picks remaining
+                          {path.eliminatedPickCount > 0 && (
+                            <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                          )}
+                        </p>
+                        {path.remainingPicks.length === 0 ? (
+                          <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {["R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
+                              const picks = path.remainingPicks.filter((p) => p.round === round);
+                              if (picks.length === 0) return null;
+                              return (
+                                <div key={round} className="flex items-center gap-2">
+                                  <span className="font-label text-[10px] text-on-surface-variant w-20 shrink-0">
+                                    {ROUND_LABELS[round as Round] || round}
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {picks.map((p) => (
+                                      <TeamPill
+                                        key={`${round}-${p.team}`}
+                                        name={p.team}
+                                        seed={p.seed}
+                                        logo={p.logo}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="font-label text-[10px] text-on-surface-variant">
+                                    +{picks.reduce((s, p) => s + p.pts, 0)} pts
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
             );
           })}
         </tbody>
