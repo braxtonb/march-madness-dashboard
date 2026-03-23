@@ -425,6 +425,62 @@ export default function SimulatorPage() {
     return data.brackets.map((b) => ({ value: b.id, label: b.name, sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined }));
   }, [data]);
 
+  // Compute sim results synchronously as a memo — no useEffect flicker
+  const simResults = useMemo((): SimResult[] => {
+    if (!data) return [];
+    const picksByBracket = new Map<string, Map<string, string>>();
+    for (const p of data.picks) {
+      if (!picksByBracket.has(p.bracket_id)) picksByBracket.set(p.bracket_id, new Map());
+      picksByBracket.get(p.bracket_id)!.set(p.game_id, p.team_picked);
+    }
+
+    const scored = data.brackets.map((b) => {
+      const bPicks = picksByBracket.get(b.id);
+      let bonus = 0;
+      if (bPicks) {
+        for (const [gameId, winner] of selections) {
+          const picked = bPicks.get(gameId);
+          const game = data.games.find((g) => g.game_id === gameId);
+          if (picked === winner && game) {
+            bonus += ROUND_POINTS[game.round as keyof typeof ROUND_POINTS] || 0;
+          }
+        }
+      }
+      const cappedBonus = Math.min(bonus, b.max_remaining);
+      return { id: b.id, name: b.name, owner: b.owner, full_name: b.full_name, champion: b.champion_pick, basePoints: b.points, simPoints: b.points + cappedBonus };
+    });
+
+    const baseRanked = [...data.brackets].sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.max_remaining !== a.max_remaining) return b.max_remaining - a.max_remaining;
+      return a.name.localeCompare(b.name);
+    });
+    const baseRankMap = new Map<string, number>();
+    for (let i = 0; i < baseRanked.length; i++) {
+      if (i === 0) { baseRankMap.set(baseRanked[i].id, 1); }
+      else if (baseRanked[i].points === baseRanked[i - 1].points && baseRanked[i].max_remaining === baseRanked[i - 1].max_remaining) {
+        baseRankMap.set(baseRanked[i].id, baseRankMap.get(baseRanked[i - 1].id)!);
+      } else { baseRankMap.set(baseRanked[i].id, i + 1); }
+    }
+
+    const simRanked = [...scored].sort((a, b) => {
+      if (b.simPoints !== a.simPoints) return b.simPoints - a.simPoints;
+      return a.name.localeCompare(b.name);
+    });
+    const simRankList: number[] = [];
+    for (let i = 0; i < simRanked.length; i++) {
+      if (i === 0) { simRankList.push(1); }
+      else if (simRanked[i].simPoints === simRanked[i - 1].simPoints) { simRankList.push(simRankList[i - 1]); }
+      else { simRankList.push(i + 1); }
+    }
+
+    return simRanked.map((s, i) => ({
+      ...s,
+      baseRank: baseRankMap.get(s.id) || 0,
+      simRank: simRankList[i],
+    }));
+  }, [data, selections]);
+
   const simChampionOptions: MultiSelectOption[] = useMemo(() => {
     const map = new Set<string>();
     for (const r of simResults) if (r.champion) map.add(r.champion);
@@ -508,63 +564,6 @@ export default function SimulatorPage() {
     }
     updateHash(hp);
   }, [selections, data, activeScenario]);
-
-  // Compute sim results synchronously as a memo — no useEffect flicker
-  const simResults = useMemo((): SimResult[] => {
-    if (!data) return [];
-    const picksByBracket = new Map<string, Map<string, string>>();
-    for (const p of data.picks) {
-      if (!picksByBracket.has(p.bracket_id)) picksByBracket.set(p.bracket_id, new Map());
-      picksByBracket.get(p.bracket_id)!.set(p.game_id, p.team_picked);
-    }
-
-    const scored = data.brackets.map((b) => {
-      const bPicks = picksByBracket.get(b.id);
-      let bonus = 0;
-      if (bPicks) {
-        for (const [gameId, winner] of selections) {
-          const picked = bPicks.get(gameId);
-          const game = data.games.find((g) => g.game_id === gameId);
-          if (picked === winner && game) {
-            bonus += ROUND_POINTS[game.round as keyof typeof ROUND_POINTS] || 0;
-          }
-        }
-      }
-      const cappedBonus = Math.min(bonus, b.max_remaining);
-      return { id: b.id, name: b.name, owner: b.owner, full_name: b.full_name, champion: b.champion_pick, basePoints: b.points, simPoints: b.points + cappedBonus };
-    });
-
-    // RANK style (not dense) — ties get the same rank, then skip
-    const baseRanked = [...data.brackets].sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.max_remaining !== a.max_remaining) return b.max_remaining - a.max_remaining;
-      return a.name.localeCompare(b.name);
-    });
-    const baseRankMap = new Map<string, number>();
-    for (let i = 0; i < baseRanked.length; i++) {
-      if (i === 0) { baseRankMap.set(baseRanked[i].id, 1); }
-      else if (baseRanked[i].points === baseRanked[i - 1].points && baseRanked[i].max_remaining === baseRanked[i - 1].max_remaining) {
-        baseRankMap.set(baseRanked[i].id, baseRankMap.get(baseRanked[i - 1].id)!);
-      } else { baseRankMap.set(baseRanked[i].id, i + 1); }
-    }
-
-    const simRanked = [...scored].sort((a, b) => {
-      if (b.simPoints !== a.simPoints) return b.simPoints - a.simPoints;
-      return a.name.localeCompare(b.name);
-    });
-    const simRankList: number[] = [];
-    for (let i = 0; i < simRanked.length; i++) {
-      if (i === 0) { simRankList.push(1); }
-      else if (simRanked[i].simPoints === simRanked[i - 1].simPoints) { simRankList.push(simRankList[i - 1]); }
-      else { simRankList.push(i + 1); }
-    }
-
-    return simRanked.map((s, i) => ({
-      ...s,
-      baseRank: baseRankMap.get(s.id) || 0,
-      simRank: simRankList[i],
-    }));
-  }, [data, selections]);
 
   // Toggle a winner selection (clears scenario since it's a custom pick)
   function toggleWinner(gameId: string, team: string) {
