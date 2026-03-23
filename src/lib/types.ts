@@ -148,6 +148,7 @@ export interface DerivedData {
   madness_index: number;
   submitted_count: number;
   team_logos: Record<string, string>;
+  team_abbrevs: Record<string, string>;
 }
 
 /** All data needed to render any page */

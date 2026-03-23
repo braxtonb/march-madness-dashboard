@@ -13,6 +13,7 @@ interface BracketViewProps {
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
   totalBrackets: number;
   teamLogos?: Record<string, string>;
+  teamAbbrevs?: Record<string, string>;
   eliminatedTeams?: Set<string>;
   onGameClick?: (gameId: string) => void;
   /** When set, highlights which team this bracket picked in each game */
@@ -25,16 +26,16 @@ interface BracketViewProps {
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const GAME_H = 56;
-const GAME_W = 170;
-const BASE_GAP = 44; // vertical gap between R64 games — R32 nests between parents via z-index
+const GAME_H = 58;
+const GAME_W = 160;
+const BASE_GAP = 56; // vertical gap between R64 games — R32 nests between parents via z-index
 const REGION_GAP = 48;
 const CENTER_GAP = 4; // gap between FF/Champ games in center section
 const SECTION_GAP = 4; // gap between left/center and center/right sections
 
 /** Per-round x-offsets (LTR direction, from outer edge toward center) */
-const ROUND_X: Record<string, number> = { R64: 0, R32: 180, S16: 360, E8: 460 };
-const MAX_ROUND_X = 460; // rightmost regional round offset
+const ROUND_X: Record<string, number> = { R64: 0, R32: 170, S16: 340, E8: 396 };
+const MAX_ROUND_X = 396; // rightmost regional round offset — tuned so total fits max-w-7xl (1280px) at scale=1
 
 /** Region codes to display labels */
 const REGION_NAMES: Record<string, string> = {
@@ -49,9 +50,9 @@ const REGION_ROUNDS: Round[] = ["R64", "R32", "S16", "E8"];
 
 /** Short round labels for column headers */
 const SHORT_ROUND_LABELS: Record<string, string> = {
-  R64: "R64",
-  R32: "R32",
-  S16: "S16",
+  R64: "Round of 64",
+  R32: "Round of 32",
+  S16: "Sweet 16",
   E8: "Elite 8",
   FF: "Final Four",
   CHAMP: "Championship",
@@ -111,6 +112,8 @@ function GameCell({
   mirror = false,
   bracketPick,
   gameTeams,
+  teamLogos = {},
+  teamAbbrevs = {},
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
@@ -122,10 +125,13 @@ function GameCell({
   bracketPick?: string;
   /** The two teams that were pickable for this game (from all brackets' picks) */
   gameTeams?: [string, string];
+  teamLogos?: Record<string, string>;
+  teamAbbrevs?: Record<string, string>;
 }) {
   const total = pickSplit.team1Count + pickSplit.team2Count;
-  const pct1 = total > 0 ? Math.round((pickSplit.team1Count / total) * 100) : 50;
-  const pct2 = total > 0 ? 100 - pct1 : 50;
+  const hasPicks = total > 0;
+  const pct1 = hasPicks ? Math.round((pickSplit.team1Count / total) * 100) : 0;
+  const pct2 = hasPicks ? 100 - pct1 : 0;
   const isCompleted = game.completed;
 
   const team1IsWinner = isCompleted && game.winner === game.team1;
@@ -151,18 +157,19 @@ function GameCell({
 
   const borderClass = pickCorrect ? "border-emerald-500/70" : pickIncorrect ? "border-red-400/40" : "border-on-surface-variant/40";
 
-  const pickedTeamName = displayedPick ? shortName(displayedPick) : "";
+  const abbr = (name: string) => teamAbbrevs[name] || shortName(name);
+  const pickedTeamName = displayedPick ? abbr(displayedPick) : "";
   // Always derive opponent from the bracket's predicted matchup (gameTeams), not the actual game teams
   const predictedOpponent = (() => {
     if (!displayedPick) return "";
     // If bracket pick is one of the two pickable teams, opponent is the other
     if (gameTeams) {
       const other = gameTeams[0] === displayedPick ? gameTeams[1] : gameTeams[1] === displayedPick ? gameTeams[0] : "";
-      if (other) return shortName(other);
+      if (other) return abbr(other);
     }
     // Fallback: use actual game teams
     if (game.team1 && game.team2) {
-      return shortName(displayedPick === game.team1 ? game.team2 : game.team1);
+      return abbr(displayedPick === game.team1 ? game.team2 : game.team1);
     }
     return "";
   })();
@@ -176,7 +183,7 @@ function GameCell({
     >
       {/* Pick header — shows bracket pick or group consensus */}
       {hasPick && (
-        <div className={`flex items-center justify-between px-2 py-0.5 text-[10px] font-label border-b border-outline-variant/20 ${
+        <div className={`flex items-center justify-between px-1.5 py-0.5 text-xs font-label border-b border-outline-variant/20 ${
           pickCorrect ? "bg-emerald-500/10 text-emerald-400" : pickIncorrect ? "bg-red-400/10 text-red-400" : "text-on-surface-variant/60"
         }`}>
           <span className="truncate font-bold">{pickLabel}: <span className="font-extrabold">{pickedTeamName}</span>{predictedOpponent && <span className="font-semibold opacity-60"> over {predictedOpponent}</span>}</span>
@@ -186,7 +193,7 @@ function GameCell({
       )}
       {/* Team 1 */}
       <div
-        className={`flex items-center justify-between px-2 py-1 text-xs border-b border-outline-variant/20 ${mirror ? "flex-row-reverse" : ""} ${
+        className={`flex items-center justify-between px-1.5 py-1 text-xs border-b border-outline-variant/20 ${mirror ? "flex-row-reverse" : ""} ${
           team1IsWinner
             ? "text-on-surface font-semibold"
             : team1Eliminated
@@ -194,28 +201,30 @@ function GameCell({
               : "text-on-surface-variant"
         }`}
       >
-        <span className="truncate">
+        <span className="truncate flex items-center gap-1">
           {mirror ? (
             <>
-              {shortName(game.team1)}{" "}
-              <span className="text-on-surface-variant/60 ml-1">
+              {teamLogos[game.team1] && <img src={teamLogos[game.team1]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {abbr(game.team1)}{" "}
+              <span className="text-on-surface-variant/60 ml-0.5">
                 {game.seed1 || ""}
               </span>
             </>
           ) : (
             <>
-              <span className="text-on-surface-variant/60 mr-1">
+              <span className="text-on-surface-variant/60 mr-0.5">
                 {game.seed1 || ""}
               </span>
-              {shortName(game.team1)}
+              {teamLogos[game.team1] && <img src={teamLogos[game.team1]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {abbr(game.team1)}
             </>
           )}
         </span>
-        <span className="text-[10px] shrink-0">{pct1}%</span>
+        {hasPicks && <span className="text-[11px] shrink-0">{pct1}% <span className="text-on-surface-variant/50">({pickSplit.team1Count})</span></span>}
       </div>
       {/* Team 2 */}
       <div
-        className={`flex items-center justify-between px-2 py-1 text-xs ${mirror ? "flex-row-reverse" : ""} ${
+        className={`flex items-center justify-between px-1.5 py-1 text-xs ${mirror ? "flex-row-reverse" : ""} ${
           team2IsWinner
             ? "text-on-surface font-semibold"
             : team2Eliminated
@@ -223,27 +232,29 @@ function GameCell({
               : "text-on-surface-variant"
         }`}
       >
-        <span className="truncate">
+        <span className="truncate flex items-center gap-1">
           {mirror ? (
             <>
-              {shortName(game.team2)}{" "}
-              <span className="text-on-surface-variant/60 ml-1">
+              {teamLogos[game.team2] && <img src={teamLogos[game.team2]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {abbr(game.team2)}{" "}
+              <span className="text-on-surface-variant/60 ml-0.5">
                 {game.seed2 || ""}
               </span>
             </>
           ) : (
             <>
-              <span className="text-on-surface-variant/60 mr-1">
+              <span className="text-on-surface-variant/60 mr-0.5">
                 {game.seed2 || ""}
               </span>
-              {shortName(game.team2)}
+              {teamLogos[game.team2] && <img src={teamLogos[game.team2]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {abbr(game.team2)}
             </>
           )}
         </span>
-        <span className="text-[10px] shrink-0">{pct2}%</span>
+        {hasPicks && <span className="text-[11px] shrink-0">{pct2}% <span className="text-on-surface-variant/50">({pickSplit.team2Count})</span></span>}
       </div>
       {/* ESPN link + status — fixed height so all cards match */}
-      <div className="flex items-center justify-between px-2 pt-0.5 pb-1" style={{ minHeight: 16 }}>
+      <div className="flex items-center justify-between px-1.5 pt-0.5 pb-0.5" style={{ minHeight: 16 }}>
         {game.espn_url && isCompleted ? (
           <a
             href={game.espn_url}
@@ -258,9 +269,9 @@ function GameCell({
           <span />
         )}
         {isCompleted ? (
-          <span className="text-[9px] text-on-surface-variant/70">Final</span>
+          <span className="text-[10px] text-on-surface-variant/70">Final</span>
         ) : (
-          <span className="text-[9px] text-on-surface-variant/70">Scheduled</span>
+          <span className="text-[10px] text-on-surface-variant/70">Scheduled</span>
         )}
       </div>
     </button>
@@ -271,6 +282,15 @@ function GameCell({
 /*  ColumnHeader — round label + point value for a single column      */
 /* ------------------------------------------------------------------ */
 
+const ROUND_DATES: Record<string, string> = {
+  R64: "Mar 19–20",
+  R32: "Mar 21–22",
+  S16: "Mar 26–27",
+  E8: "Mar 28–30",
+  FF: "Apr 5",
+  CHAMP: "Apr 6",
+};
+
 function ColumnHeader({ round, align = "center" }: { round: Round; align?: "left" | "center" | "right" }) {
   const pts = ROUND_POINTS[round];
   const justifyClass = align === "left" ? "justify-start" : align === "right" ? "justify-end" : "justify-center";
@@ -279,11 +299,14 @@ function ColumnHeader({ round, align = "center" }: { round: Round; align?: "left
       className={`shrink-0 py-1 flex ${justifyClass}`}
       style={{ width: GAME_W }}
     >
-      <div className="text-center">
-        <div className="inline-block rounded-full bg-surface-bright/80 px-2.5 py-0.5 text-[10px] font-label text-on-surface-variant uppercase tracking-wider leading-tight">
+      <div className="text-center space-y-0.5">
+        <div className="inline-block rounded-full bg-surface-bright/80 px-2.5 py-0.5 text-[11px] font-label text-on-surface-variant uppercase tracking-wider leading-tight">
           {SHORT_ROUND_LABELS[round] || round}
         </div>
-        <div className="text-[10px] text-primary font-bold mt-0.5 leading-tight">
+        <div className="text-[10px] text-on-surface-variant/60 leading-tight">
+          {ROUND_DATES[round]}
+        </div>
+        <div className="text-[11px] text-primary font-bold leading-tight">
           {pts} pts
         </div>
       </div>
@@ -305,6 +328,8 @@ function RegionBracket({
   onGameClick,
   highlightBracketPicks,
   gameTeamsMap = {},
+  teamLogos = {},
+  teamAbbrevs = {},
 }: {
   games: Game[];
   region: string;
@@ -315,6 +340,8 @@ function RegionBracket({
   onGameClick?: (gameId: string) => void;
   highlightBracketPicks?: Record<string, string>;
   gameTeamsMap?: Record<string, [string, string]>;
+  teamLogos?: Record<string, string>;
+  teamAbbrevs?: Record<string, string>;
 }) {
   const regionGames = useMemo(
     () => games.filter((g) => g.region === region),
@@ -380,7 +407,7 @@ function RegionBracket({
     <div>
       {/* Region label — prominent static block above bracket grid */}
       <div
-        className={`font-display text-sm font-bold text-on-surface uppercase tracking-widest mb-4 pt-2 px-1 ${isMirror ? "text-right" : ""}`}
+        className={`font-display text-base font-bold text-on-surface uppercase tracking-widest mb-4 pt-2 px-1 ${isMirror ? "text-right" : ""}`}
       >
         <span className="inline-block border-b-2 border-primary pb-0.5">
           {REGION_NAMES[region] || region}
@@ -435,6 +462,8 @@ function RegionBracket({
                     mirror={isMirror}
                     bracketPick={highlightBracketPicks?.[game.game_id]}
                     gameTeams={gameTeamsMap[game.game_id]}
+                    teamLogos={teamLogos}
+                    teamAbbrevs={teamAbbrevs}
                   />
                 </div>
               ))}
@@ -455,6 +484,7 @@ export function BracketView({
   pickSplits,
   totalBrackets,
   teamLogos = {},
+  teamAbbrevs = {},
   eliminatedTeams,
   onGameClick,
   highlightBracketPicks,
@@ -464,6 +494,16 @@ export function BracketView({
   const bracketRef = useRef<HTMLDivElement>(null);
   const naturalWidthRef = useRef<number>(0);
   const [bracketScale, setBracketScale] = useState(1);
+
+  // Mobile collapsed state — all completed rounds collapsed, non-completed rounds expanded
+  const [mobileCollapsed, setMobileCollapsed] = useState<Set<Round>>(() => {
+    const allRounds: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
+    const completedRounds = allRounds.filter((r) =>
+      games.some((g) => g.round === r && g.completed) &&
+      games.filter((g) => g.round === r).every((g) => g.completed)
+    );
+    return new Set<Round>(completedRounds);
+  });
 
   const computeScale = useCallback(() => {
     if (!scrollRef.current || !bracketRef.current) return;
@@ -532,9 +572,9 @@ export function BracketView({
   const hasR3 = regions.includes("R3");
   const hasR4 = regions.includes("R4");
 
-  // Column header rounds for each side
-  const leftRounds: Round[] = ["R64", "R32", "S16", "E8"];
-  const rightRounds: Round[] = ["E8", "S16", "R32", "R64"];
+  // Column header rounds for each side (E8 combined with Final Rounds in center)
+  const leftRounds: Round[] = ["R64", "R32", "S16"];
+  const rightRounds: Round[] = ["S16", "R32", "R64"];
   const centerRounds: Round[] = hasFinalRounds
     ? [
         ...(ffGames.length > 0 ? (["FF"] as Round[]) : []),
@@ -573,26 +613,69 @@ export function BracketView({
         )}
       </div>
 
-      {/* Mobile: stacked list by round */}
-      <div className="lg:hidden space-y-4">
+      {/* Mobile: stacked list by round — collapsible */}
+      <div className="lg:hidden space-y-3">
         {(["R64", "R32", "S16", "E8", "FF", "CHAMP"] as Round[]).map((round) => {
           const roundGames = games.filter((g) => g.round === round).sort((a, b) => a.game_id.localeCompare(b.game_id));
           if (roundGames.length === 0) return null;
+          const isCollapsed = mobileCollapsed.has(round);
           return (
-            <div key={round}>
-              <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-2">
-                {SHORT_ROUND_LABELS[round] || round} <span className="text-primary font-bold ml-1">{ROUND_POINTS[round]} pts</span>
-              </p>
+            <div key={round} className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setMobileCollapsed((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(round)) next.delete(round); else next.add(round);
+                  return next;
+                })}
+                className="w-full flex items-center gap-2 pt-2 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+              >
+                <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">
+                  {isCollapsed ? "+" : "\u2212"}
+                </span>
+                <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                  {SHORT_ROUND_LABELS[round] || round}
+                </p>
+                <span className="text-[11px] text-primary font-bold">{ROUND_POINTS[round]} pts</span>
+                {isCollapsed && (
+                  <span className="text-xs text-on-surface-variant/50 ml-auto">
+                    {roundGames.length} game{roundGames.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </button>
+              {!isCollapsed && (
               <div className="space-y-1.5">
                 {roundGames.map((game) => {
                   const split = pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 };
                   const pick = highlightBracketPicks?.[game.game_id];
                   const t1 = game.team1 || "TBD";
                   const t2 = game.team2 || "TBD";
-                  const pickName = pick || (split.team1Count >= split.team2Count ? game.team1 : game.team2);
+                  const gt = gameTeamsMap[game.game_id];
+                  const pickName = pick || (gt
+                    ? (split.team1Count >= split.team2Count ? gt[0] : gt[1])
+                    : (split.team1Count >= split.team2Count ? game.team1 : game.team2));
+                  const pickInGame = pickName === game.team1 || pickName === game.team2;
                   const pickIsCorrect = game.completed && pickName === game.winner;
-                  const pickIsWrong = game.completed && pickName && pickName !== game.winner;
+                  const pickIsWrong = game.completed && pickName && (!pickInGame || pickName !== game.winner);
                   const pickEliminated = pickName ? eliminatedTeams?.has(pickName) : false;
+                  const pickLabel = pick ? "Pick" : "Group";
+                  const mAbbr = (name: string) => teamAbbrevs[name] || shortName(name);
+                  const mobileOpponent = (() => {
+                    if (!pickName) return "";
+                    if (gt) {
+                      const other = gt[0] === pickName ? gt[1] : gt[1] === pickName ? gt[0] : "";
+                      if (other) return mAbbr(other);
+                    }
+                    if (game.team1 && game.team2) {
+                      return mAbbr(pickName === game.team1 ? game.team2 : game.team1);
+                    }
+                    return "";
+                  })();
+
+                  const mTotal = split.team1Count + split.team2Count;
+                  const mHasPicks = mTotal > 0;
+                  const mPct1 = mHasPicks ? Math.round((split.team1Count / mTotal) * 100) : 0;
+                  const mPct2 = mHasPicks ? 100 - mPct1 : 0;
 
                   return (
                     <button
@@ -603,20 +686,22 @@ export function BracketView({
                       } ${onGameClick ? "cursor-pointer hover:bg-surface-bright" : ""}`}
                     >
                       {pickName && (
-                        <div className={`text-[10px] font-label font-bold mb-1 flex items-center gap-1 ${
+                        <div className={`text-xs font-label font-bold mb-1 flex items-center gap-1 ${
                           pickIsCorrect ? "text-emerald-400" : (pickIsWrong || pickEliminated) ? "text-red-400" : "text-on-surface-variant/60"
                         }`}>
-                          {pick ? "Pick" : "Group"}: {shortName(pickName)}
-                          {pickIsCorrect && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
-                          {(pickIsWrong || pickEliminated) && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>}
+                          {pickLabel}: <span className="font-extrabold">{mAbbr(pickName)}</span>{mobileOpponent && <span className="font-semibold opacity-60"> over {mobileOpponent}</span>}
+                          {pickIsCorrect && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
+                          {(pickIsWrong || pickEliminated) && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>}
                         </div>
                       )}
                       <div className="flex items-center gap-2">
-                        <span className={`flex-1 text-xs font-label ${game.completed && game.winner === game.team1 ? "text-on-surface font-bold" : game.completed ? "text-on-surface-variant/50 line-through" : "text-on-surface-variant"}`}>
+                        <span className={`flex-1 text-sm font-label ${game.completed && game.winner === game.team1 ? "text-on-surface font-bold" : game.completed ? "text-on-surface-variant/50 line-through" : "text-on-surface-variant"}`}>
                           {game.seed1 ? `${game.seed1} ` : ""}{shortName(t1)}
+                          {mHasPicks && <span className="text-[10px] text-on-surface-variant/50 ml-1">{mPct1}% ({split.team1Count})</span>}
                         </span>
-                        <span className="text-[9px] text-on-surface-variant/40">vs</span>
-                        <span className={`flex-1 text-xs font-label text-right ${game.completed && game.winner === game.team2 ? "text-on-surface font-bold" : game.completed ? "text-on-surface-variant/50 line-through" : "text-on-surface-variant"}`}>
+                        <span className="text-[10px] text-on-surface-variant/40">vs</span>
+                        <span className={`flex-1 text-sm font-label text-right ${game.completed && game.winner === game.team2 ? "text-on-surface font-bold" : game.completed ? "text-on-surface-variant/50 line-through" : "text-on-surface-variant"}`}>
+                          {mHasPicks && <span className="text-[10px] text-on-surface-variant/50 mr-1">{mPct2}% ({split.team2Count})</span>}
                           {shortName(t2)}{game.seed2 ? ` ${game.seed2}` : ""}
                         </span>
                       </div>
@@ -624,6 +709,7 @@ export function BracketView({
                   );
                 })}
               </div>
+              )}
             </div>
           );
         })}
@@ -635,7 +721,7 @@ export function BracketView({
         <div className="sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-2 border-b border-on-surface-variant/10 mb-6"
           style={bracketScale < 1 ? { transform: `scale(${bracketScale})`, transformOrigin: "top left" } : undefined}
         >
-          <div className="flex items-stretch" style={{ height: 40 }}>
+          <div className="flex items-stretch" style={{ height: 56 }}>
             {/* Left header region — left-aligned with game cards */}
             <div className="relative shrink-0" style={{ width: GAME_W + MAX_ROUND_X }}>
               {leftRounds.map((round) => (
@@ -644,15 +730,18 @@ export function BracketView({
                 </div>
               ))}
             </div>
-            {/* Center header — single card width, FF games overflow visually */}
+            {/* Center header — E8 + FF + CHAMP combined as "Final Rounds" */}
             {hasFinalRounds && (
               <div className="shrink-0 text-center py-1 flex items-center justify-center" style={{ width: GAME_W, marginLeft: SECTION_GAP, marginRight: SECTION_GAP }}>
-                <div>
-                  <div className="inline-block rounded-full bg-surface-bright/80 px-2.5 py-0.5 text-[10px] font-label text-on-surface-variant uppercase tracking-wider leading-tight">
+                <div className="space-y-0.5">
+                  <div className="inline-block rounded-full bg-surface-bright/80 px-2.5 py-0.5 text-[11px] font-label text-on-surface-variant uppercase tracking-wider leading-tight">
                     Final Rounds
                   </div>
-                  <div className="text-[10px] text-primary font-bold mt-0.5 leading-tight">
-                    {ROUND_POINTS.FF}&ndash;{ROUND_POINTS.CHAMP} pts
+                  <div className="text-[10px] text-on-surface-variant/60 leading-tight">
+                    Mar 28 – Apr 6
+                  </div>
+                  <div className="text-[11px] text-primary font-bold leading-tight">
+                    {ROUND_POINTS.E8}&ndash;{ROUND_POINTS.CHAMP} pts
                   </div>
                 </div>
               </div>
@@ -693,6 +782,8 @@ export function BracketView({
                 onGameClick={onGameClick}
                 highlightBracketPicks={highlightBracketPicks}
                 gameTeamsMap={gameTeamsMap}
+                teamLogos={teamLogos}
+                teamAbbrevs={teamAbbrevs}
               />
             )}
             {hasR2 && (
@@ -706,6 +797,8 @@ export function BracketView({
                 onGameClick={onGameClick}
                 highlightBracketPicks={highlightBracketPicks}
                 gameTeamsMap={gameTeamsMap}
+                teamLogos={teamLogos}
+                teamAbbrevs={teamAbbrevs}
               />
             )}
           </div>
@@ -733,6 +826,8 @@ export function BracketView({
                     }
                     bracketPick={highlightBracketPicks?.[ffLeft.game_id]}
                     gameTeams={gameTeamsMap[ffLeft.game_id]}
+                    teamLogos={teamLogos}
+                    teamAbbrevs={teamAbbrevs}
                   />
                 </div>
               )}
@@ -757,6 +852,8 @@ export function BracketView({
                   }
                   bracketPick={highlightBracketPicks?.[game.game_id]}
                   gameTeams={gameTeamsMap[game.game_id]}
+                  teamLogos={teamLogos}
+                  teamAbbrevs={teamAbbrevs}
                 />
               ))}
 
@@ -781,6 +878,8 @@ export function BracketView({
                     mirror
                     bracketPick={highlightBracketPicks?.[ffRight.game_id]}
                     gameTeams={gameTeamsMap[ffRight.game_id]}
+                    teamLogos={teamLogos}
+                    teamAbbrevs={teamAbbrevs}
                   />
                 </div>
               )}
@@ -800,6 +899,8 @@ export function BracketView({
                 onGameClick={onGameClick}
                 highlightBracketPicks={highlightBracketPicks}
                 gameTeamsMap={gameTeamsMap}
+                teamLogos={teamLogos}
+                teamAbbrevs={teamAbbrevs}
               />
             )}
             {hasR4 && (
@@ -813,6 +914,8 @@ export function BracketView({
                 onGameClick={onGameClick}
                 highlightBracketPicks={highlightBracketPicks}
                 gameTeamsMap={gameTeamsMap}
+                teamLogos={teamLogos}
+                teamAbbrevs={teamAbbrevs}
               />
             )}
           </div>

@@ -44,9 +44,21 @@ export function PicksDrawer({
       onPrev={onPrev}
       onNext={onNext}
     >
+      {/* Both teams TBD — empty state */}
+      {!game.team1 && !game.team2 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-on-surface-variant/60">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 text-on-surface-variant/40">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <p className="text-sm font-label font-semibold text-on-surface-variant/50">Matchup not yet decided</p>
+          <p className="text-xs text-on-surface-variant/40 mt-1">Check back after earlier rounds are complete</p>
+        </div>
+      ) : (
+      <>
       <div className="flex items-center justify-between mb-4">
         <TeamPill name={game.team1} seed={game.seed1} logo={teamLogos[game.team1]} eliminated={eliminatedTeams?.has(game.team1)} showStatus={!!eliminatedTeams} />
-        <span className="text-xs text-on-surface-variant">vs</span>
+        <span className="text-sm text-on-surface-variant">vs</span>
         <TeamPill name={game.team2} seed={game.seed2} logo={teamLogos[game.team2]} eliminated={eliminatedTeams?.has(game.team2)} showStatus={!!eliminatedTeams} />
       </div>
 
@@ -64,17 +76,17 @@ export function PicksDrawer({
                 {isLoser && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
                 )}
-                <p className="text-sm font-label">
-                  Picked {game.team1}{" "}
-                  <span className={`font-semibold ${isWinner ? "text-emerald-400" : "text-on-surface"}`}>
-                    ({pickerDetails.team1Pickers.length})
-                  </span>
+                <p className="text-base font-label">
+                  {game.team1 ? <>Picked {game.team1}{" "}
+                    <span className={`font-semibold ${isWinner ? "text-emerald-400" : "text-on-surface"}`}>
+                      ({pickerDetails.team1Pickers.length})
+                    </span></> : "TBD"}
                 </p>
               </div>
             );
           })()}
           {pickerDetails.team1Pickers.length === 0 ? (
-            <p className="text-xs text-on-surface-variant italic">None</p>
+            game.team1 ? <p className="text-sm text-on-surface-variant italic">None</p> : null
           ) : (
             pickerDetails.team1Pickers.map((picker) => (
               <div
@@ -83,11 +95,11 @@ export function PicksDrawer({
               >
                 <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-on-surface truncate">
+                  <p className="text-base font-semibold text-on-surface truncate">
                     {picker.name}
                   </p>
                   {picker.full_name && picker.full_name !== picker.name && (
-                    <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
+                    <p className="text-xs text-on-surface-variant truncate">{picker.full_name}</p>
                   )}
                   <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
                 </div>
@@ -108,17 +120,17 @@ export function PicksDrawer({
                 {isLoser && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
                 )}
-                <p className="text-sm font-label">
-                  Picked {game.team2}{" "}
-                  <span className={`font-semibold ${isWinner ? "text-emerald-400" : "text-on-surface"}`}>
-                    ({pickerDetails.team2Pickers.length})
-                  </span>
+                <p className="text-base font-label">
+                  {game.team2 ? <>Picked {game.team2}{" "}
+                    <span className={`font-semibold ${isWinner ? "text-emerald-400" : "text-on-surface"}`}>
+                      ({pickerDetails.team2Pickers.length})
+                    </span></> : "TBD"}
                 </p>
               </div>
             );
           })()}
           {pickerDetails.team2Pickers.length === 0 ? (
-            <p className="text-xs text-on-surface-variant italic">None</p>
+            game.team2 ? <p className="text-sm text-on-surface-variant italic">None</p> : null
           ) : (
             pickerDetails.team2Pickers.map((picker) => (
               <div
@@ -127,11 +139,11 @@ export function PicksDrawer({
               >
                 <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-on-surface truncate">
+                  <p className="text-base font-semibold text-on-surface truncate">
                     {picker.name}
                   </p>
                   {picker.full_name && picker.full_name !== picker.name && (
-                    <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
+                    <p className="text-xs text-on-surface-variant truncate">{picker.full_name}</p>
                   )}
                   <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
                 </div>
@@ -140,6 +152,8 @@ export function PicksDrawer({
           )}
         </div>
       </div>
+      </>
+      )}
     </BottomSheet>
   );
 }
@@ -183,7 +197,7 @@ export function GameCard({
           <span className="inline-flex items-center rounded-full bg-surface-bright px-2.5 py-1 text-xs font-label text-on-surface-variant">
             TBD
           </span>
-          <span className="text-xs text-on-surface-variant">vs</span>
+          <span className="text-sm text-on-surface-variant">vs</span>
           <span className="inline-flex items-center rounded-full bg-surface-bright px-2.5 py-1 text-xs font-label text-on-surface-variant">
             TBD
           </span>
@@ -219,7 +233,7 @@ export function GameCard({
                 showStatus={!!eliminatedTeams}
               />
             </div>
-            <span className={`font-label text-xs shrink-0 ${game.completed && game.winner === game.team1 ? "text-on-surface font-bold" : "text-on-surface-variant"}`}>
+            <span className={`font-label text-sm shrink-0 ${game.completed && game.winner === game.team1 ? "text-on-surface font-bold" : "text-on-surface-variant"}`}>
               {team1Pct}%
             </span>
           </div>
@@ -234,7 +248,7 @@ export function GameCard({
                 showStatus={!!eliminatedTeams}
               />
             </div>
-            <span className={`font-label text-xs shrink-0 ${game.completed && game.winner === game.team2 ? "text-on-surface font-bold" : "text-on-surface-variant"}`}>
+            <span className={`font-label text-sm shrink-0 ${game.completed && game.winner === game.team2 ? "text-on-surface font-bold" : "text-on-surface-variant"}`}>
               {team2Pct}%
             </span>
           </div>
@@ -243,11 +257,11 @@ export function GameCard({
         {/* Status badge + ESPN link */}
         <div className="flex items-center justify-between">
           {game.completed ? (
-            <span className={`text-[10px] font-label ${consensusCorrect ? "text-emerald-400" : "text-on-surface-variant"}`}>
+            <span className={`text-xs font-label ${consensusCorrect ? "text-emerald-400" : "text-on-surface-variant"}`}>
               {consensusCorrect ? "Group called it" : `${minorityCount} of ${totalBrackets} saw this coming`}
             </span>
           ) : (
-            <span className="text-[10px] font-label text-on-surface-variant">Scheduled</span>
+            <span className="text-xs font-label text-on-surface-variant">Scheduled</span>
           )}
           {game.espn_url && game.completed && (
             <a
@@ -255,7 +269,7 @@ export function GameCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="text-[10px] font-label text-on-surface-variant hover:text-secondary transition-colors"
+              className="text-xs font-label text-on-surface-variant hover:text-secondary transition-colors"
             >
               ESPN
             </a>
@@ -266,7 +280,7 @@ export function GameCard({
         {pickerDetails && onOpenDrawer && (
           <button
             onClick={onOpenDrawer}
-            className="w-full text-[10px] font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1"
+            className="w-full text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1"
           >
             Show individual picks
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant/60">

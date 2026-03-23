@@ -40,6 +40,7 @@ export function PicksContent({
   totalBrackets,
   currentRound,
   teamLogos = {},
+  teamAbbrevs = {},
   champDistribution = [],
   brackets = [],
   bracketPicksMap = {},
@@ -51,6 +52,7 @@ export function PicksContent({
   totalBrackets: number;
   currentRound: Round;
   teamLogos?: Record<string, string>;
+  teamAbbrevs?: Record<string, string>;
   champDistribution?: ChampDistEntry[];
   brackets?: Bracket[];
   bracketPicksMap?: Record<string, Record<string, string>>;
@@ -412,6 +414,7 @@ export function PicksContent({
             pickSplits={pickSplits}
             totalBrackets={totalBrackets}
             teamLogos={teamLogos}
+            teamAbbrevs={teamAbbrevs}
             eliminatedTeams={eliminatedTeams}
             onGameClick={openDrawer}
             highlightBracketPicks={filterBracketId ? bracketPicksMap[filterBracketId] : undefined}

@@ -114,6 +114,7 @@ export default async function GroupPicksPage() {
         totalBrackets={submittedCount}
         currentRound={data.meta.current_round}
         teamLogos={d.team_logos}
+        teamAbbrevs={d.team_abbrevs}
         champDistribution={d.champ_distribution}
         brackets={data.brackets}
         bracketPicksMap={bracketPicksMap}

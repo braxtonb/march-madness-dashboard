@@ -354,6 +354,7 @@ def parse_teams(outcome_map: dict[str, dict]) -> list[dict]:
         seen.add(name)
         teams.append({
             'name': name,
+            'abbrev': team.get('abbrev', ''),
             'seed': seed,
             'region': team.get('region', ''),
             'conference': team.get('conference', ''),
