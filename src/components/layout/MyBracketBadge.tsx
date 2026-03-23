@@ -108,7 +108,7 @@ export default function MyBracketBadge({ brackets }: MyBracketBadgeProps) {
       )}
 
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-72 z-50">
+        <div className="absolute top-full right-0 mt-1 w-72 z-[60]">
           <MultiSelectSearch
             mode="single"
             label="Brackets"

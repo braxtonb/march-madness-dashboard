@@ -218,11 +218,10 @@ function MultiSelectSearchInner({
         // Keep dropdown open, keep query intact (Fix 3)
         inputRef.current?.focus();
       } else {
-        // Single select
-        onSelect?.(value);
+        // Single select — close immediately, no blur animation
         setOpen(false);
         setQuery("");
-        inputRef.current?.blur();
+        onSelect?.(value);
       }
     },
     [isMulti, selected, selectedSet, onSelectedChange, onSelect]
@@ -301,11 +300,11 @@ function MultiSelectSearchInner({
             onClick={handleClick}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className={`w-full rounded-card bg-surface-container border px-3 py-2.5 pl-9 pr-8 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all cursor-pointer min-w-[200px] min-h-[36px] ${
+            className={`w-full rounded-card bg-surface-container border px-3 py-2.5 pl-9 pr-8 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 cursor-pointer min-w-[200px] min-h-[36px] ${
               hasSelections
-                ? "text-on-surface border-primary/30"
+                ? "border-primary/30"
                 : "text-on-surface-variant border-outline"
-            } placeholder:text-on-surface-variant`}
+            } ${!isMulti && selectedId && !open ? "!text-transparent caret-transparent" : hasSelections ? "text-on-surface" : ""} placeholder:text-on-surface-variant`}
           />
 
           {/* Clear button */}
@@ -330,11 +329,18 @@ function MultiSelectSearchInner({
             </button>
           )}
 
-          {/* Sublabel for single mode */}
-          {!isMulti && displaySublabel && !open && !showClear && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-on-surface-variant">
-              {displaySublabel}
-            </span>
+          {/* Selected display for single mode — matches dropdown item font sizes */}
+          {!isMulti && selectedId && !open && (
+            <div
+              className="absolute inset-0 pl-9 pr-8 flex items-center pointer-events-none"
+            >
+              <div className="min-w-0">
+                <p className="text-xs text-on-surface truncate">{displayText}</p>
+                {displaySublabel && (
+                  <p className="text-[10px] text-on-surface-variant truncate leading-tight">{displaySublabel}</p>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -342,12 +348,28 @@ function MultiSelectSearchInner({
         {open && (
           <div className="absolute z-50 mt-1 w-full min-w-[240px] max-h-72 bg-surface-container border border-outline rounded-card shadow-2xl shadow-black/30 flex flex-col overflow-hidden">
             {/* Count header */}
-            <div className="sticky top-0 bg-surface-container px-3 py-1.5 border-b border-outline">
+            <div className="sticky top-0 bg-surface-container px-3 py-1.5 border-b border-outline flex items-center justify-between">
               <span className="text-[10px] text-on-surface-variant">
                 {hasSelections
                   ? `${isMulti ? selected.length : 1} selected of ${available.length}`
                   : `${filtered.length} ${label.toLowerCase()}`}
               </span>
+              {isMulti && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selected.length === available.length) {
+                      onSelectedChange?.([]);
+                    } else {
+                      onSelectedChange?.(available.map((o) => o.value));
+                    }
+                  }}
+                  className="text-[10px] font-label text-secondary hover:text-secondary/80 transition-colors"
+                >
+                  {selected.length === available.length ? "Deselect all" : "Select all"}
+                </button>
+              )}
             </div>
 
             {/* Scrollable list -- scroll position preserved on item toggle */}

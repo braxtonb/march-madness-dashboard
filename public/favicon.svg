@@ -1,16 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Basketball background -->
-  <circle cx="16" cy="16" r="15" fill="#ff8c42"/>
-  <!-- Basketball lines -->
-  <path d="M16 1v30" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
-  <path d="M1 16h30" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
-  <path d="M4 5Q16 11 28 5" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
-  <path d="M4 27Q16 21 28 27" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
-  <!-- DoorDash "D" door shape in center -->
-  <rect x="10" y="8" width="12" height="16" rx="6" fill="none" stroke="#fff" stroke-width="2.5"/>
-  <rect x="10" y="8" width="12" height="16" rx="6" fill="#ff8c42" opacity="0.6"/>
-  <!-- Bracket lines inside the door -->
-  <path d="M14 12v8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M18 12v8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M14 16h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Red basketball -->
+  <circle cx="16" cy="16" r="15" fill="#e03c31"/>
+  <circle cx="16" cy="16" r="15" fill="none" stroke="#c0332a" stroke-width="0.8"/>
+  <!-- Basketball seam lines -->
+  <path d="M16 1v30" stroke="#000" stroke-width="0.8" opacity="0.25"/>
+  <path d="M1 16h30" stroke="#000" stroke-width="0.8" opacity="0.25"/>
+  <path d="M3.5 5Q16 12 28.5 5" fill="none" stroke="#000" stroke-width="0.8" opacity="0.25"/>
+  <path d="M3.5 27Q16 20 28.5 27" fill="none" stroke="#000" stroke-width="0.8" opacity="0.25"/>
+  <!-- DoorDash "D" — flat left edge, rounded right (door shape) -->
+  <path d="M11 7h5a9 9 0 0 1 0 18h-5z" fill="#fff" fill-rule="evenodd"/>
+  <!-- Inner cutout to make it a "D" not a filled shape -->
+  <path d="M14.5 11h1.5a5 5 0 0 1 0 10h-1.5z" fill="#e03c31"/>
 </svg>

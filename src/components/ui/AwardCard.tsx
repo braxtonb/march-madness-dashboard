@@ -33,12 +33,12 @@ const AWARD_ICONS: Record<string, ReactNode> = {
   "The Faithful": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c97cff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#c97cff" fillOpacity="0.15" />
-      <path d="M12 11l-1.5 1.5L12 14l1.5-1.5z" fill="#c97cff" />
     </svg>
   ),
   "The Contrarian": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff8c42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#ff8c42" fillOpacity="0.2" />
+      <path d="M9 18h6" /><path d="M10 22h4" />
+      <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" fill="#ff8c42" fillOpacity="0.15" />
     </svg>
   ),
   "Diamond in the Rough": (
@@ -122,7 +122,7 @@ export function AwardCard({
               <p className="text-sm text-on-surface-variant">{firstWinner.stat}</p>
               {firstWinner.championPick && award.title !== "The Contrarian" && award.title !== "Diamond in the Rough" && (
                 <p className="text-xs text-on-surface-variant flex items-center gap-1">
-                  <span className="inline-flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary shrink-0"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg> Champion</span>: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
+                  Champion: <TeamPill name={firstWinner.championPick} seed={firstWinner.championSeed} logo={teamLogos[firstWinner.championPick]} eliminated={firstWinner.championEliminated} showStatus />
                 </p>
               )}
             </>

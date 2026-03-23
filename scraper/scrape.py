@@ -270,19 +270,20 @@ def run():
 
 
 def _export_data_json(brackets, picks, games, teams, store, meta):
-    """Export all dashboard data as a single JSON file for the frontend.
-
-    The frontend reads this instead of hitting the Sheets API, avoiding
-    rate limits entirely.
-    """
-
-    # Read snapshots from sheet (already written earlier)
+    """Production export — reads snapshots from Google Sheets, then delegates to shared function."""
     try:
         snapshots = store.read_tab('snapshots')
     except Exception:
         snapshots = []
+    _export_data_json_shared(brackets, picks, games, teams, snapshots, meta)
 
-    # Normalize types for JSON serialization
+
+def _export_data_json_shared(brackets, picks, games, teams, snapshots, meta):
+    """Shared export function used by both production and local modes.
+
+    Normalizes data, runs pre-computation + Monte Carlo, writes public/data.json.
+    """
+
     def _normalize(rows, bool_fields=None):
         bool_fields = bool_fields or []
         result = []
@@ -301,12 +302,29 @@ def _export_data_json(brackets, picks, games, teams, store, meta):
             result.append(r)
         return result
 
+    norm_brackets = _normalize(brackets)
+    norm_picks = _normalize(picks, bool_fields=['correct', 'vacated'])
+    norm_games = _normalize(games, bool_fields=['completed'])
+    norm_teams = _normalize(teams, bool_fields=['eliminated'])
+
+    # Pre-compute all derived data (analytics, pick splits, awards, etc.)
+    from scraper.precompute import precompute_all
+    derived = precompute_all(norm_brackets, norm_picks, norm_games, norm_teams)
+    logger.info("Pre-computed analytics, pick splits, scatter, awards, paths, alive data")
+
+    # Run Monte Carlo simulation (10,000 iterations)
+    from scraper.montecarlo import run_monte_carlo
+    sim_results = run_monte_carlo(norm_brackets, norm_picks, norm_games, iterations=10000)
+    logger.info(f"Monte Carlo: {len(sim_results)} brackets simulated (10,000 iterations)")
+
     data = {
-        'brackets': _normalize(brackets),
-        'picks': _normalize(picks, bool_fields=['correct', 'vacated']),
-        'games': _normalize(games, bool_fields=['completed']),
-        'teams': _normalize(teams, bool_fields=['eliminated']),
+        'brackets': norm_brackets,
+        'picks': norm_picks,
+        'games': norm_games,
+        'teams': norm_teams,
         'snapshots': _normalize(snapshots),
+        'sim_results': sim_results,
+        'derived': derived,
         'meta': meta,
     }
 
@@ -477,42 +495,9 @@ def run_local():
         'games_completed': games_completed,
     }
 
-    # Export data.json (no sheets needed)
-    _export_data_json_local(brackets, all_picks, merged_games, teams, meta)
+    # Export data.json using the same function as production (no sheets for snapshots)
+    _export_data_json_shared(brackets, all_picks, merged_games, teams, [], meta)
     logger.info(f"Done (local). {games_completed}/63 games. Round: {current_round}")
-
-
-def _export_data_json_local(brackets, picks, games, teams, meta):
-    """Export data.json without needing a Google Sheets store for snapshots."""
-    def _normalize(rows, bool_fields=None):
-        bool_fields = bool_fields or []
-        result = []
-        for row in rows:
-            r = {}
-            for k, v in row.items():
-                if k in bool_fields:
-                    r[k] = str(v).lower() in ('true', '1') if isinstance(v, str) else bool(v)
-                elif isinstance(v, str) and v.replace('.', '', 1).replace('-', '', 1).isdigit():
-                    try: r[k] = int(v) if '.' not in v else float(v)
-                    except ValueError: r[k] = v
-                else:
-                    r[k] = v
-            result.append(r)
-        return result
-
-    data = {
-        'brackets': _normalize(brackets),
-        'picks': _normalize(picks, bool_fields=['correct', 'vacated']),
-        'games': _normalize(games, bool_fields=['completed']),
-        'teams': _normalize(teams, bool_fields=['eliminated']),
-        'snapshots': [],
-        'meta': meta,
-    }
-
-    out_path = Path(__file__).resolve().parent.parent / 'public' / 'data.json'
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(data, default=str), encoding='utf-8')
-    logger.info(f"Exported data.json ({out_path.stat().st_size // 1024}KB)")
 
 
 if __name__ == '__main__':

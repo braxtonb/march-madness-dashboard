@@ -3,6 +3,7 @@
 import type { Game } from "@/lib/types";
 import { TeamPill } from "./TeamPill";
 import { GameHeader } from "./GameHeader";
+import { ViewBracketLink } from "./ViewBracketLink";
 import BottomSheet from "./BottomSheet";
 import CompareCheckbox from "./CompareCheckbox";
 
@@ -67,16 +68,17 @@ export function PicksDrawer({
               return (
                 <div
                   key={picker.name}
-                  className={`group flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
+                  className={`group flex items-start gap-2 rounded-lg bg-surface-bright/50 px-3 py-2 overflow-hidden ${isCorrect ? "text-secondary" : ""}`}
                 >
-                  <CompareCheckbox bracketId={picker.bracketId} />
-                  <div>
-                    <p className={`text-sm font-semibold ${isCorrect ? "" : "text-on-surface"}`}>
+                  <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold truncate ${isCorrect ? "" : "text-on-surface"}`}>
                       {picker.name}{isCorrect && " \u2713"}
                     </p>
                     {picker.full_name && picker.full_name !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant">{picker.full_name}</p>
+                      <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
                     )}
+                    <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
                   </div>
                 </div>
               );
@@ -100,16 +102,17 @@ export function PicksDrawer({
               return (
                 <div
                   key={picker.name}
-                  className={`group flex items-center gap-2 ${isCorrect ? "text-secondary" : ""}`}
+                  className={`group flex items-start gap-2 rounded-lg bg-surface-bright/50 px-3 py-2 overflow-hidden ${isCorrect ? "text-secondary" : ""}`}
                 >
-                  <CompareCheckbox bracketId={picker.bracketId} />
-                  <div>
-                    <p className={`text-sm font-semibold ${isCorrect ? "" : "text-on-surface"}`}>
+                  <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold truncate ${isCorrect ? "" : "text-on-surface"}`}>
                       {picker.name}{isCorrect && " \u2713"}
                     </p>
                     {picker.full_name && picker.full_name !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant">{picker.full_name}</p>
+                      <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
                     )}
+                    <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
                   </div>
                 </div>
               );
@@ -172,59 +175,81 @@ export function GameCard({
     );
   }
 
+  // Accuracy color (heatmap style) for completed games
+  const accuracyPct = game.completed ? (consensusCorrect ? Math.max(team1Pct, team2Pct) / 100 : (1 - Math.max(team1Pct, team2Pct) / 100)) : -1;
+  const accuracyBorder = game.completed
+    ? (consensusCorrect
+        ? (accuracyPct > 0.7 ? "border-l-emerald-500" : accuracyPct > 0.5 ? "border-l-emerald-500/60" : "border-l-emerald-500/30")
+        : (accuracyPct < 0.3 ? "border-l-red-400" : accuracyPct < 0.5 ? "border-l-red-400/60" : "border-l-red-400/30"))
+    : "border-l-transparent";
+
   return (
     <>
-      <div className="rounded-card bg-surface-container p-4 space-y-3">
-        <GameHeader game={game} teamLogos={teamLogos} eliminatedTeams={eliminatedTeams} />
-
-        <div className="flex h-3 rounded-full overflow-hidden bg-surface-bright">
-          <div
-            className="bg-primary transition-all"
-            style={{ width: `${team1Pct}%` }}
-          />
-          <div
-            className="bg-secondary transition-all"
-            style={{ width: `${team2Pct}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs font-label text-on-surface-variant">
-          <span>
-            {team1Pct}% {game.team1}
-          </span>
-          <span>
-            {game.team2} {team2Pct}%
-          </span>
-        </div>
-
-        {/* Status / correctness badge */}
-        {game.completed ? (
-          <div
-            className={`rounded-card px-3 py-1.5 text-xs text-center ${
-              consensusCorrect
-                ? game.winner === game.team1
-                  ? "bg-primary/10 text-primary"
-                  : "bg-secondary/10 text-secondary"
-                : "bg-on-surface-variant/10 text-on-surface-variant"
-            }`}
-          >
-            {consensusCorrect
-              ? "We called it!"
-              : `Surprise! Only ${minorityCount} of us saw this coming`}
+      <div className={`rounded-card bg-surface-container p-4 space-y-2.5 border-l-[3px] ${accuracyBorder}`}>
+        {/* Team matchup with inline percentages */}
+        <div className="space-y-1.5">
+          {/* Team 1 */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <TeamPill
+                name={game.team1}
+                seed={game.seed1}
+                logo={teamLogos[game.team1]}
+                eliminated={eliminatedTeams?.has(game.team1)}
+                showStatus={!!eliminatedTeams}
+              />
+            </div>
+            <span className={`font-label text-xs shrink-0 ${game.completed && game.winner === game.team1 ? "text-on-surface font-bold" : "text-on-surface-variant"}`}>
+              {team1Pct}%
+            </span>
           </div>
-        ) : (
-          <div className="rounded-card px-3 py-1.5 text-xs text-center bg-surface-bright text-on-surface-variant">
-            Scheduled
+          {/* Team 2 */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <TeamPill
+                name={game.team2}
+                seed={game.seed2}
+                logo={teamLogos[game.team2]}
+                eliminated={eliminatedTeams?.has(game.team2)}
+                showStatus={!!eliminatedTeams}
+              />
+            </div>
+            <span className={`font-label text-xs shrink-0 ${game.completed && game.winner === game.team2 ? "text-on-surface font-bold" : "text-on-surface-variant"}`}>
+              {team2Pct}%
+            </span>
           </div>
-        )}
+        </div>
+
+        {/* Status badge + ESPN link */}
+        <div className="flex items-center justify-between">
+          {game.completed ? (
+            <span className={`text-[10px] font-label ${consensusCorrect ? "text-emerald-400" : "text-on-surface-variant"}`}>
+              {consensusCorrect ? "Group called it" : `${minorityCount} of ${totalBrackets} saw this coming`}
+            </span>
+          ) : (
+            <span className="text-[10px] font-label text-on-surface-variant">Scheduled</span>
+          )}
+          {game.espn_url && game.completed && (
+            <a
+              href={game.espn_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[10px] font-label text-on-surface-variant hover:text-secondary transition-colors"
+            >
+              ESPN
+            </a>
+          )}
+        </div>
 
         {/* Button to open drawer for picker details */}
         {pickerDetails && onOpenDrawer && (
           <button
             onClick={onOpenDrawer}
-            className="w-full text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1.5"
+            className="w-full text-[10px] font-label text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center gap-1"
           >
             Show individual picks
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant/60">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant/60">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />

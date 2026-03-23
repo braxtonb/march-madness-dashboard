@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import React from "react";
+
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { DashboardData, Game, Pick, Round, Bracket } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
@@ -10,6 +12,7 @@ import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
   if (direction === "asc") return (
@@ -71,6 +74,7 @@ interface SimResult {
   name: string;
   owner: string;
   full_name: string;
+  champion: string;
   baseRank: number;
   simRank: number;
   basePoints: number;
@@ -171,28 +175,27 @@ export default function SimulatorPage() {
   const { isMyBracket } = useMyBracket();
   const [data, setData] = useState<DashboardData | null>(null);
   const [selections, setSelections] = useState<Map<string, string>>(new Map());
+  const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const [simResults, setSimResults] = useState<SimResult[]>([]);
   const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(new Set());
   const [simSearch, setSimSearch] = useState<string[]>([]);
+  const [simChampionFilter, setSimChampionFilter] = useState<string[]>([]);
+  const [bestCaseBracketId, setBestCaseBracketId] = useState<string>("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Impact table sort state (from hash)
   type ImpactSort = "simRank" | "simPoints" | "basePoints" | "delta";
   const VALID_IMPACT_SORTS: ImpactSort[] = ["simRank", "simPoints", "basePoints", "delta"];
-  const [impactSortKey, setImpactSortKey] = useState<ImpactSort>(() => {
-    if (typeof window === "undefined") return "simRank";
+  const [impactSortKey, setImpactSortKey] = useState<ImpactSort>("simRank");
+  const [impactSortAsc, setImpactSortAsc] = useState(true);
+  useEffect(() => {
     const hp = parseHashParams(window.location.hash);
     const s = hp.get("isort") as ImpactSort | null;
-    return s && VALID_IMPACT_SORTS.includes(s) ? s : "simRank";
-  });
-  const [impactSortAsc, setImpactSortAsc] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const hp = parseHashParams(window.location.hash);
+    if (s && VALID_IMPACT_SORTS.includes(s)) setImpactSortKey(s);
     const d = hp.get("idir");
-    if (d === "asc") return true;
-    if (d === "desc") return false;
-    return true;
-  });
+    if (d === "desc") setImpactSortAsc(false);
+    else if (d === "asc") setImpactSortAsc(true);
+  }, []);
 
   // Flag to track hash restoration status:
   // "pending" = haven't tried yet, "done" = restored (or nothing to restore)
@@ -205,8 +208,92 @@ export default function SimulatorPage() {
     fetch("/api/data")
       .then((r) => r.json())
       .then((d: DashboardData) => {
-        // Restore picks from the initial hash immediately with the data
-        if (hashRestoreRef.current === "pending") {
+        // Check for scenario deep link (e.g., #scenario=favorites)
+        const hp = parseHashParams(window.location.hash);
+        const scenario = hp.get("scenario");
+
+        if (scenario && scenario.startsWith("bracket:")) {
+          // Best-case scenario for a specific bracket — cascade round-by-round
+          const bracketId = scenario.slice("bracket:".length);
+          const bracketPicks = d.picks.filter((p) => p.bracket_id === bracketId);
+          const pickMap = new Map(bracketPicks.map((p) => [p.game_id, p.team_picked]));
+          const chain = buildGameChain(d.picks, d.games);
+          const fds = buildFeeders(chain);
+          const gMap = new Map(d.games.map((g) => [g.game_id, g]));
+          // Future value per team for fallback selection
+          const teamFV = new Map<string, number>();
+          for (const p of bracketPicks) {
+            const pg = gMap.get(p.game_id);
+            if (pg && !pg.completed && p.team_picked) {
+              teamFV.set(p.team_picked, (teamFV.get(p.team_picked) || 0) + (ROUND_POINTS[pg.round as keyof typeof ROUND_POINTS] || 0));
+            }
+          }
+          const next = new Map<string, string>();
+          for (const round of ROUND_ORDER) {
+            for (const g of d.games.filter((g) => g.round === round)) {
+              if (g.completed) continue;
+              let t1 = g.team1, t2 = g.team2;
+              if (!t1 || !t2) {
+                const gameFeeders = fds.get(g.game_id) || [];
+                if (!t1 && gameFeeders[0]) {
+                  const feeder = gMap.get(gameFeeders[0]);
+                  t1 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[0]) || "");
+                }
+                if (!t2 && gameFeeders[1]) {
+                  const feeder = gMap.get(gameFeeders[1]);
+                  t2 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[1]) || "");
+                }
+              }
+              if (t1 && t2) {
+                const picked = pickMap.get(g.game_id);
+                if (picked === t1 || picked === t2) {
+                  next.set(g.game_id, picked);
+                } else {
+                  next.set(g.game_id, (teamFV.get(t1) || 0) >= (teamFV.get(t2) || 0) ? t1 : t2);
+                }
+              }
+            }
+          }
+          setSelections(next);
+          setActiveScenario(scenario);
+          setBestCaseBracketId(bracketId);
+          hashRestoreRef.current = "done";
+        } else if (scenario === "favorites" || scenario === "underdogs") {
+          // Apply scenario inline with fresh data — no closure issues
+          const chain = buildGameChain(d.picks, d.games);
+          const fds = buildFeeders(chain);
+          const gMap = new Map(d.games.map((g) => [g.game_id, g]));
+          const next = new Map<string, string>();
+          for (const round of ROUND_ORDER) {
+            for (const g of d.games.filter((g) => g.round === round)) {
+              if (g.completed) continue;
+              let t1 = g.team1, s1 = g.seed1, t2 = g.team2, s2 = g.seed2;
+              if (!t1 || !t2) {
+                const gameFeeders = fds.get(g.game_id) || [];
+                if (!t1 && gameFeeders[0]) {
+                  const feeder = gMap.get(gameFeeders[0]);
+                  t1 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[0]) || "");
+                  if (t1) s1 = getTeamSeed(d.picks, t1);
+                }
+                if (!t2 && gameFeeders[1]) {
+                  const feeder = gMap.get(gameFeeders[1]);
+                  t2 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[1]) || "");
+                  if (t2) s2 = getTeamSeed(d.picks, t2);
+                }
+              }
+              if (t1 && t2) {
+                const winner = s1 === s2
+                  ? (scenario === "favorites" ? (t1 < t2 ? t1 : t2) : (t1 > t2 ? t1 : t2))
+                  : (scenario === "favorites" ? (s1 <= s2 ? t1 : t2) : (s1 > s2 ? t1 : t2));
+                next.set(g.game_id, winner);
+              }
+            }
+          }
+          setSelections(next);
+          setActiveScenario(scenario);
+          hashRestoreRef.current = "done";
+        } else if (hashRestoreRef.current === "pending") {
+          // Restore picks from hash (non-scenario case)
           hashRestoreRef.current = "done";
           const hash = initialHashRef.current;
           if (hash) {
@@ -338,9 +425,19 @@ export default function SimulatorPage() {
     return data.brackets.map((b) => ({ value: b.id, label: b.name, sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined }));
   }, [data]);
 
+  const simChampionOptions: MultiSelectOption[] = useMemo(() => {
+    const map = new Set<string>();
+    for (const r of simResults) if (r.champion) map.add(r.champion);
+    return [...map].sort().map((c) => ({ value: c, label: c }));
+  }, [simResults]);
+
   // Filter and sort sim results
   const filteredSimResults = useMemo(() => {
     let list = simSearch.length === 0 ? simResults : simResults.filter((r) => new Set(simSearch).has(r.id));
+    if (simChampionFilter.length > 0) {
+      const champSet = new Set(simChampionFilter);
+      list = list.filter((r) => champSet.has(r.champion));
+    }
     return [...list].sort((a, b) => {
       let aVal: number, bVal: number;
       switch (impactSortKey) {
@@ -352,7 +449,10 @@ export default function SimulatorPage() {
       }
       return impactSortAsc ? aVal - bVal : bVal - aVal;
     });
-  }, [simResults, simSearch, impactSortKey, impactSortAsc]);
+  }, [simResults, simSearch, simChampionFilter, impactSortKey, impactSortAsc]);
+
+  // Pinned row rendered separately — not part of the sorted list to avoid flicker
+  const pinnedResult = bestCaseBracketId ? filteredSimResults.find((r) => r.id === bestCaseBracketId) : null;
 
   // Path to victory per bracket
   const pathMap = useMemo(() => {
@@ -365,7 +465,7 @@ export default function SimulatorPage() {
       }
     }
     const completedGameIds = new Set(data.games.filter((g) => g.completed).map((g) => g.game_id));
-    const ROUND_PTS: Record<string, number> = { R64: 10, R32: 20, S16: 40, E8: 80, FF: 160, CHAMP: 320 };
+    // Use canonical ROUND_POINTS from constants
     const map = new Map<string, { remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }>();
     const logos: Record<string, string> = Object.fromEntries(data.teams.map((t) => [t.name, t.logo || ""]));
     for (const b of data.brackets) {
@@ -376,7 +476,7 @@ export default function SimulatorPage() {
           round: p.round,
           team: p.team_picked,
           seed: p.seed_picked,
-          pts: ROUND_PTS[p.round] || 0,
+          pts: ROUND_POINTS[p.round as keyof typeof ROUND_POINTS] || 0,
           logo: logos[p.team_picked] || "",
         }));
       const eliminatedPickCount = bPicks
@@ -391,15 +491,23 @@ export default function SimulatorPage() {
   useEffect(() => {
     if (!data || hashRestoreRef.current !== "done") return;
     const hp = parseHashParams(window.location.hash);
-    const picksStr = encodePicks(selections, data.games);
-    if (picksStr) {
-      const match = picksStr.match(/picks=(.+)/);
-      if (match) hp.set("picks", match[1]);
-    } else {
+    if (activeScenario) {
+      // Scenario mode: clean URL with just the scenario name
       hp.delete("picks");
+      hp.set("scenario", activeScenario);
+    } else {
+      // Custom picks mode: encode individual picks
+      hp.delete("scenario");
+      const picksStr = encodePicks(selections, data.games);
+      if (picksStr) {
+        const match = picksStr.match(/picks=(.+)/);
+        if (match) hp.set("picks", match[1]);
+      } else {
+        hp.delete("picks");
+      }
     }
     updateHash(hp);
-  }, [selections, data]);
+  }, [selections, data, activeScenario]);
 
   // Auto-simulate impact
   const runSimulate = useCallback(
@@ -422,19 +530,41 @@ export default function SimulatorPage() {
             }
           }
         }
-        return { id: b.id, name: b.name, owner: b.owner, full_name: b.full_name, basePoints: b.points, simPoints: b.points + bonus };
+        // Cap bonus at max_remaining — a bracket can't exceed its theoretical maximum
+        const cappedBonus = Math.min(bonus, b.max_remaining);
+        return { id: b.id, name: b.name, owner: b.owner, full_name: b.full_name, champion: b.champion_pick, basePoints: b.points, simPoints: b.points + cappedBonus };
       });
 
-      const baseRanked = [...d.brackets].sort((a, b) => b.points - a.points);
-      const simRanked = [...scored].sort((a, b) => b.simPoints - a.simPoints);
+      // RANK style (not dense) — ties get the same rank, then skip
+      const baseRanked = [...d.brackets].sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.max_remaining !== a.max_remaining) return b.max_remaining - a.max_remaining;
+        return a.name.localeCompare(b.name);
+      });
       const baseRankMap = new Map<string, number>();
-      baseRanked.forEach((b, i) => baseRankMap.set(b.id, i + 1));
+      for (let i = 0; i < baseRanked.length; i++) {
+        if (i === 0) { baseRankMap.set(baseRanked[i].id, 1); }
+        else if (baseRanked[i].points === baseRanked[i - 1].points && baseRanked[i].max_remaining === baseRanked[i - 1].max_remaining) {
+          baseRankMap.set(baseRanked[i].id, baseRankMap.get(baseRanked[i - 1].id)!);
+        } else { baseRankMap.set(baseRanked[i].id, i + 1); }
+      }
+
+      const simRanked = [...scored].sort((a, b) => {
+        if (b.simPoints !== a.simPoints) return b.simPoints - a.simPoints;
+        return a.name.localeCompare(b.name);
+      });
+      const simRankList: number[] = [];
+      for (let i = 0; i < simRanked.length; i++) {
+        if (i === 0) { simRankList.push(1); }
+        else if (simRanked[i].simPoints === simRanked[i - 1].simPoints) { simRankList.push(simRankList[i - 1]); }
+        else { simRankList.push(i + 1); }
+      }
 
       setSimResults(
         simRanked.map((s, i) => ({
           ...s,
           baseRank: baseRankMap.get(s.id) || 0,
-          simRank: i + 1,
+          simRank: simRankList[i],
         }))
       );
     },
@@ -446,8 +576,10 @@ export default function SimulatorPage() {
     runSimulate(data, selections);
   }, [selections, data, runSimulate]);
 
-  // Toggle a winner selection
+  // Toggle a winner selection (clears scenario since it's a custom pick)
   function toggleWinner(gameId: string, team: string) {
+    setActiveScenario(null);
+    setBestCaseBracketId("");
     setSelections((prev) => {
       const next = new Map(prev);
       if (next.get(gameId) === team) {
@@ -480,6 +612,8 @@ export default function SimulatorPage() {
    */
   function fillRemaining(mode: "favorites" | "underdogs") {
     if (!data) return;
+    setActiveScenario(null);
+    setBestCaseBracketId("");
     const next = new Map(selections); // start from current selections
 
     const gMap = new Map(data.games.map((g) => [g.game_id, g]));
@@ -529,6 +663,8 @@ export default function SimulatorPage() {
    */
   function fillAllRounds(mode: "favorites" | "underdogs") {
     if (!data) return;
+    setActiveScenario(mode);
+    setBestCaseBracketId("");
     const next = new Map<string, string>();
 
     // Build a map of game_id → game for quick lookup
@@ -578,6 +714,67 @@ export default function SimulatorPage() {
     setSelections(next);
   }
 
+  /**
+   * Fill all incomplete games with a specific bracket's picks — their best-case scenario.
+   * Processes round-by-round with cascading so only valid (alive) teams are selected.
+   * When the bracket's pick was eliminated, chooses the team that appears more often
+   * in the bracket's future picks (maximizing downstream correct picks).
+   */
+  function fillBracketBestCase(bracketId: string) {
+    if (!data) return;
+    setActiveScenario(`bracket:${bracketId}`);
+    const bracketPicks = data.picks.filter((p) => p.bracket_id === bracketId);
+    const pickMap = new Map(bracketPicks.map((p) => [p.game_id, p.team_picked]));
+    const gMap = new Map(data.games.map((g) => [g.game_id, g]));
+    const next = new Map<string, string>();
+
+    // Count how many future picks each team appears in for this bracket
+    const teamFutureValue = new Map<string, number>();
+    for (const p of bracketPicks) {
+      const g = gMap.get(p.game_id);
+      if (g && !g.completed && p.team_picked) {
+        teamFutureValue.set(
+          p.team_picked,
+          (teamFutureValue.get(p.team_picked) || 0) + (ROUND_POINTS[g.round as keyof typeof ROUND_POINTS] || 0)
+        );
+      }
+    }
+
+    for (const round of ROUND_ORDER) {
+      for (const g of data.games.filter((g) => g.round === round)) {
+        if (g.completed) continue;
+
+        // Resolve teams from game data or from feeders/previous picks
+        let t1 = g.team1, t2 = g.team2;
+        if (!t1 || !t2) {
+          const gameFeeders = feeders.get(g.game_id) || [];
+          if (!t1 && gameFeeders[0]) {
+            const feeder = gMap.get(gameFeeders[0]);
+            t1 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[0]) || "");
+          }
+          if (!t2 && gameFeeders[1]) {
+            const feeder = gMap.get(gameFeeders[1]);
+            t2 = feeder?.completed ? feeder.winner : (next.get(gameFeeders[1]) || "");
+          }
+        }
+
+        if (t1 && t2) {
+          const picked = pickMap.get(g.game_id);
+          if (picked === t1 || picked === t2) {
+            // Bracket's pick is in this game — use it
+            next.set(g.game_id, picked);
+          } else {
+            // Bracket's pick was eliminated — choose the team with more future value
+            const v1 = teamFutureValue.get(t1) || 0;
+            const v2 = teamFutureValue.get(t2) || 0;
+            next.set(g.game_id, v1 >= v2 ? t1 : t2);
+          }
+        }
+      }
+    }
+    setSelections(next);
+  }
+
   function toggleImpactSort(key: ImpactSort) {
     const newAsc = impactSortKey === key ? !impactSortAsc : key === "simRank";
     setImpactSortKey(key);
@@ -602,6 +799,16 @@ export default function SimulatorPage() {
       return next;
     });
   }
+
+  // Bracket options for "Best Case" selector (must be before early return)
+  const bestCaseOptions: MultiSelectOption[] = useMemo(() => {
+    if (!data) return [];
+    return data.brackets.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined,
+    }));
+  }, [data]);
 
   if (!data) {
     return (
@@ -679,69 +886,72 @@ export default function SimulatorPage() {
         </p>
       </div>
 
-      <div className="relative z-50 space-y-2">
-        <div className="flex gap-2 flex-wrap items-center">
+      {/* Sticky preset bar */}
+      <div className="sticky top-[52px] z-50 bg-surface/95 backdrop-blur-sm py-2 border-b border-on-surface-variant/10 -mx-4 px-4 sm:-mx-6 sm:px-6 space-y-2">
+        <div className="flex gap-3 flex-wrap items-center">
+          <div className="w-full sm:w-48 [&_input]:text-xs [&_input]:py-1">
+            <MultiSelectSearch
+              mode="single"
+              label="Brackets"
+              options={bestCaseOptions}
+              selectedId={bestCaseBracketId}
+              onSelect={(id) => {
+                setBestCaseBracketId(id);
+                fillBracketBestCase(id);
+              }}
+              onClear={() => {
+                setBestCaseBracketId("");
+                setSelections(new Map());
+                setActiveScenario(null);
+              }}
+              placeholder="Best case for..."
+            />
+          </div>
           <button
             onClick={() => fillAllRounds("favorites")}
-            className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
+            className="rounded-card bg-surface-container px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors"
           >
             All favorites
           </button>
           <button
             onClick={() => fillAllRounds("underdogs")}
-            className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
+            className="rounded-card bg-surface-container px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors"
           >
             All underdogs
           </button>
+          {(() => {
+            const allFilled = selections.size >= totalPending;
+            const nonePicked = selections.size === 0;
+            const disabled = nonePicked || allFilled;
+            return (
+              <>
+                <button
+                  onClick={() => fillRemaining("favorites")}
+                  disabled={disabled}
+                  className={`rounded-card bg-surface-container px-3 py-1.5 text-xs font-label transition-colors ${disabled ? "opacity-30 cursor-not-allowed text-on-surface-variant" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  + Chalk rest
+                </button>
+                <button
+                  onClick={() => fillRemaining("underdogs")}
+                  disabled={disabled}
+                  className={`rounded-card bg-surface-container px-3 py-1.5 text-xs font-label transition-colors ${disabled ? "opacity-30 cursor-not-allowed text-on-surface-variant" : "text-on-surface-variant hover:text-on-surface"}`}
+                >
+                  + Upset rest
+                </button>
+              </>
+            );
+          })()}
           <button
-            onClick={() => setSelections(new Map())}
-            className="rounded-card bg-surface-container px-4 py-2 text-sm font-label text-on-surface-variant hover:text-on-surface transition-colors"
+            onClick={() => { setSelections(new Map()); setActiveScenario(null); setBestCaseBracketId(""); }}
+            className="rounded-card bg-surface-container px-3 py-1.5 text-xs font-label text-on-surface-variant hover:text-on-surface transition-colors"
           >
             Clear
           </button>
+          <p className="text-[10px] text-on-surface-variant leading-relaxed">
+            <span className="text-primary font-semibold">Best case for</span> simulates every remaining game in a bracket&apos;s favor. When their predicted team is still alive, it wins. When eliminated, the team with the most value to the bracket advances instead.
+          </p>
         </div>
-        {(() => {
-          const allFilled = selections.size >= totalPending;
-          const nonePicked = selections.size === 0;
-          const disabled = nonePicked || allFilled;
-          const tooltip = nonePicked
-            ? "Pick at least one game first"
-            : allFilled
-              ? "All games are already picked"
-              : "Fill remaining unpicked games";
-          return (
-            <div className="flex gap-2 flex-wrap items-center">
-              <span className="text-[10px] text-on-surface-variant">Fill remaining:</span>
-              <button
-                onClick={() => fillRemaining("favorites")}
-                disabled={disabled}
-                title={tooltip}
-                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors border border-outline ${
-                  disabled
-                    ? "opacity-30 cursor-not-allowed text-on-surface-variant"
-                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
-                }`}
-              >
-                + Chalk the rest
-              </button>
-              <button
-                onClick={() => fillRemaining("underdogs")}
-                disabled={disabled}
-                title={tooltip}
-                className={`rounded-card px-3 py-1.5 text-xs font-label transition-colors border border-outline ${
-                  disabled
-                    ? "opacity-30 cursor-not-allowed text-on-surface-variant"
-                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
-                }`}
-              >
-                + Upset the rest
-              </button>
-            </div>
-          );
-        })()}
-        <p className="text-[10px] text-on-surface-variant">
-          Favorites = lower seed wins. Same seed tiebreak: alphabetical.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-section lg:items-start">
@@ -759,7 +969,7 @@ export default function SimulatorPage() {
                   onClick={() => toggleRoundCollapse(round)}
                   className="w-full flex items-center justify-between sticky top-0 bg-surface z-10 py-2 px-1"
                 >
-                  <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
+                  <span className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
                     <span className="w-4 text-center text-sm leading-none">{isCollapsed ? "+" : "\u2212"}</span> {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
                   </span>
                   <span className="font-label text-[10px] text-on-surface-variant">
@@ -770,94 +980,68 @@ export default function SimulatorPage() {
                 </button>
 
                 {!isCollapsed && (
-                  <div className="space-y-1.5 pb-2">
+                  <div className="space-y-0.5 pb-1">
                     {games.map((g) => {
                       const hasBothTeams = Boolean(g.team1 && g.team2);
 
                       if (g.completed) {
                         return (
-                          <div key={g.game_id} className="rounded-card bg-surface-container/50 p-2.5 opacity-50">
-                            <div className="flex items-center gap-2">
-                              <span className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label inline-flex items-center gap-1 ${g.winner === g.team1 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
-                                {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
-                                {g.seed1} {g.team1}{g.winner === g.team1 && " \u2713"}
-                              </span>
-                              <span className="text-[10px] text-on-surface-variant">vs</span>
-                              <span className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label inline-flex items-center gap-1 ${g.winner === g.team2 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
-                                {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
-                                {g.seed2} {g.team2}{g.winner === g.team2 && " \u2713"}
-                              </span>
-                              {g.espn_url && (
-                                <a
-                                  href={g.espn_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[9px] font-label text-on-surface-variant/50 hover:text-primary transition-colors shrink-0"
-                                  title="View on ESPN"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  ESPN ↗
-                                </a>
-                              )}
-                            </div>
+                          <div key={g.game_id} className="flex items-center gap-1.5 py-1 px-1 opacity-50">
+                            <span className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label inline-flex items-center gap-1 ${g.winner === g.team1 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
+                              {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+                              <span className="text-on-surface-variant/60">{g.seed1}</span> {g.team1}{g.winner === g.team1 && " \u2713"}
+                            </span>
+                            <span className="text-[9px] text-on-surface-variant shrink-0">vs</span>
+                            <span className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label inline-flex items-center gap-1 ${g.winner === g.team2 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
+                              {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+                              <span className="text-on-surface-variant/60">{g.seed2}</span> {g.team2}{g.winner === g.team2 && " \u2713"}
+                            </span>
+                            {g.espn_url && (
+                              <a href={g.espn_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[8px] font-label text-on-surface-variant/40 hover:text-primary transition-colors shrink-0">ESPN</a>
+                            )}
                           </div>
                         );
                       }
 
                       if (hasBothTeams) {
                         return (
-                          <div
-                            key={g.game_id}
-                            className={`rounded-card p-2.5 ${g.simulated ? "border border-dashed border-tertiary/30 bg-surface-container/70" : "bg-surface-container"}`}
-                          >
-                            {g.simulated && (
-                              <span className="inline-block mb-1 rounded-full bg-tertiary/15 text-tertiary px-2 py-0.5 text-[9px] font-label">
-                                Simulated matchup
-                              </span>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => toggleWinner(g.game_id, g.team1)}
-                                className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label transition-colors inline-flex items-center gap-1 ${
-                                  selections.get(g.game_id) === g.team1
-                                    ? "bg-secondary/20 text-secondary"
-                                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
-                                }`}
-                              >
-                                {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
-                                {g.seed1} {g.team1}
-                              </button>
-                              <span className="text-[10px] text-on-surface-variant">vs</span>
-                              <button
-                                onClick={() => toggleWinner(g.game_id, g.team2)}
-                                className={`flex-1 rounded-card px-2 py-1.5 text-xs font-label transition-colors inline-flex items-center gap-1 ${
-                                  selections.get(g.game_id) === g.team2
-                                    ? "bg-secondary/20 text-secondary"
-                                    : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
-                                }`}
-                              >
-                                {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}
-                                {g.seed2} {g.team2}
-                              </button>
-                            </div>
+                          <div key={g.game_id} className={`flex items-center gap-1.5 py-1 px-1 ${g.simulated ? "border-l-2 border-l-tertiary/40" : ""}`}>
+                            <button
+                              onClick={() => toggleWinner(g.game_id, g.team1)}
+                              className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label transition-colors inline-flex items-center gap-1 ${
+                                selections.get(g.game_id) === g.team1
+                                  ? "bg-secondary/20 text-secondary"
+                                  : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
+                              }`}
+                            >
+                              {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+                              <span className="text-on-surface-variant/60">{g.seed1}</span> {g.team1}
+                            </button>
+                            <span className="text-[9px] text-on-surface-variant shrink-0">vs</span>
+                            <button
+                              onClick={() => toggleWinner(g.game_id, g.team2)}
+                              className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label transition-colors inline-flex items-center gap-1 ${
+                                selections.get(g.game_id) === g.team2
+                                  ? "bg-secondary/20 text-secondary"
+                                  : "bg-surface-bright text-on-surface-variant hover:text-on-surface"
+                              }`}
+                            >
+                              {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+                              <span className="text-on-surface-variant/60">{g.seed2}</span> {g.team2}
+                            </button>
                           </div>
                         );
                       }
 
                       return (
-                        <div key={g.game_id} className="rounded-card border border-dashed border-outline/30 bg-surface-container/30 p-2.5">
-                          <div className="flex items-center gap-2">
-                            <span className="flex-1 text-center text-xs font-label text-on-surface-variant/40 inline-flex items-center justify-center gap-1">
-                              {g.team1 ? <>{teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}{g.seed1} {g.team1}</> : "TBD"}
-                            </span>
-                            <span className="text-[10px] text-on-surface-variant/40">vs</span>
-                            <span className="flex-1 text-center text-xs font-label text-on-surface-variant/40 inline-flex items-center justify-center gap-1">
-                              {g.team2 ? <>{teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-5 h-5 inline-block rounded-full bg-on-surface/10 p-[2px]" style={{ filter: "drop-shadow(0 0 1px rgba(255,255,255,0.3))" }} />}{g.seed2} {g.team2}</> : "TBD"}
-                            </span>
-                          </div>
-                          <p className="text-[9px] text-on-surface-variant/30 italic text-center mt-1">
-                            Pick earlier rounds to unlock
-                          </p>
+                        <div key={g.game_id} className="flex items-center gap-1.5 py-1 px-1 opacity-40">
+                          <span className="flex-1 text-center text-[11px] font-label text-on-surface-variant/40 inline-flex items-center justify-center gap-1">
+                            {g.team1 ? <>{teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}{g.seed1} {g.team1}</> : "TBD"}
+                          </span>
+                          <span className="text-[9px] text-on-surface-variant/40 shrink-0">vs</span>
+                          <span className="flex-1 text-center text-[11px] font-label text-on-surface-variant/40 inline-flex items-center justify-center gap-1">
+                            {g.team2 ? <>{teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}{g.seed2} {g.team2}</> : "TBD"}
+                          </span>
                         </div>
                       );
                     })}
@@ -881,17 +1065,29 @@ export default function SimulatorPage() {
           <p className="sm:hidden text-xs text-on-surface-variant">
             Tap any row for details &middot; Tap &#9675; to compare brackets
           </p>
-          <div className="w-full sm:w-72">
-            <MultiSelectSearch
-              mode="multi"
-              label="Brackets"
-              options={bracketOptions}
-              selected={simSearch}
-              onSelectedChange={setSimSearch}
-              placeholder="Search brackets..."
-            />
+          <div className="flex flex-wrap gap-3">
+            <div className="w-full sm:w-72">
+              <MultiSelectSearch
+                mode="multi"
+                label="Brackets"
+                options={bracketOptions}
+                selected={simSearch}
+                onSelectedChange={setSimSearch}
+                placeholder="Search brackets..."
+              />
+            </div>
+            <div className="w-full sm:w-56">
+              <MultiSelectSearch
+                mode="multi"
+                label="Champions"
+                options={simChampionOptions}
+                selected={simChampionFilter}
+                onSelectedChange={setSimChampionFilter}
+                placeholder="Filter by champion..."
+              />
+            </div>
           </div>
-          {simSearch.length > 0 && (
+          {(simSearch.length > 0 || simChampionFilter.length > 0) && (
             <p className="text-xs text-on-surface-variant">
               Showing {filteredSimResults.length} of {simResults.length} brackets
             </p>
@@ -918,24 +1114,36 @@ export default function SimulatorPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSimResults.map((r) => {
+                  {(pinnedResult ? [pinnedResult, ...filteredSimResults.filter((r) => r.id !== bestCaseBracketId)] : filteredSimResults).map((r) => {
                     const delta = r.baseRank - r.simRank;
                     const isExpanded = expandedId === r.id;
                     const path = pathMap.get(r.id);
+                    const isBestCase = r.id === bestCaseBracketId;
+                    const rowBg = isMyBracket(r.id)
+                      ? "bg-[#0f2e36] border-l-2 border-l-secondary"
+                      : isBestCase
+                        ? "bg-[#241a0a] border-l-2 border-l-primary"
+                        : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright";
                     return (
-                      <>
+                      <React.Fragment key={r.id}>
                         <tr
-                          key={r.id}
-                          className={`group border-b border-outline transition-colors cursor-pointer ${isMyBracket(r.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                          className={`group border-b border-outline transition-colors cursor-pointer ${rowBg}`}
                           onClick={() => setExpandedId(isExpanded ? null : r.id)}
                         >
                           <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={r.id} /></td>
                           <td className="px-3 py-2 font-label">{r.simRank}</td>
-                          <td className={`sticky left-0 z-10 transition-colors ${isMyBracket(r.id) ? "bg-secondary/5" : isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"} px-3 py-2`}>
+                          <td className={`sticky left-0 z-10 transition-colors ${isMyBracket(r.id) ? "bg-[#0f2e36]" : isBestCase ? "bg-[#241a0a]" : isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"} px-3 py-2`}>
                             <div className="flex items-center gap-1.5">
                               <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "\u2212" : "+"}</span>
                               <div>
-                                <div className="font-semibold text-on-surface text-xs">{r.name}</div>
+                                <div className="font-semibold text-on-surface text-xs flex items-center gap-1">
+                                  {r.name}
+                                  {isBestCase && (
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary shrink-0" title="Pinned — best case scenario">
+                                      <path d="M12 17v5" /><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76z" />
+                                    </svg>
+                                  )}
+                                </div>
                                 {r.full_name && r.full_name !== r.name && <div className="text-[10px] text-on-surface-variant">{r.full_name}</div>}
                               </div>
                             </div>
@@ -959,11 +1167,13 @@ export default function SimulatorPage() {
                           <tr key={`${r.id}-path`}>
                             <td colSpan={7} className="px-4 py-3 bg-surface-bright/50">
                               <div className="space-y-2">
-                                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                                  Path to victory — {path.remainingPicks.length} alive picks remaining
-                                  {path.eliminatedPickCount > 0 && (
-                                    <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
-                                  )}
+                                <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant flex items-center gap-2 flex-wrap">
+                                  <span>Path to victory — {path.remainingPicks.length} alive picks remaining
+                                    {path.eliminatedPickCount > 0 && (
+                                      <span className="ml-1 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                                    )}
+                                  </span>
+                                  <ViewBracketLink bracketId={r.id} />
                                 </p>
                                 {path.remainingPicks.length === 0 ? (
                                   <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
@@ -997,7 +1207,7 @@ export default function SimulatorPage() {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>

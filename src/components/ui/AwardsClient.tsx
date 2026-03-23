@@ -35,16 +35,15 @@ export function AwardsClient({
   const [selectedRound, setSelectedRound] = useState<string>(
     paramRound && validRounds.includes(paramRound) ? paramRound : "ALL"
   );
-  const [selectedAwardIdx, setSelectedAwardIdx] = useState<number | null>(() => {
-    if (typeof window === "undefined") return null;
+  const [selectedAwardIdx, setSelectedAwardIdx] = useState<number | null>(null);
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const awardParam = params.get("award");
     if (awardParam != null) {
       const idx = Number(awardParam);
-      if (!isNaN(idx) && idx >= 0) return idx;
+      if (!isNaN(idx) && idx >= 0) setSelectedAwardIdx(idx);
     }
-    return null;
-  });
+  }, []);
 
   // Update URL when award sidebar opens/closes
   function setAwardWithUrl(idx: number | null) {
@@ -70,7 +69,15 @@ export function AwardsClient({
     window.history.replaceState(null, "", `/awards?${params.toString()}`);
   }
 
-  const awards = awardsByRound[selectedRound] ?? [];
+  // Round-agnostic awards always pull from "ALL" regardless of selected round
+  const ROUND_AGNOSTIC_AWARDS = new Set(["The Faithful"]);
+  const allAwards = awardsByRound["ALL"] ?? [];
+  const roundAwards = awardsByRound[selectedRound] ?? [];
+  const awards = roundAwards.map((award) =>
+    ROUND_AGNOSTIC_AWARDS.has(award.title)
+      ? allAwards.find((a) => a.title === award.title) ?? award
+      : award
+  );
   const roundLabel = AWARD_ROUND_LABELS[selectedRound] || selectedRound;
 
   return (

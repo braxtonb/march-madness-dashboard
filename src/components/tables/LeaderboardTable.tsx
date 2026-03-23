@@ -8,6 +8,7 @@ import type { Round } from "@/lib/types";
 import MobileSortDropdown from "@/components/ui/MobileSortDropdown";
 import MobileCard from "@/components/ui/MobileCard";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
+import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
@@ -51,29 +52,26 @@ export function LeaderboardTable({
   eliminatedTeams,
   teamLogos = {},
   pathEntries = [],
+  initialSort = "rank",
+  initialDir = "asc",
 }: {
   brackets: Bracket[];
   analytics: Map<string, BracketAnalytics>;
   eliminatedTeams: Set<string>;
   teamLogos?: Record<string, string>;
   pathEntries?: PathEntry[];
+  initialSort?: string;
+  initialDir?: string;
 }) {
   const { isMyBracket } = useMyBracket();
 
-  // Initialize sort from URL params
+  // Initialize sort from props (SSR-safe — parent reads searchParams via Suspense)
   const [sortKey, setSortKey] = useState<SortKey>(() => {
-    if (typeof window === "undefined") return "rank";
-    const params = new URLSearchParams(window.location.search);
-    const s = params.get("sort") as SortKey | null;
     const validKeys: SortKey[] = ["rank", "points", "max", "r64", "r32", "s16", "e8", "ff", "champ"];
-    return s && validKeys.includes(s) ? s : "rank";
+    return validKeys.includes(initialSort as SortKey) ? (initialSort as SortKey) : "rank";
   });
   const [sortAsc, setSortAsc] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const params = new URLSearchParams(window.location.search);
-    const d = params.get("dir");
-    if (d === "asc") return true;
-    if (d === "desc") return false;
+    if (initialDir === "desc") return false;
     return true;
   });
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -241,11 +239,13 @@ export function LeaderboardTable({
                   <tr key={`${b.id}-path`}>
                     <td colSpan={colCount} className="px-4 py-3 bg-surface-bright/50">
                       <div className="space-y-2">
-                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                          Path to victory — {path.remainingPicks.length} alive picks remaining
-                          {path.eliminatedPickCount > 0 && (
-                            <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
-                          )}
+                        <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant flex items-center gap-2 flex-wrap">
+                          <span>Path to victory — {path.remainingPicks.length} alive picks remaining
+                            {path.eliminatedPickCount > 0 && (
+                              <span className="ml-1 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                            )}
+                          </span>
+                          <ViewBracketLink bracketId={b.id} />
                         </p>
                         {path.remainingPicks.length === 0 ? (
                           <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>

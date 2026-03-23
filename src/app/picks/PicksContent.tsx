@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
 import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
@@ -11,7 +11,11 @@ import BottomSheet from "@/components/ui/BottomSheet";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { GameHeatmap } from "@/components/charts/GameHeatmap";
 import { BracketView } from "@/components/charts/BracketView";
+import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import type { PickerDetails } from "@/components/ui/GameCard";
+import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
+import type { Bracket } from "@/lib/types";
 
 interface ChampBracketInfo {
   bracketId: string;
@@ -36,6 +40,8 @@ export function PicksContent({
   currentRound,
   teamLogos = {},
   champDistribution = [],
+  brackets = [],
+  bracketPicksMap = {},
 }: {
   games: Game[];
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
@@ -44,6 +50,8 @@ export function PicksContent({
   currentRound: Round;
   teamLogos?: Record<string, string>;
   champDistribution?: ChampDistEntry[];
+  brackets?: Bracket[];
+  bracketPicksMap?: Record<string, Record<string, string>>;
 }) {
   const searchParams = useSearchParams();
 
@@ -57,6 +65,51 @@ export function PicksContent({
     }
     return set;
   }, [games]);
+
+  // Single-bracket filter for bracket view (deep-linked via ?bracket=)
+  const [filterBracketId, setFilterBracketId] = useState<string>(
+    searchParams.get("bracket") || ""
+  );
+
+  const bracketOptions: MultiSelectOption[] = useMemo(
+    () => brackets.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.full_name && b.full_name !== b.name ? b.full_name : undefined,
+    })),
+    [brackets]
+  );
+
+  // Sync from URL when bracket param changes via Link navigation
+  const lastSyncedBracket = useRef(searchParams.get("bracket") || "");
+  useEffect(() => {
+    const bracket = searchParams.get("bracket") || "";
+    const rview = searchParams.get("rview");
+    const view = searchParams.get("view") as PageTab | null;
+
+    // Only act when the bracket param actually changed (not on other param changes like ?game=)
+    if (bracket && bracket !== lastSyncedBracket.current) {
+      lastSyncedBracket.current = bracket;
+      setFilterBracketId(bracket);
+      setDrawerGameId(null);
+      setChampDrawerTeam(null);
+      if (view === "results") setPageTab("results");
+      if (rview === "bracket") setResultView("bracket");
+    } else if (!bracket && lastSyncedBracket.current) {
+      lastSyncedBracket.current = "";
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const changeFilterBracket = useCallback((id: string) => {
+    setFilterBracketId(id);
+    const url = new URL(window.location.href);
+    if (id) {
+      url.searchParams.set("bracket", id);
+    } else {
+      url.searchParams.delete("bracket");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, []);
 
   type PageTab = "results" | "champions";
   const initialPageTab = (searchParams.get("view") as PageTab) || "results";
@@ -124,20 +177,27 @@ export function PicksContent({
   })();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
 
-  type ResultView = "cards" | "bracket" | "heatmap";
+  type ResultView = "bracket" | "heatmap";
   const initialResultView = (() => {
     const param = searchParams.get("rview");
-    if (param && ["cards", "bracket", "heatmap"].includes(param)) return param as ResultView;
-    return "cards" as ResultView;
+    if (param === "heatmap") return "heatmap" as ResultView;
+    return "bracket" as ResultView;
   })();
   const [resultView, setResultView] = useState<ResultView>(initialResultView);
 
   const changeResultView = useCallback(
     (v: ResultView) => {
       setResultView(v);
-      const params = new URLSearchParams(window.location.search);
-      params.set("rview", v);
-      window.history.replaceState(null, "", `?${params.toString()}`);
+      // Clear bracket filter when leaving bracket view so re-selecting works
+      if (v !== "bracket") {
+        setFilterBracketId("");
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("rview", v);
+      if (v !== "bracket") {
+        url.searchParams.delete("bracket");
+      }
+      window.history.replaceState(null, "", url.toString());
     },
     []
   );
@@ -186,12 +246,13 @@ export function PicksContent({
     });
   }, []);
 
-  // Champion distribution drawer state (Fix 8)
-  const [champDrawerTeam, setChampDrawerTeam] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
+  // Champion distribution drawer state
+  const [champDrawerTeam, setChampDrawerTeam] = useState<string | null>(null);
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("champ") || null;
-  });
+    const champ = params.get("champ");
+    if (champ) setChampDrawerTeam(champ);
+  }, []);
 
   function setChampDrawerWithUrl(team: string | null) {
     setChampDrawerTeam(team);
@@ -208,11 +269,12 @@ export function PicksContent({
     : null;
 
   // Drawer state — managed here for cross-game navigation
-  const [drawerGameId, setDrawerGameId] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
+  const [drawerGameId, setDrawerGameId] = useState<string | null>(null);
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("game") || null;
-  });
+    const game = params.get("game");
+    if (game) setDrawerGameId(game);
+  }, []);
 
   function setDrawerGameWithUrl(gameId: string | null) {
     setDrawerGameId(gameId);
@@ -273,7 +335,6 @@ export function PicksContent({
       <div className="overflow-x-auto no-scrollbar">
         <div className="flex gap-1.5 min-w-max">
           {([
-            { label: "Card View", value: "cards" as ResultView },
             { label: "Bracket", value: "bracket" as ResultView },
             { label: "Heatmap", value: "heatmap" as ResultView },
           ]).map((opt) => (
@@ -326,14 +387,28 @@ export function PicksContent({
 
       {/* Bracket view — shows all rounds, ignores round/status filters */}
       {resultView === "bracket" && (
-        <BracketView
-          games={games}
-          pickSplits={pickSplits}
-          totalBrackets={totalBrackets}
-          teamLogos={teamLogos}
-          eliminatedTeams={eliminatedTeams}
-          onGameClick={openDrawer}
-        />
+        <>
+          <div className="w-full sm:w-64 mb-3">
+            <MultiSelectSearch
+              mode="single"
+              label="Brackets"
+              options={bracketOptions}
+              selectedId={filterBracketId}
+              onSelect={(id) => changeFilterBracket(id)}
+              onClear={() => changeFilterBracket("")}
+              placeholder="View a bracket's picks..."
+            />
+          </div>
+          <BracketView
+            games={games}
+            pickSplits={pickSplits}
+            totalBrackets={totalBrackets}
+            teamLogos={teamLogos}
+            eliminatedTeams={eliminatedTeams}
+            onGameClick={openDrawer}
+            highlightBracketPicks={filterBracketId ? bracketPicksMap[filterBracketId] : undefined}
+          />
+        </>
       )}
 
       {/* Heatmap view */}
@@ -344,194 +419,10 @@ export function PicksContent({
           totalBrackets={totalBrackets}
           round={round}
           statusFilter={statusFilter}
+          onGameClick={openDrawer}
         />
       )}
 
-      {/* Card view: All Rounds grouped by round with collapsible sections */}
-      {resultView === "cards" && (
-        <div className="flex items-center gap-3 text-xs text-on-surface-variant mb-3">
-          <span className="font-label">Pick Split:</span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-primary" />
-            Team 1
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-secondary" />
-            Team 2
-          </span>
-        </div>
-      )}
-      {resultView === "cards" && (isAllRounds ? (
-        <div className="space-y-3">
-          {(() => {
-            const roundsWithData = ROUND_ORDER.filter((r) => {
-              const rGames = games.filter((g) => g.round === r);
-              if (rGames.length === 0) return false;
-              if (statusFilter === "completed") return rGames.some((g) => g.completed);
-              if (statusFilter === "scheduled") return rGames.some((g) => !g.completed);
-              return true;
-            });
-            const showRoundHeaders = roundsWithData.length > 1;
-
-            return ROUND_ORDER.map((r) => {
-              const rGames = games.filter((g) => g.round === r);
-              if (rGames.length === 0) return null;
-              const rCompleted = rGames.filter((g) => g.completed);
-              const rScheduled = rGames.filter((g) => !g.completed);
-              const isCollapsed = collapsedRounds.has(r);
-
-              // Apply status filter
-              const rFiltered = statusFilter === "completed"
-                ? rCompleted
-                : statusFilter === "scheduled"
-                  ? rScheduled
-                  : rGames;
-              if (rFiltered.length === 0 && statusFilter !== "all") return null;
-
-              const renderRoundContent = () => (
-                <>
-                  {(statusFilter === "all" || statusFilter === "completed") && rCompleted.length > 0 && (
-                    <>
-                      <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                        Completed ({rCompleted.length})
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {rCompleted.map((game) => (
-                          <GameCard
-                            key={game.game_id}
-                            game={game}
-                            pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                            totalBrackets={totalBrackets}
-                            pickerDetails={pickerDetailsMap[game.game_id]}
-                            teamLogos={teamLogos}
-                            onOpenDrawer={() => openDrawer(game.game_id)}
-                            eliminatedTeams={eliminatedTeams}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {(statusFilter === "all" || statusFilter === "scheduled") && rScheduled.length > 0 && (
-                    <>
-                      <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
-                        Scheduled ({rScheduled.length})
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {rScheduled.map((game) => (
-                          <GameCard
-                            key={game.game_id}
-                            game={game}
-                            pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                            totalBrackets={totalBrackets}
-                            pickerDetails={pickerDetailsMap[game.game_id]}
-                            teamLogos={teamLogos}
-                            onOpenDrawer={() => openDrawer(game.game_id)}
-                            eliminatedTeams={eliminatedTeams}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </>
-              );
-
-              if (!showRoundHeaders) {
-                return (
-                  <div key={r} className="space-y-2">
-                    <div className="pt-3 first:pt-0">
-                      <p className="font-label text-xs font-semibold text-on-surface">
-                        {ROUND_LABELS[r]}
-                      </p>
-                      <span className="text-[10px] text-on-surface-variant">
-                        {rCompleted.length} completed / {rScheduled.length} scheduled
-                      </span>
-                    </div>
-                    {renderRoundContent()}
-                  </div>
-                );
-              }
-
-              return (
-                <div key={r} className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => toggleRoundCollapse(r)}
-                    className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
-                  >
-                    <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
-                    <p className="font-label text-xs font-semibold text-on-surface">
-                      {ROUND_LABELS[r]}
-                    </p>
-                    <span className="text-[10px] text-on-surface-variant">
-                      {rCompleted.length} completed / {rScheduled.length} scheduled
-                    </span>
-                    {isCollapsed && (
-                      <span className="text-[10px] text-on-surface-variant/50 ml-auto">
-                        {rGames.length} game{rGames.length !== 1 ? "s" : ""}
-                      </span>
-                    )}
-                  </button>
-                  {!isCollapsed && renderRoundContent()}
-                </div>
-              );
-            });
-          })()}
-        </div>
-      ) : (
-        <>
-          {/* Single round: Completed games */}
-          {(statusFilter === "all" || statusFilter === "completed") && completedGames.length > 0 && (
-            <>
-              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                Completed ({completedGames.length})
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {completedGames.map((game) => (
-                  <GameCard
-                    key={game.game_id}
-                    game={game}
-                    pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                    totalBrackets={totalBrackets}
-                    pickerDetails={pickerDetailsMap[game.game_id]}
-                    teamLogos={teamLogos}
-                    onOpenDrawer={() => openDrawer(game.game_id)}
-                    eliminatedTeams={eliminatedTeams}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Scheduled games */}
-          {(statusFilter === "all" || statusFilter === "scheduled") && scheduledGames.length > 0 && (
-            <>
-              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant pt-2">
-                Scheduled ({scheduledGames.length})
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {scheduledGames.map((game) => (
-                  <GameCard
-                    key={game.game_id}
-                    game={game}
-                    pickSplit={pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 }}
-                    totalBrackets={totalBrackets}
-                    pickerDetails={pickerDetailsMap[game.game_id]}
-                    teamLogos={teamLogos}
-                    onOpenDrawer={() => openDrawer(game.game_id)}
-                    eliminatedTeams={eliminatedTeams}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
-          {roundGames.length === 0 && (
-            <p className="text-on-surface-variant text-sm text-center py-8">
-              No games scheduled for this round.
-            </p>
-          )}
-        </>
-      ))}
 
       {/* Centralized drawer with prev/next navigation */}
       {drawerGame && pickerDetailsMap[drawerGame.game_id] && (
@@ -609,11 +500,12 @@ export function PicksContent({
                 {champDrawerEntry.brackets.map((b) => (
                   <div key={b.bracketName} className="group flex items-center gap-2 py-1.5">
                     <CompareCheckbox bracketId={b.bracketId} />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-on-surface truncate">{b.bracketName}</p>
                       {b.fullName && b.fullName !== b.bracketName && (
                         <p className="text-[10px] text-on-surface-variant truncate">{b.fullName}</p>
                       )}
+                      <ViewBracketLink bracketId={b.bracketId} className="mt-0.5" />
                     </div>
                   </div>
                 ))}

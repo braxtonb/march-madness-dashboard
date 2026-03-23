@@ -113,6 +113,43 @@ export interface BracketAnalytics {
   final_four_alive: number;
 }
 
+/** Pre-computed Monte Carlo simulation result per bracket */
+export interface SimResult {
+  bracket_id: string;
+  wins: number;
+  avg_final_points: number;
+  median_rank: number;
+  best_rank: number;
+  pct_first: number;
+  pct_second: number;
+  pct_third: number;
+  pct_top10: number;
+  pct_top25: number;
+}
+
+/** Pre-computed derived data from scraper */
+export interface DerivedData {
+  analytics: Record<string, BracketAnalytics>;
+  pick_splits: Record<string, { team1Count: number; team2Count: number }>;
+  eliminated_teams: string[];
+  scatter_data: { name: string; skill: number; fortune: number }[];
+  greatest_calls: { bracketId: string; bracketName: string; bracketOwner: string; bracketFullName: string; teamPicked: string; seedPicked: number; rate: number; round: string }[];
+  round_accuracy: { round: string; correct: number; total: number }[];
+  path_entries: { bracketId: string; remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }[];
+  alive_data: {
+    champAlive: number;
+    ff3Plus: number;
+    ff2Plus: number;
+    gamesRemaining: number;
+    gamesToWatch: unknown[];
+    bracketFFTeamsMap: Record<string, string[]>;
+  };
+  champ_distribution: { name: string; count: number; alive: boolean; logo: string; seed: number; brackets: { bracketId: string; bracketName: string; fullName: string }[] }[];
+  madness_index: number;
+  submitted_count: number;
+  team_logos: Record<string, string>;
+}
+
 /** All data needed to render any page */
 export interface DashboardData {
   brackets: Bracket[];
@@ -120,5 +157,7 @@ export interface DashboardData {
   games: Game[];
   teams: Team[];
   snapshots: Snapshot[];
+  sim_results?: SimResult[];
+  derived?: DerivedData;
   meta: Meta;
 }

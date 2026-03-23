@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { TeamPill } from "@/components/ui/TeamPill";
 import BottomSheet from "@/components/ui/BottomSheet";
+import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Round } from "@/lib/types";
@@ -27,17 +28,18 @@ interface GameToWatch {
   affectedBrackets: AffectedBracket[];
 }
 
-export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games: GameToWatch[]; teamLogos?: Record<string, string>; eliminatedTeams?: Set<string> }) {
-  const [selectedGameIdx, setSelectedGameIdx] = useState<number | null>(() => {
-    if (typeof window === "undefined") return null;
+export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams = new Set() }: { games: GameToWatch[]; teamLogos?: Record<string, string>; eliminatedTeams?: Set<string> }) {
+  const [selectedGameIdx, setSelectedGameIdx] = useState<number | null>(null);
+
+  // Hydrate from URL on mount (client-only to avoid SSR mismatch)
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const watchParam = params.get("watch");
     if (watchParam) {
       const idx = games.findIndex((g) => g.gameId === watchParam);
-      if (idx >= 0) return idx;
+      if (idx >= 0) setSelectedGameIdx(idx);
     }
-    return null;
-  });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function setGameIdxWithUrl(idx: number | null) {
     setSelectedGameIdx(idx);
@@ -68,13 +70,13 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
             onClick={() => setGameIdxWithUrl(idx)}
             className="group rounded-card bg-surface-bright p-4 text-left space-y-2 hover:bg-surface-bright/80 transition-colors cursor-pointer w-full"
           >
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-on-surface flex items-center gap-1.5">
-                <TeamPill name={g.team1} seed={g.seed1} logo={teamLogos[g.team1]} />
+            <div className="flex items-center justify-between text-sm gap-1">
+              <span className="text-on-surface flex items-center gap-1.5 flex-wrap min-w-0">
+                <TeamPill name={g.team1} seed={g.seed1} logo={teamLogos[g.team1]} eliminated={eliminatedTeams.has(g.team1)} showStatus />
                 <span className="text-[10px] text-on-surface-variant">vs</span>
-                <TeamPill name={g.team2} seed={g.seed2} logo={teamLogos[g.team2]} />
+                <TeamPill name={g.team2} seed={g.seed2} logo={teamLogos[g.team2]} eliminated={eliminatedTeams.has(g.team2)} showStatus />
               </span>
-              <span className="shrink-0 ml-2">
+              <span className="shrink-0">
                 <span className="inline-block rounded-card px-2 py-0.5 font-label text-[10px] bg-tertiary/15 text-tertiary">
                   {ROUND_LABELS[g.round as Round] ?? g.round}
                 </span>
@@ -107,12 +109,12 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
         {selectedGame && (
           <div className="space-y-4">
             {/* Game header */}
-            <div className="flex items-center gap-2 justify-center">
-              <TeamPill name={selectedGame.team1} seed={selectedGame.seed1} logo={teamLogos[selectedGame.team1]} />
+            <div className="flex items-center justify-between">
+              <TeamPill name={selectedGame.team1} seed={selectedGame.seed1} logo={teamLogos[selectedGame.team1]} eliminated={eliminatedTeams.has(selectedGame.team1)} showStatus />
               <span className="text-xs text-on-surface-variant">vs</span>
-              <TeamPill name={selectedGame.team2} seed={selectedGame.seed2} logo={teamLogos[selectedGame.team2]} />
+              <TeamPill name={selectedGame.team2} seed={selectedGame.seed2} logo={teamLogos[selectedGame.team2]} eliminated={eliminatedTeams.has(selectedGame.team2)} showStatus />
             </div>
-            <p className="text-xs text-on-surface-variant text-center">
+            <p className="text-xs text-on-surface-variant">
               {selectedGame.affectedCount} bracket{selectedGame.affectedCount !== 1 ? "s" : ""} have champion hopes riding on this game
             </p>
 
@@ -139,6 +141,7 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
                           {b.full_name && b.full_name !== b.name && (
                             <p className="text-xs text-on-surface-variant truncate">{b.full_name}</p>
                           )}
+                          {b.bracketId && <ViewBracketLink bracketId={b.bracketId} className="mt-0.5" />}
                         </div>
                       </div>
                     ))}
@@ -151,7 +154,7 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
                   {team1Brackets.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <TeamPill name={selectedGame.team1} seed={selectedGame.seed1} logo={teamLogos[selectedGame.team1]} />
+                        <TeamPill name={selectedGame.team1} seed={selectedGame.seed1} logo={teamLogos[selectedGame.team1]} eliminated={eliminatedTeams.has(selectedGame.team1)} showStatus />
                       </div>
                       {renderBracketList(team1Brackets)}
                     </div>
@@ -159,7 +162,7 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
                   {team2Brackets.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <TeamPill name={selectedGame.team2} seed={selectedGame.seed2} logo={teamLogos[selectedGame.team2]} />
+                        <TeamPill name={selectedGame.team2} seed={selectedGame.seed2} logo={teamLogos[selectedGame.team2]} eliminated={eliminatedTeams.has(selectedGame.team2)} showStatus />
                       </div>
                       {renderBracketList(team2Brackets)}
                     </div>
@@ -177,7 +180,7 @@ export function GamesToWatch({ games, teamLogos = {}, eliminatedTeams }: { games
                             )}
                           </div>
                           <span className="text-on-surface-variant text-xs shrink-0 ml-2">
-                            <TeamPill name={b.champion} seed={b.championSeed} logo={teamLogos[b.champion]} eliminated={eliminatedTeams?.has(b.champion)} />
+                            <TeamPill name={b.champion} seed={b.championSeed} logo={teamLogos[b.champion]} eliminated={eliminatedTeams.has(b.champion)} showStatus />
                           </span>
                         </div>
                       ))}

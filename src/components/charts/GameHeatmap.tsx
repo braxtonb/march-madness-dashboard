@@ -10,6 +10,7 @@ interface GameHeatmapProps {
   totalBrackets: number;
   round: string;
   statusFilter: "all" | "completed" | "scheduled";
+  onGameClick?: (gameId: string) => void;
 }
 
 function accuracyColor(pctCorrect: number): string {
@@ -64,7 +65,7 @@ function isTBDTeam(name: string): boolean {
   return !name || name === "TBD" || name === "";
 }
 
-export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFilter }: GameHeatmapProps) {
+export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFilter, onGameClick }: GameHeatmapProps) {
   const isAllRounds = round === "ALL";
 
   const filteredGames = useMemo(() => {
@@ -116,9 +117,17 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
     );
   }
 
+  const peopleIcon = (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-variant/40 group-hover:text-on-surface-variant shrink-0 transition-colors">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+
   function renderGameCell(game: Game) {
     const split = pickSplits[game.game_id];
     const total = split ? split.team1Count + split.team2Count : 0;
+    const hasTeam = !!(game.team1 || game.team2);
+    const clickable = onGameClick && hasTeam;
 
     if (!game.completed) {
       const tbd1 = isTBDTeam(game.team1);
@@ -128,11 +137,11 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
         return (
           <div
             key={game.game_id}
-            className="flex items-center gap-1.5 rounded-lg bg-on-surface-variant/5 px-2.5 py-1.5"
+            className="flex items-center gap-1 rounded bg-on-surface-variant/5 px-2 py-1"
           >
-            <span className="text-xs text-on-surface-variant/50 font-label truncate min-w-0 flex-1">TBD</span>
-            <span className="text-xs text-on-surface-variant/30 shrink-0">vs</span>
-            <span className="text-xs text-on-surface-variant/50 font-label truncate min-w-0 flex-1 text-right">TBD</span>
+            <span className="text-[11px] text-on-surface-variant/50 font-label truncate min-w-0 flex-1">TBD</span>
+            <span className="text-[10px] text-on-surface-variant/30 shrink-0">v</span>
+            <span className="text-[11px] text-on-surface-variant/50 font-label truncate min-w-0 flex-1 text-right">TBD</span>
           </div>
         );
       }
@@ -140,31 +149,34 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
       const pct1 = total > 0 ? Math.round((split.team1Count / total) * 100) : 50;
       const pct2 = total > 0 ? 100 - pct1 : 50;
 
+      const El = clickable ? "button" : "div";
       return (
-        <div
+        <El
           key={game.game_id}
-          className="flex items-center gap-1.5 rounded-lg bg-on-surface-variant/10 px-2.5 py-1.5"
+          {...(clickable ? { onClick: () => onGameClick!(game.game_id), type: "button" as const } : {})}
+          className={`group flex items-center gap-1 rounded bg-on-surface-variant/10 px-2 py-1 w-full text-left ${clickable ? "cursor-pointer hover:bg-on-surface-variant/15 transition-colors" : ""}`}
         >
           {!tbd1 && (
-            <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+            <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
               {game.seed1}
             </span>
           )}
-          <span className={`text-sm font-medium truncate min-w-0 flex-1 ${tbd1 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
+          <span className={`text-xs font-medium truncate min-w-0 flex-1 ${tbd1 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
             {tbd1 ? "TBD" : shortName(game.team1)}
           </span>
-          <span className="text-xs text-on-surface-variant font-label shrink-0">{pct1}%</span>
-          <span className="text-xs text-on-surface-variant/50 shrink-0">v</span>
-          <span className="text-xs text-on-surface-variant font-label shrink-0">{pct2}%</span>
-          <span className={`text-sm font-medium truncate min-w-0 flex-1 text-right ${tbd2 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
+          <span className="text-[10px] text-on-surface-variant font-label shrink-0">{pct1}%</span>
+          <span className="text-[10px] text-on-surface-variant/50 shrink-0">v</span>
+          <span className="text-[10px] text-on-surface-variant font-label shrink-0">{pct2}%</span>
+          <span className={`text-xs font-medium truncate min-w-0 flex-1 text-right ${tbd2 ? "text-on-surface-variant/50 italic" : "text-on-surface"}`}>
             {tbd2 ? "TBD" : shortName(game.team2)}
           </span>
           {!tbd2 && (
-            <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+            <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
               {game.seed2}
             </span>
           )}
-        </div>
+          {clickable && peopleIcon}
+        </El>
       );
     }
 
@@ -175,43 +187,46 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
     const colorClass = accuracyColor(pctCorrect);
     const pctDisplay = Math.round(pctCorrect * 100);
 
+    const El2 = clickable ? "button" : "div";
     return (
-      <div
+      <El2
         key={game.game_id}
-        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${colorClass}`}
+        {...(clickable ? { onClick: () => onGameClick!(game.game_id), type: "button" as const } : {})}
+        className={`group flex items-center gap-1 rounded px-2 py-1 w-full text-left ${colorClass} ${clickable ? "cursor-pointer hover:brightness-125 transition-all" : ""}`}
       >
-        <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+        <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
           {game.seed1}
         </span>
         <span
-          className={`text-sm font-medium truncate min-w-0 flex-1 ${
+          className={`text-xs font-medium truncate min-w-0 flex-1 ${
             game.winner === game.team1 ? "text-on-surface font-bold" : "text-on-surface-variant line-through"
           }`}
         >
           {shortName(game.team1)}
         </span>
-        <span className="text-xs text-on-surface-variant/50 shrink-0">v</span>
+        <span className="text-[10px] text-on-surface-variant/50 shrink-0">v</span>
         <span
-          className={`text-sm font-medium truncate min-w-0 flex-1 text-right ${
+          className={`text-xs font-medium truncate min-w-0 flex-1 text-right ${
             game.winner === game.team2 ? "text-on-surface font-bold" : "text-on-surface-variant line-through"
           }`}
         >
           {shortName(game.team2)}
         </span>
-        <span className="text-xs text-on-surface-variant w-5 text-center font-label shrink-0">
+        <span className="text-[10px] text-on-surface-variant w-4 text-center font-label shrink-0">
           {game.seed2}
         </span>
-        <span className="text-xs text-on-surface font-label w-9 text-right shrink-0">
+        <span className="text-[10px] text-on-surface font-label w-8 text-right shrink-0">
           {pctDisplay}%
         </span>
-      </div>
+        {clickable && peopleIcon}
+      </El2>
     );
   }
 
   const showRoundHeaders = isAllRounds && groupedGames.length > 1;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Legend */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs text-on-surface-variant font-label" title="Percentage of completed games where the group's most popular pick was correct">Group Accuracy:</span>
@@ -246,7 +261,7 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
                 <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">
                   {isCollapsed ? "+" : "\u2212"}
                 </span>
-                <p className="font-label text-sm font-semibold text-on-surface">
+                <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                   {ROUND_LABELS[group.round]}
                 </p>
                 {isCollapsed && (
@@ -256,7 +271,7 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
                 )}
               </button>
               {!isCollapsed && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
                   {group.games.map((game) => renderGameCell(game))}
                 </div>
               )}
@@ -267,11 +282,11 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
         return (
           <div key={group.round} className="space-y-2">
             {isAllRounds && (
-              <p className="font-label text-sm font-semibold text-on-surface pt-1">
+              <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant pt-1">
                 {ROUND_LABELS[group.round]}
               </p>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
               {group.games.map((game) => renderGameCell(game))}
             </div>
           </div>

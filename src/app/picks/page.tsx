@@ -7,30 +7,18 @@ export const dynamic = "force-dynamic";
 
 export default async function GroupPicksPage() {
   const data = await fetchDashboardData();
+  const d = data.derived!;
 
-  // Only count brackets that actually submitted picks (have a champion_pick)
-  const submittedBrackets = data.brackets.filter((b) => b.champion_pick);
-  const emptyBrackets = data.brackets.length - submittedBrackets.length;
+  const submittedCount = d.submitted_count;
+  const emptyBrackets = data.brackets.length - submittedCount;
 
-  const pickSplits: Record<string, { team1Count: number; team2Count: number }> = {};
+  // Picker details still computed here (needed for drawer, keyed by game)
+  const bracketById = new Map(data.brackets.map((b) => [b.id, { name: b.name, owner: b.owner, full_name: b.full_name }]));
+  const pointsById = new Map(data.brackets.map((b) => [b.name, b.points]));
+
   const pickerDetailsMap: Record<string, PickerDetails> = {};
-
-  // Build bracket_id -> { name, owner, full_name } lookup
-  const bracketById = new Map<string, { name: string; owner: string; full_name: string }>();
-  for (const b of data.brackets) {
-    bracketById.set(b.id, { name: b.name, owner: b.owner, full_name: b.full_name });
-  }
-
   for (const game of data.games) {
     const gamePicks = data.picks.filter((p) => p.game_id === game.game_id);
-    const team1Count = gamePicks.filter(
-      (p) => p.team_picked === game.team1
-    ).length;
-    const team2Count = gamePicks.filter(
-      (p) => p.team_picked === game.team2
-    ).length;
-    pickSplits[game.game_id] = { team1Count, team2Count };
-
     const team1Pickers: { bracketId: string; name: string; owner: string; full_name: string }[] = [];
     const team2Pickers: { bracketId: string; name: string; owner: string; full_name: string }[] = [];
     for (const p of gamePicks) {
@@ -41,61 +29,20 @@ export default async function GroupPicksPage() {
         team2Pickers.push({ bracketId: p.bracket_id, ...bracket });
       }
     }
-    // Sort pickers by points descending
-    const pointsById = new Map(data.brackets.map((b) => [b.name, b.points]));
     team1Pickers.sort((a, b) => (pointsById.get(b.name) || 0) - (pointsById.get(a.name) || 0));
     team2Pickers.sort((a, b) => (pointsById.get(b.name) || 0) - (pointsById.get(a.name) || 0));
     pickerDetailsMap[game.game_id] = { team1Pickers, team2Pickers };
   }
 
-  // Build team logo lookup
-  const teamLogos: Record<string, string> = Object.fromEntries(
-    data.teams.map((t) => [t.name, t.logo])
-  );
-
-  // Derive eliminated teams from game results
-  const eliminatedTeams = new Set<string>();
-  for (const g of data.games) {
-    if (g.completed && g.winner) {
-      if (g.team1 && g.team1 !== g.winner) eliminatedTeams.add(g.team1);
-      if (g.team2 && g.team2 !== g.winner) eliminatedTeams.add(g.team2);
-    }
+  // Build bracket picks lookup for single-bracket filter on bracket view
+  const bracketPicksMap: Record<string, Record<string, string>> = {};
+  for (const p of data.picks) {
+    if (!bracketPicksMap[p.bracket_id]) bracketPicksMap[p.bracket_id] = {};
+    bracketPicksMap[p.bracket_id][p.game_id] = p.team_picked;
   }
 
-  // Champion distribution
-  const champCounts = new Map<string, number>();
-  const champBrackets = new Map<string, { bracketId: string; bracketName: string; fullName: string }[]>();
-  for (const b of submittedBrackets) {
-    if (b.champion_pick) {
-      champCounts.set(
-        b.champion_pick,
-        (champCounts.get(b.champion_pick) || 0) + 1
-      );
-      if (!champBrackets.has(b.champion_pick)) champBrackets.set(b.champion_pick, []);
-      champBrackets.get(b.champion_pick)!.push({ bracketId: b.id, bracketName: b.name, fullName: b.full_name });
-    }
-  }
-  // Build team seed lookup
-  const teamSeeds: Record<string, number> = Object.fromEntries(
-    data.teams.map((t) => [t.name, t.seed])
-  );
-
-  const champDistribution = [...champCounts.entries()]
-    .map(([name, count]) => ({
-      name,
-      count,
-      alive: !eliminatedTeams.has(name),
-      logo: teamLogos[name] || "",
-      seed: teamSeeds[name] || 0,
-      brackets: champBrackets.get(name) || [],
-    }))
-    .sort((a, b) => b.count - a.count);
-
-  // Compute per-round accuracy for report card
-  const roundAccuracy = ["R64", "R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
-    const acc = computeGroupAccuracy(data.picks, data.games, round, submittedBrackets.length);
-    return { round, ...acc };
-  });
+  // Round accuracy from pre-computed data
+  const roundAccuracy = d.round_accuracy;
   const overallCorrect = roundAccuracy.reduce((s, r) => s + r.correct, 0);
   const overallTotal = roundAccuracy.reduce((s, r) => s + r.total, 0);
 
@@ -104,12 +51,12 @@ export default async function GroupPicksPage() {
       <div>
         <h2 className="font-display text-2xl font-bold">Group Picks</h2>
         <p className="text-on-surface-variant text-sm mt-1">
-          See how our {submittedBrackets.length} brackets collectively predicted
+          See how our {submittedCount} brackets collectively predicted
           each game
         </p>
         {emptyBrackets > 0 && (
           <p className="text-on-surface-variant text-xs mt-0.5 italic">
-            Based on {submittedBrackets.length} submitted brackets ({emptyBrackets} did not submit picks)
+            Based on {submittedCount} submitted brackets ({emptyBrackets} did not submit picks)
           </p>
         )}
       </div>
@@ -145,12 +92,14 @@ export default async function GroupPicksPage() {
 
       <PicksContent
         games={data.games}
-        pickSplits={pickSplits}
+        pickSplits={d.pick_splits}
         pickerDetailsMap={pickerDetailsMap}
-        totalBrackets={submittedBrackets.length}
+        totalBrackets={submittedCount}
         currentRound={data.meta.current_round}
-        teamLogos={teamLogos}
-        champDistribution={champDistribution}
+        teamLogos={d.team_logos}
+        champDistribution={d.champ_distribution}
+        brackets={data.brackets}
+        bracketPicksMap={bracketPicksMap}
       />
     </div>
   );

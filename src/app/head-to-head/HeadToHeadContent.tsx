@@ -9,6 +9,7 @@ import { GameHeader } from "@/components/ui/GameHeader";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 
+
 type DiffFilter = "all" | "differences" | "agreement";
 type StatusFilter = "all" | "completed" | "scheduled";
 
@@ -295,39 +296,29 @@ export function HeadToHeadContent({
 
           {/* Stat comparison — compact inline */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-on-surface truncate">{b1.name}</p>
-                {b1.full_name && b1.full_name !== b1.name && <p className="font-label text-[10px] text-on-surface-variant">{b1.full_name}</p>}
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="text-center">
-                  <p className="font-display text-sm font-bold text-on-surface">{b1.points}</p>
-                  <p className="font-label text-[8px] text-on-surface-variant">PTS</p>
+            <div className="rounded-card bg-surface-container px-3 py-2 space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-base font-bold text-on-surface truncate">{b1.name}</p>
+                  {b1.full_name && b1.full_name !== b1.name && <p className="font-label text-xs text-on-surface-variant">{b1.full_name}</p>}
                 </div>
-                <div className="text-center">
-                  <p className="font-display text-sm font-bold text-on-surface">{b1.max_remaining}</p>
-                  <p className="font-label text-[8px] text-on-surface-variant">MAX</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <p className="font-display text-sm font-bold text-on-surface">{b1.points} <span className="text-[10px] font-normal text-on-surface-variant">/ {b1.points + b1.max_remaining} pts</span></p>
+                  <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} eliminated={eliminatedTeams.has(b1.champion_pick)} showStatus />
                 </div>
-                <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} eliminated={eliminatedTeams.has(b1.champion_pick)} showStatus />
               </div>
             </div>
 
-            <div className="rounded-card bg-surface-container px-3 py-2 flex items-center gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-sm font-bold text-on-surface truncate">{b2.name}</p>
-                {b2.full_name && b2.full_name !== b2.name && <p className="font-label text-[10px] text-on-surface-variant">{b2.full_name}</p>}
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="text-center">
-                  <p className="font-display text-sm font-bold text-on-surface">{b2.points}</p>
-                  <p className="font-label text-[8px] text-on-surface-variant">PTS</p>
+            <div className="rounded-card bg-surface-container px-3 py-2 space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-base font-bold text-on-surface truncate">{b2.name}</p>
+                  {b2.full_name && b2.full_name !== b2.name && <p className="font-label text-xs text-on-surface-variant">{b2.full_name}</p>}
                 </div>
-                <div className="text-center">
-                  <p className="font-display text-sm font-bold text-on-surface">{b2.max_remaining}</p>
-                  <p className="font-label text-[8px] text-on-surface-variant">MAX</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <p className="font-display text-sm font-bold text-on-surface">{b2.points} <span className="text-[10px] font-normal text-on-surface-variant">/ {b2.points + b2.max_remaining} pts</span></p>
+                  <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} eliminated={eliminatedTeams.has(b2.champion_pick)} showStatus />
                 </div>
-                <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} eliminated={eliminatedTeams.has(b2.champion_pick)} showStatus />
               </div>
             </div>
           </div>

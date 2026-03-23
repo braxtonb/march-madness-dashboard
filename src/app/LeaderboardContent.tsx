@@ -7,25 +7,35 @@ import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
+import { GamesToWatch } from "@/components/GamesToWatch";
 import { TeamPill } from "@/components/ui/TeamPill";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
-type LeaderboardTab = "standings" | "calls" | "style";
+type LeaderboardTab = "standings" | "insights" | "style";
 
 function isValidTab(value: string | null): value is LeaderboardTab {
   return (
     value === "standings" ||
-    value === "calls" ||
+    value === "insights" ||
+    value === "alive" || // legacy alias
+    value === "calls" || // legacy alias
     value === "style"
   );
 }
 
+/** Map legacy tab values to current ones */
+function normalizeTab(value: string | null): LeaderboardTab {
+  if (value === "alive" || value === "calls") return "insights";
+  if (value === "standings" || value === "insights" || value === "style") return value;
+  return "standings";
+}
+
 const TAB_OPTIONS: { label: string; value: LeaderboardTab }[] = [
   { label: "Standings", value: "standings" },
-  { label: "Best Calls", value: "calls" },
+  { label: "Insights", value: "insights" },
   { label: "Picking Style", value: "style" },
 ];
 
@@ -57,6 +67,35 @@ interface RisingStar {
   analytics: BracketAnalytics;
 }
 
+interface AffectedBracket {
+  name: string;
+  owner: string;
+  full_name: string;
+  champion: string;
+  championSeed?: number;
+  bracketId?: string;
+}
+
+interface GameToWatchData {
+  gameId: string;
+  seed1: number;
+  team1: string;
+  seed2: number;
+  team2: string;
+  round: string;
+  affectedCount: number;
+  affectedBrackets: AffectedBracket[];
+}
+
+interface AliveData {
+  champAlive: number;
+  ff3Plus: number;
+  ff2Plus: number;
+  gamesRemaining: number;
+  gamesToWatch: GameToWatchData[];
+  bracketFFTeamsMap: Record<string, string[]>;
+}
+
 interface LeaderboardContentProps {
   brackets: Bracket[];
   analytics: Map<string, BracketAnalytics>;
@@ -73,6 +112,7 @@ interface LeaderboardContentProps {
   submittedCount: number;
   teamLogos?: Record<string, string>;
   pathEntries?: { bracketId: string; remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }[];
+  aliveData?: AliveData;
 }
 
 function LeaderboardContentInner({
@@ -91,20 +131,17 @@ function LeaderboardContentInner({
   submittedCount,
   teamLogos = {},
   pathEntries = [],
+  aliveData,
 }: LeaderboardContentProps) {
   const searchParams = useSearchParams();
 
-  const initialTab = isValidTab(searchParams.get("tab"))
-    ? (searchParams.get("tab") as LeaderboardTab)
-    : "standings";
+  const [tab, setTab] = useState<LeaderboardTab>(
+    normalizeTab(searchParams.get("tab")),
+  );
 
-  const [tab, setTab] = useState<LeaderboardTab>(initialTab);
-
-  // Deep-link bracket search: initialize from URL
+  // Deep-link bracket search: initialize from searchParams (SSR-safe via Suspense)
   const [selectedSearchIds, setSelectedSearchIds] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-    const params = new URLSearchParams(window.location.search);
-    const bracketParam = params.get("brackets");
+    const bracketParam = searchParams.get("brackets");
     return bracketParam ? bracketParam.split(",").filter(Boolean) : [];
   });
 
@@ -135,15 +172,75 @@ function LeaderboardContentInner({
     return brackets.filter((b) => idSet.has(b.id));
   }, [brackets, selectedSearchIds]);
 
+  // Alive filter state for standings tab (deep-linked via ?filter=)
+  type AliveFilter = "all" | "champion" | "ff3" | "ff2";
+  const VALID_ALIVE_FILTERS: AliveFilter[] = ["all", "champion", "ff3", "ff2"];
+  const [aliveFilter, setAliveFilter] = useState<AliveFilter>(() => {
+    const f = searchParams.get("filter") as AliveFilter | null;
+    return f && VALID_ALIVE_FILTERS.includes(f) ? f : "all";
+  });
+
+  const changeAliveFilter = useCallback((f: AliveFilter) => {
+    setAliveFilter(f);
+    const url = new URL(window.location.href);
+    if (f !== "all") {
+      url.searchParams.set("filter", f);
+    } else {
+      url.searchParams.delete("filter");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, []);
+
+  // Champion filter (deep-linked via ?champion=)
+  const [championFilter, setChampionFilter] = useState<string[]>(() => {
+    const v = searchParams.get("champion");
+    return v ? v.split(",").filter(Boolean) : [];
+  });
+  const championOptions: MultiSelectOption[] = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const b of brackets) if (b.champion_pick) map.set(b.champion_pick, (map.get(b.champion_pick) || 0) + 1);
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([c]) => ({ value: c, label: c }));
+  }, [brackets]);
+  const changeChampionFilter = useCallback((ids: string[]) => {
+    setChampionFilter(ids);
+    const url = new URL(window.location.href);
+    if (ids.length > 0) url.searchParams.set("champion", ids.join(","));
+    else url.searchParams.delete("champion");
+    window.history.replaceState(null, "", url.toString());
+  }, []);
+
+  const aliveFilteredBrackets = useMemo(() => {
+    let result = filteredBrackets;
+    if (championFilter.length > 0) {
+      const champSet = new Set(championFilter);
+      result = result.filter((b) => champSet.has(b.champion_pick));
+    }
+    if (aliveFilter !== "all" && aliveData) {
+      result = result.filter((b) => {
+        if (aliveFilter === "champion") {
+          return b.champion_pick && !eliminatedTeams.has(b.champion_pick);
+        }
+        const ffTeams = aliveData.bracketFFTeamsMap[b.id] ?? [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
+        const aliveCount = ffTeams.filter((t) => !eliminatedTeams.has(t)).length;
+        if (aliveFilter === "ff3") return aliveCount >= 3;
+        if (aliveFilter === "ff2") return aliveCount >= 2;
+        return true;
+      });
+    }
+    return result;
+  }, [filteredBrackets, championFilter, aliveFilter, aliveData, eliminatedTeams]);
+
+  const eliminatedTeamsSet = useMemo(() => eliminatedTeams, [eliminatedTeams]);
+
   const changeTab = useCallback(
     (newTab: LeaderboardTab) => {
       setTab(newTab);
-      // Reset search inputs when switching tabs
       setSelectedSearchIds([]);
+      setAliveFilter("all");
+      setChampionFilter([]);
       const url = new URL(window.location.href);
 
-      // Clear ALL tab-specific params, then only the tab param stays
-      const allTabParams = ["sort", "dir", "brackets", "champion", "pts", "ptsOp"];
+      const allTabParams = ["sort", "dir", "brackets", "champion", "pts", "ptsOp", "filter"];
       for (const p of allTabParams) {
         url.searchParams.delete(p);
       }
@@ -157,8 +254,9 @@ function LeaderboardContentInner({
   // Keep tab in sync if user navigates back/forward
   useEffect(() => {
     const paramTab = searchParams.get("tab");
-    if (isValidTab(paramTab) && paramTab !== tab) {
-      setTab(paramTab);
+    if (isValidTab(paramTab)) {
+      const normalized = normalizeTab(paramTab);
+      if (normalized !== tab) setTab(normalized);
     }
   }, [searchParams, tab]);
 
@@ -221,8 +319,7 @@ function LeaderboardContentInner({
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`font-display font-black text-lg ${accents[idx]}`}>{b.points}</p>
-                        <p className="text-[10px] text-on-surface-variant">pts</p>
+                        <p className={`font-display font-black text-lg leading-tight ${accents[idx]}`}>{b.points} <span className="text-[10px] font-normal text-on-surface-variant">/ {b.points + b.max_remaining} pts</span></p>
                       </div>
                       {b.champion_pick && (
                         <div className="shrink-0">
@@ -244,7 +341,7 @@ function LeaderboardContentInner({
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`font-display font-black text-base ${accents[idx]}`}>{b.points}</p>
+                        <p className={`font-display font-black text-base leading-tight ${accents[idx]}`}>{b.points} <span className="text-[10px] font-normal text-on-surface-variant">/ {b.points + b.max_remaining} pts</span></p>
                       </div>
                       {b.champion_pick && (
                         <div className="shrink-0">
@@ -275,13 +372,16 @@ function LeaderboardContentInner({
                 title: "Bracket View",
                 description: "See every pick in bracket format",
                 icon: (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <path d="M3 3v6h6" /><path d="M3 9l4-4h4" /><path d="M3 15v6h6" /><path d="M3 21l4-4h4" /><path d="M15 5h6" /><path d="M15 19h6" /><path d="M11 5v14" /><path d="M11 12h4" />
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    {/* Left: 4 lines → 2 → 1 */}
+                    <path d="M1 2h2v3h2" /><path d="M1 8h2v-3" /><path d="M1 16h2v3h2" /><path d="M1 22h2v-3" /><path d="M5 5h2v6" /><path d="M5 19h2v-6" /><path d="M7 11h5v1" />
+                    {/* Right: 4 lines → 2 → 1 (mirror) */}
+                    <path d="M23 2h-2v3h-2" /><path d="M23 8h-2v-3" /><path d="M23 16h-2v3h-2" /><path d="M23 22h-2v-3" /><path d="M19 5h-2v6" /><path d="M19 19h-2v-6" /><path d="M17 11h-5" />
                   </svg>
                 ),
               },
               {
-                href: "/simulator",
+                href: "/simulator#scenario=favorites",
                 title: "Simulate Favorites",
                 description: "What if all favorites win?",
                 icon: (
@@ -313,7 +413,7 @@ function LeaderboardContentInner({
             ];
 
             return (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {quickLinks.map((link) => (
                   <Link
                     key={link.href}
@@ -340,74 +440,145 @@ function LeaderboardContentInner({
               Tap any row for details &middot; Tap &#9675; to compare brackets
             </p>
           </div>
-          <div className="w-full sm:w-72 mb-3">
-            <MultiSelectSearch
-              mode="multi"
-              label="Brackets"
-              options={bracketOptions}
-              selected={selectedSearchIds}
-              onSelectedChange={setSelectedSearchIds}
-              placeholder="Search brackets..."
-            />
+          <div className="flex flex-wrap items-end gap-3 mb-3">
+            <div className="w-full sm:w-72">
+              <MultiSelectSearch
+                mode="multi"
+                label="Brackets"
+                options={bracketOptions}
+                selected={selectedSearchIds}
+                onSelectedChange={setSelectedSearchIds}
+                placeholder="Search brackets..."
+              />
+            </div>
+            <div className="w-full sm:w-56">
+              <MultiSelectSearch
+                mode="multi"
+                label="Champions"
+                options={championOptions}
+                selected={championFilter}
+                onSelectedChange={changeChampionFilter}
+                placeholder="Filter by champion..."
+              />
+            </div>
+            {aliveData && (
+              <div className="flex gap-1.5">
+                {(
+                  [
+                    ["all", "All"],
+                    ["champion", "Champion Alive"],
+                    ["ff3", "3+ Final Four"],
+                    ["ff2", "2+ Final Four"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => changeAliveFilter(key)}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${
+                      aliveFilter === key
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "text-on-surface-variant hover:text-on-surface"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {selectedSearchIds.length > 0 && (
+          {(selectedSearchIds.length > 0 || aliveFilter !== "all" || championFilter.length > 0) && (
             <p className="text-xs text-on-surface-variant mb-2">
-              Showing {filteredBrackets.length} of {brackets.length} brackets
+              Showing {aliveFilteredBrackets.length} of {brackets.length} brackets
             </p>
           )}
           <LeaderboardTable
-            brackets={filteredBrackets}
+            brackets={aliveFilteredBrackets}
             analytics={analytics}
             eliminatedTeams={eliminatedTeams}
             teamLogos={teamLogos}
             pathEntries={pathEntries}
+            initialSort={searchParams.get("sort") || "rank"}
+            initialDir={searchParams.get("dir") || "asc"}
           />
 
         </div>
       )}
 
-      {/* ===== Tab 2: Best Calls ===== */}
-      {tab === "calls" && (
-        <div className="rounded-card bg-surface-container p-5">
-          <h3 className="font-display text-lg font-semibold mb-4">
-            Best Calls
-          </h3>
-          <p className="text-xs text-on-surface-variant mb-4">
-            The most contrarian correct picks &mdash; the ones almost nobody
-            else got right. Based on {submittedCount} submitted brackets.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {greatestCalls.slice(0, 15).map((gc, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between gap-2 rounded-card bg-surface-bright px-3 py-2.5"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="text-on-surface font-medium truncate">{gc.bracketName}</div>
-                    {gc.bracketFullName && gc.bracketFullName !== gc.bracketName && (
-                      <div className="text-xs text-on-surface-variant truncate">{gc.bracketFullName}</div>
-                    )}
-                    <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
-                      Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />
-                      {gc.round &&
-                        <span>{"\u2014"} {ROUND_LABELS[gc.round as Round] || gc.round}</span>}
-                    </p>
+      {/* ===== Tab 2: Insights (Alive + Best Calls) ===== */}
+      {tab === "insights" && (
+        <div className="space-y-section">
+          {/* Alive stat cards */}
+          {aliveData && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <StatCard
+                label="Champion Alive"
+                value={aliveData.champAlive}
+                subtitle="brackets still have their champion"
+              />
+              <StatCard
+                label="3+ Final Four Teams"
+                value={aliveData.ff3Plus}
+                subtitle="brackets have 3+ Final Four teams left"
+              />
+              <StatCard
+                label="2+ Final Four Teams"
+                value={aliveData.ff2Plus}
+                subtitle="brackets have 2+ Final Four teams left"
+              />
+              <StatCard
+                label="Games Remaining"
+                value={aliveData.gamesRemaining}
+              />
+            </div>
+          )}
+
+          {/* Games to Watch */}
+          {aliveData && aliveData.gamesToWatch.length > 0 && (
+            <GamesToWatch games={aliveData.gamesToWatch} teamLogos={teamLogos} eliminatedTeams={eliminatedTeamsSet} />
+          )}
+
+          {/* Best Calls */}
+          <div className="rounded-card bg-surface-container p-5">
+            <h3 className="font-display text-lg font-semibold mb-4">
+              Best Calls
+            </h3>
+            <p className="text-xs text-on-surface-variant mb-4">
+              The most contrarian correct picks &mdash; the ones almost nobody
+              else got right. Based on {submittedCount} submitted brackets.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {greatestCalls.slice(0, 15).map((gc, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-2 rounded-card bg-surface-bright px-3 py-2.5"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-display text-lg font-bold text-on-surface-variant w-6 text-center shrink-0">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-on-surface font-medium truncate">{gc.bracketName}</div>
+                      {gc.bracketFullName && gc.bracketFullName !== gc.bracketName && (
+                        <div className="text-xs text-on-surface-variant truncate">{gc.bracketFullName}</div>
+                      )}
+                      <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1 flex-wrap">
+                        Picked <TeamPill name={gc.teamPicked} seed={gc.seedPicked} logo={teamLogos[gc.teamPicked]} eliminated={eliminatedTeams.has(gc.teamPicked)} showStatus />
+                        {gc.round &&
+                          <span>{"\u2014"} {ROUND_LABELS[gc.round as Round] || gc.round}</span>}
+                      </p>
+                    </div>
                   </div>
+                  <span className="font-label text-xs text-secondary whitespace-nowrap shrink-0">
+                    Only {Math.round(gc.rate * 100)}%
+                  </span>
                 </div>
-                <span className="font-label text-xs text-secondary whitespace-nowrap shrink-0">
-                  Only {Math.round(gc.rate * 100)}%
-                </span>
-              </div>
-            ))}
-            {greatestCalls.length === 0 && (
-              <p className="text-on-surface-variant text-sm text-center py-8">
-                No completed games yet to evaluate.
-              </p>
-            )}
+              ))}
+              {greatestCalls.length === 0 && (
+                <p className="text-on-surface-variant text-sm text-center py-8">
+                  No completed games yet to evaluate.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

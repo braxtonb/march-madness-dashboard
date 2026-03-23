@@ -2,18 +2,16 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
+import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
 import { useSearchParams } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
-import { DrilldownTable } from "@/components/tables/DrilldownTable";
-import { GamesToWatch } from "@/components/GamesToWatch";
-import { StatCard } from "@/components/ui/StatCard";
 import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import { ROUND_LABELS } from "@/lib/constants";
-import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
+import type { Round } from "@/lib/types";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
   if (direction === "asc") return (
@@ -99,18 +97,6 @@ interface GameToWatch {
   affectedBrackets: AffectedBracket[];
 }
 
-interface AliveData {
-  champAlive: number;
-  ff3Plus: number;
-  ff2Plus: number;
-  gamesRemaining: number;
-  gamesToWatch: GameToWatch[];
-  brackets: Bracket[];
-  analyticsObj: Record<string, BracketAnalytics>;
-  eliminatedArr: string[];
-  bracketFFTeamsMap: Record<string, string[]>;
-}
-
 interface ProbabilityClientProps {
   probData: ProbEntry[];
   journeyData: JourneyPoint[];
@@ -119,10 +105,9 @@ interface ProbabilityClientProps {
   teamLogos?: Record<string, string>;
   eliminatedTeams?: string[];
   pathData?: PathEntry[];
-  aliveData?: AliveData;
 }
 
-type ProbTab = "chances" | "finishes" | "path" | "alive";
+type ProbTab = "chances" | "finishes" | "path";
 
 type TierKey = "strong" | "hunt" | "fighting" | "longshot" | "miracle";
 
@@ -152,9 +137,6 @@ function getTierKey(probability: number): TierKey {
 const TAB_ACTIVE = "text-primary border-b-2 border-primary px-3 py-1.5 text-sm font-semibold font-label";
 const TAB_INACTIVE = "text-on-surface-variant hover:text-on-surface px-3 py-1.5 text-sm font-semibold font-label";
 
-type AliveFilter = "champion" | "ff3" | "ff2" | "all";
-const VALID_ALIVE_FILTERS: AliveFilter[] = ["champion", "ff3", "ff2", "all"];
-
 export function ProbabilityClient({
   probData,
   journeyData,
@@ -163,14 +145,13 @@ export function ProbabilityClient({
   teamLogos = {},
   eliminatedTeams: eliminatedTeamsArr = [],
   pathData = [],
-  aliveData,
 }: ProbabilityClientProps) {
   const { isMyBracket } = useMyBracket();
   const searchParams = useSearchParams();
 
   const eliminatedTeamsSet = useMemo(() => new Set(eliminatedTeamsArr), [eliminatedTeamsArr]);
 
-  const VALID_TABS: ProbTab[] = ["chances", "finishes", "path", "alive"];
+  const VALID_TABS: ProbTab[] = ["chances", "finishes", "path"];
   const initialTab = (() => {
     const param = searchParams.get("tab") as ProbTab;
     if (param && VALID_TABS.includes(param)) return param;
@@ -184,21 +165,20 @@ export function ProbabilityClient({
   type FinishSort = "probability" | "pct_second" | "pct_third" | "pct_top10" | "pct_top25" | "median_rank";
   const VALID_FINISH_SORTS: FinishSort[] = ["probability", "pct_second", "pct_third", "pct_top10", "pct_top25", "median_rank"];
   const [finishSortKey, setFinishSortKey] = useState<FinishSort>(() => {
-    if (typeof window === "undefined") return "probability";
-    const params = new URLSearchParams(window.location.search);
-    const s = params.get("fsort") as FinishSort | null;
+    const s = searchParams.get("fsort") as FinishSort | null;
     return s && VALID_FINISH_SORTS.includes(s) ? s : "probability";
   });
   const [finishSortAsc, setFinishSortAsc] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const params = new URLSearchParams(window.location.search);
-    const d = params.get("fdir");
+    const d = searchParams.get("fdir");
     if (d === "asc") return true;
     if (d === "desc") return false;
     return false;
   });
   const [expandedFinishIds, setExpandedFinishIds] = useState<Set<string>>(new Set());
-  const [finishSearch, setFinishSearch] = useState<string[]>([]);
+  const [finishSearch, setFinishSearch] = useState<string[]>(() => {
+    const fb = searchParams.get("finishBrackets");
+    return fb ? fb.split(",").filter(Boolean) : [];
+  });
 
   // Build bracket options for MultiSelectSearch
   const finishBracketOptions: MultiSelectOption[] = useMemo(() => {
@@ -209,21 +189,54 @@ export function ProbabilityClient({
     }));
   }, [probData]);
 
+  const handleFinishSearchChange = useCallback((ids: string[]) => {
+    setFinishSearch(ids);
+    const url = new URL(window.location.href);
+    if (ids.length > 0) {
+      url.searchParams.set("finishBrackets", ids.join(","));
+    } else {
+      url.searchParams.delete("finishBrackets");
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, []);
+
+  // Champion filter for simulated finishes
+  const [finishChampionFilter, setFinishChampionFilter] = useState<string[]>(() => {
+    const v = searchParams.get("finishChampion");
+    return v ? v.split(",").filter(Boolean) : [];
+  });
+  const finishChampionOptions: MultiSelectOption[] = useMemo(() => {
+    const map = new Set<string>();
+    for (const d of probData) if (d.champion) map.add(d.champion);
+    return [...map].sort().map((c) => ({ value: c, label: c }));
+  }, [probData]);
+  const handleFinishChampionChange = useCallback((ids: string[]) => {
+    setFinishChampionFilter(ids);
+    const url = new URL(window.location.href);
+    if (ids.length > 0) url.searchParams.set("finishChampion", ids.join(","));
+    else url.searchParams.delete("finishChampion");
+    window.history.replaceState(null, "", url.toString());
+  }, []);
+
   const sortedProbData = useMemo(() => {
     let data = [...probData];
     if (finishSearch.length > 0) {
       const idSet = new Set(finishSearch);
       data = data.filter((d) => idSet.has(d.id));
     }
+    if (finishChampionFilter.length > 0) {
+      const champSet = new Set(finishChampionFilter);
+      data = data.filter((d) => champSet.has(d.champion));
+    }
     return data.sort((a, b) => {
       const aVal = a[finishSortKey] ?? 0;
       const bVal = b[finishSortKey] ?? 0;
       return finishSortAsc ? aVal - bVal : bVal - aVal;
     });
-  }, [probData, finishSortKey, finishSortAsc, finishSearch]);
+  }, [probData, finishSortKey, finishSortAsc, finishSearch, finishChampionFilter]);
 
   function toggleFinishSort(key: FinishSort) {
-    const newAsc = finishSortKey === key ? !finishSortAsc : false;
+    const newAsc = finishSortKey === key ? !finishSortAsc : key === "median_rank";
     setFinishSortKey(key);
     setFinishSortAsc(newAsc);
     const url = new URL(window.location.href);
@@ -238,43 +251,19 @@ export function ProbabilityClient({
   };
 
   // Alive filter state
-  const initialAliveFilter = (() => {
-    const param = searchParams.get("filter") as AliveFilter | null;
-    if (param && VALID_ALIVE_FILTERS.includes(param)) return param;
-    return "champion" as AliveFilter;
-  })();
-  const [aliveFilter, setAliveFilter] = useState<AliveFilter>(initialAliveFilter);
-
   function changeTab(t: ProbTab) {
     setTab(t);
     const url = new URL(window.location.href);
 
-    // Define which params belong to which tab
     const finishesParams = ["fsort", "fdir", "finishBrackets"];
-    const aliveParams = ["filter", "watch"];
-    // "chances" and "path" tabs have no specific URL params
-
-    // Clear params not belonging to the new tab
-    const allTabParams = [...finishesParams, ...aliveParams];
-    for (const p of allTabParams) {
-      if (t === "finishes" && finishesParams.includes(p)) continue;
-      if (t === "alive" && aliveParams.includes(p)) continue;
+    for (const p of finishesParams) {
+      if (t === "finishes") continue;
       url.searchParams.delete(p);
     }
 
     url.searchParams.set("tab", t);
     window.history.replaceState(null, "", url.toString());
   }
-
-  const changeAliveFilter = useCallback(
-    (v: AliveFilter) => {
-      setAliveFilter(v);
-      const params = new URLSearchParams(window.location.search);
-      params.set("filter", v);
-      window.history.replaceState(null, "", `/probability?${params.toString()}`);
-    },
-    []
-  );
 
   // Build path lookup by bracket name for expanded rows
   const pathByName = useMemo(() => {
@@ -298,50 +287,6 @@ export function ProbabilityClient({
     return groups;
   }, [probData]);
 
-  // Memoize analytics map and eliminated set to avoid new object creation each render
-  const aliveAnalyticsMap = useMemo(
-    () => aliveData ? new Map(Object.entries(aliveData.analyticsObj)) : new Map<string, BracketAnalytics>(),
-    [aliveData]
-  );
-  const aliveEliminatedSet = useMemo(
-    () => aliveData ? new Set(aliveData.eliminatedArr) : new Set<string>(),
-    [aliveData]
-  );
-
-  // Alive tab: filter brackets (memoized)
-  const aliveFiltered = useMemo(() => {
-    if (!aliveData) return [];
-    const { brackets, eliminatedArr, bracketFFTeamsMap } = aliveData;
-    const eliminatedTeams = new Set(eliminatedArr);
-
-    function getFFTeams(b: Bracket): string[] {
-      return bracketFFTeamsMap[b.id] ?? [b.ff1, b.ff2, b.ff3, b.ff4].filter(Boolean);
-    }
-
-    switch (aliveFilter) {
-      case "champion":
-        return brackets
-          .filter((b) => b.champion_pick && !eliminatedTeams.has(b.champion_pick))
-          .sort((a, b) => b.points - a.points);
-      case "ff3":
-        return brackets
-          .filter((b) => {
-            const ffTeams = getFFTeams(b);
-            return ffTeams.filter((t) => !eliminatedTeams.has(t)).length >= 3;
-          })
-          .sort((a, b) => b.points - a.points);
-      case "ff2":
-        return brackets
-          .filter((b) => {
-            const ffTeams = getFFTeams(b);
-            return ffTeams.filter((t) => !eliminatedTeams.has(t)).length >= 2;
-          })
-          .sort((a, b) => b.points - a.points);
-      default:
-        return [...brackets].sort((a, b) => b.points - a.points);
-    }
-  }, [aliveData, aliveFilter]);
-
   return (
     <div className="space-y-section">
       <div>
@@ -361,11 +306,6 @@ export function ProbabilityClient({
             Simulated Finishes
           </button>
           {/* Path to Victory moved to leaderboard table (expandable rows) */}
-          {aliveData && (
-            <button onClick={() => changeTab("alive")} className={tab === "alive" ? TAB_ACTIVE : TAB_INACTIVE}>
-              Who&apos;s Still Alive
-            </button>
-          )}
         </div>
       </div>
 
@@ -399,7 +339,7 @@ export function ProbabilityClient({
                   {entries.map((entry) => (
                     <div
                       key={entry.name}
-                      className={`group flex items-center justify-between rounded-card px-3 py-2 overflow-hidden ${isMyBracket(entry.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : "bg-surface-bright/50"}`}
+                      className={`group flex items-center justify-between rounded-card px-3 py-2 overflow-hidden ${isMyBracket(entry.id) ? "bg-secondary/10 border-l-2 border-l-secondary" : "bg-surface-bright/50"}`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <CompareCheckbox bracketId={entry.id} />
@@ -440,17 +380,29 @@ export function ProbabilityClient({
               Tap any row for details &middot; Tap &#9675; to compare brackets
             </p>
           </div>
-          <div className="mb-4 w-full sm:w-72">
-            <MultiSelectSearch
-              mode="multi"
-              label="Brackets"
-              options={finishBracketOptions}
-              selected={finishSearch}
-              onSelectedChange={setFinishSearch}
-              placeholder="Filter brackets..."
-            />
+          <div className="flex flex-wrap gap-3 mb-4">
+            <div className="w-full sm:w-72">
+              <MultiSelectSearch
+                mode="multi"
+                label="Brackets"
+                options={finishBracketOptions}
+                selected={finishSearch}
+                onSelectedChange={handleFinishSearchChange}
+                placeholder="Filter brackets..."
+              />
+            </div>
+            <div className="w-full sm:w-56">
+              <MultiSelectSearch
+                mode="multi"
+                label="Champions"
+                options={finishChampionOptions}
+                selected={finishChampionFilter}
+                onSelectedChange={handleFinishChampionChange}
+                placeholder="Filter by champion..."
+              />
+            </div>
           </div>
-          {finishSearch.length > 0 && (
+          {(finishSearch.length > 0 || finishChampionFilter.length > 0) && (
             <p className="text-xs text-on-surface-variant mb-3">
               Showing {sortedProbData.length} of {probData.length} brackets
             </p>
@@ -480,7 +432,7 @@ export function ProbabilityClient({
                   return (
                     <React.Fragment key={d.id}>
                     <tr
-                      className={`group border-b border-outline-variant transition-colors cursor-pointer ${isMyBracket(d.id) ? "bg-secondary/5 border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
+                      className={`group border-b border-outline-variant transition-colors cursor-pointer ${isMyBracket(d.id) ? "bg-[#0f2e36] border-l-2 border-l-secondary" : isExpanded ? "bg-surface-bright" : "hover:bg-surface-bright"}`}
                       onClick={() => setExpandedFinishIds((prev) => {
                         const next = new Set(prev);
                         if (next.has(d.id)) next.delete(d.id);
@@ -489,7 +441,7 @@ export function ProbabilityClient({
                       })}
                     >
                       <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={d.id} /></td>
-                      <td className={`sticky left-0 z-10 transition-colors px-2 py-2 ${isMyBracket(d.id) ? "bg-secondary/5" : isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"}`}>
+                      <td className={`sticky left-0 z-10 transition-colors px-2 py-2 ${isMyBracket(d.id) ? "bg-[#0f2e36]" : isExpanded ? "bg-surface-bright" : "bg-surface-container group-hover:bg-surface-bright"}`}>
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none">{isExpanded ? "−" : "+"}</span>
                           <div>
@@ -519,11 +471,13 @@ export function ProbabilityClient({
                         <tr>
                           <td colSpan={finishColSpan} className="px-4 py-3 bg-surface-bright/50">
                             <div className="space-y-2">
-                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant">
-                                Path to victory — {path ? path.remainingPicks.length : 0} alive picks remaining
-                                {path && path.eliminatedPickCount > 0 && (
-                                  <span className="ml-2 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
-                                )}
+                              <p className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant flex items-center gap-2 flex-wrap">
+                                <span>Path to victory — {path ? path.remainingPicks.length : 0} alive picks remaining
+                                  {path && path.eliminatedPickCount > 0 && (
+                                    <span className="ml-1 text-on-surface-variant/50">({path.eliminatedPickCount} eliminated)</span>
+                                  )}
+                                </span>
+                                <ViewBracketLink bracketId={d.id} />
                               </p>
                               {!path || path.remainingPicks.length === 0 ? (
                                 <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
@@ -628,77 +582,7 @@ export function ProbabilityClient({
         </div>
       )}
 
-      {/* Who's Still Alive tab */}
-      {tab === "alive" && aliveData && (
-        <div className="space-y-section">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Champion Alive"
-              value={aliveData.champAlive}
-              subtitle="brackets still have their champion"
-            />
-            <StatCard
-              label="3+ Final Four Teams"
-              value={aliveData.ff3Plus}
-              subtitle="brackets have 3+ Final Four teams left"
-            />
-            <StatCard
-              label="2+ Final Four Teams"
-              value={aliveData.ff2Plus}
-              subtitle="brackets have 2+ Final Four teams left"
-            />
-            <StatCard
-              label="Games Remaining"
-              value={aliveData.gamesRemaining}
-            />
-          </div>
-
-          <GamesToWatch games={aliveData.gamesToWatch} teamLogos={teamLogos} eliminatedTeams={eliminatedTeamsSet} />
-
-          <div className="space-y-4">
-            <div className="overflow-x-auto no-scrollbar">
-              <div className="flex gap-2 min-w-max">
-                {(
-                  [
-                    ["all", "All Brackets"],
-                    ["champion", "Champion Alive"],
-                    ["ff3", "3+ Final Four"],
-                    ["ff2", "2+ Final Four"],
-                  ] as const
-                ).map(([key, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => changeAliveFilter(key)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-label h-7 transition-colors ${
-                      aliveFilter === key
-                        ? "bg-primary/15 text-primary border border-primary/30"
-                        : "text-on-surface-variant hover:text-on-surface"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="hidden sm:block text-xs text-on-surface-variant mb-1">
-                Click any row to see details &middot; Hover any row to compare brackets
-              </p>
-              <p className="sm:hidden text-xs text-on-surface-variant mb-1">
-                Tap any row for details &middot; Tap &#9675; to compare brackets
-              </p>
-            </div>
-            <DrilldownTable
-              brackets={aliveFiltered}
-              analytics={aliveAnalyticsMap}
-              eliminatedTeams={aliveEliminatedSet}
-              teamLogos={teamLogos}
-              pathData={pathData}
-            />
-          </div>
-        </div>
-      )}
+      {/* Who's Still Alive content moved to leaderboard Insights tab */}
     </div>
   );
 }
