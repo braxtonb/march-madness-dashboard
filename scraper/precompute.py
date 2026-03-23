@@ -36,6 +36,10 @@ def precompute_all(brackets, picks, games, teams):
 
     analytics = _compute_analytics(brackets, picks, games, teams, eliminated_teams, pick_rates, total_brackets)
     scatter_data = _compute_scatter_data(submitted, picks, games, pick_rates, team_logos)
+    # Enrich scatter data with archetype from analytics
+    for s in scatter_data:
+        a = analytics.get(s.get('id', ''), {})
+        s['archetype'] = a.get('archetype', 'Scout')
     greatest_calls = _compute_greatest_calls(picks, games, brackets, pick_rates, team_logos)
     round_accuracy = _compute_round_accuracy(picks, games, total_brackets)
     path_entries = _compute_path_entries(brackets, picks, games, eliminated_teams, team_logos)

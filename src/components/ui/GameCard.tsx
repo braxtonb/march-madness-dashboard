@@ -53,70 +53,90 @@ export function PicksDrawer({
       <div className="grid grid-cols-2 gap-4">
         {/* Team 1 pickers */}
         <div className="space-y-2">
-          <p className="text-sm font-label text-on-surface-variant mb-2">
-            Picked {game.team1}{" "}
-            <span className="text-on-surface font-semibold">
-              ({pickerDetails.team1Pickers.length})
-            </span>
-          </p>
+          {(() => {
+            const isWinner = game.completed && game.winner === game.team1;
+            const isLoser = game.completed && game.winner !== game.team1;
+            return (
+              <div className={`flex items-center gap-1.5 mb-2 ${isWinner ? "text-emerald-400" : isLoser ? "text-on-surface-variant/50" : "text-on-surface-variant"}`}>
+                {isWinner && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M20 6L9 17l-5-5" /></svg>
+                )}
+                {isLoser && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
+                )}
+                <p className="text-sm font-label">
+                  Picked {game.team1}{" "}
+                  <span className={`font-semibold ${isWinner ? "text-emerald-400" : "text-on-surface"}`}>
+                    ({pickerDetails.team1Pickers.length})
+                  </span>
+                </p>
+              </div>
+            );
+          })()}
           {pickerDetails.team1Pickers.length === 0 ? (
             <p className="text-xs text-on-surface-variant italic">None</p>
           ) : (
-            pickerDetails.team1Pickers.map((picker) => {
-              const isCorrect =
-                game.completed && game.winner === game.team1;
-              return (
-                <div
-                  key={picker.name}
-                  className={`group flex items-start gap-2 rounded-lg bg-surface-bright/50 px-3 py-2 overflow-hidden ${isCorrect ? "text-secondary" : ""}`}
-                >
-                  <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-semibold truncate ${isCorrect ? "" : "text-on-surface"}`}>
-                      {picker.name}{isCorrect && " \u2713"}
-                    </p>
-                    {picker.full_name && picker.full_name !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
-                    )}
-                    <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
-                  </div>
+            pickerDetails.team1Pickers.map((picker) => (
+              <div
+                key={picker.name}
+                className="group flex items-start gap-2 rounded-lg bg-surface-bright/50 px-3 py-2 overflow-hidden"
+              >
+                <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-on-surface truncate">
+                    {picker.name}
+                  </p>
+                  {picker.full_name && picker.full_name !== picker.name && (
+                    <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
+                  )}
+                  <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
         {/* Team 2 pickers */}
         <div className="space-y-2">
-          <p className="text-sm font-label text-on-surface-variant mb-2">
-            Picked {game.team2}{" "}
-            <span className="text-on-surface font-semibold">
-              ({pickerDetails.team2Pickers.length})
-            </span>
-          </p>
+          {(() => {
+            const isWinner = game.completed && game.winner === game.team2;
+            const isLoser = game.completed && game.winner !== game.team2;
+            return (
+              <div className={`flex items-center gap-1.5 mb-2 ${isWinner ? "text-emerald-400" : isLoser ? "text-on-surface-variant/50" : "text-on-surface-variant"}`}>
+                {isWinner && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M20 6L9 17l-5-5" /></svg>
+                )}
+                {isLoser && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
+                )}
+                <p className="text-sm font-label">
+                  Picked {game.team2}{" "}
+                  <span className={`font-semibold ${isWinner ? "text-emerald-400" : "text-on-surface"}`}>
+                    ({pickerDetails.team2Pickers.length})
+                  </span>
+                </p>
+              </div>
+            );
+          })()}
           {pickerDetails.team2Pickers.length === 0 ? (
             <p className="text-xs text-on-surface-variant italic">None</p>
           ) : (
-            pickerDetails.team2Pickers.map((picker) => {
-              const isCorrect =
-                game.completed && game.winner === game.team2;
-              return (
-                <div
-                  key={picker.name}
-                  className={`group flex items-start gap-2 rounded-lg bg-surface-bright/50 px-3 py-2 overflow-hidden ${isCorrect ? "text-secondary" : ""}`}
-                >
-                  <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-semibold truncate ${isCorrect ? "" : "text-on-surface"}`}>
-                      {picker.name}{isCorrect && " \u2713"}
-                    </p>
-                    {picker.full_name && picker.full_name !== picker.name && (
-                      <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
-                    )}
-                    <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
-                  </div>
+            pickerDetails.team2Pickers.map((picker) => (
+              <div
+                key={picker.name}
+                className="group flex items-start gap-2 rounded-lg bg-surface-bright/50 px-3 py-2 overflow-hidden"
+              >
+                <div className="pt-0.5 shrink-0"><CompareCheckbox bracketId={picker.bracketId} /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-on-surface truncate">
+                    {picker.name}
+                  </p>
+                  {picker.full_name && picker.full_name !== picker.name && (
+                    <p className="text-[10px] text-on-surface-variant truncate">{picker.full_name}</p>
+                  )}
+                  <ViewBracketLink bracketId={picker.bracketId} className="mt-0.5" />
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
       </div>

@@ -486,11 +486,9 @@ function LeaderboardContentInner({
               </div>
             )}
           </div>
-          {(selectedSearchIds.length > 0 || aliveFilter !== "all" || championFilter.length > 0) && (
-            <p className="text-xs text-on-surface-variant mb-2">
-              Showing {aliveFilteredBrackets.length} of {brackets.length} brackets
-            </p>
-          )}
+          <p className="text-xs text-on-surface-variant mb-2">
+            Showing {aliveFilteredBrackets.length} of {brackets.length} brackets
+          </p>
           <LeaderboardTable
             brackets={aliveFilteredBrackets}
             analytics={analytics}

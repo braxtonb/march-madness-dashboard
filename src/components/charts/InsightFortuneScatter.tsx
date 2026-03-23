@@ -3,6 +3,15 @@
 import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import { useMyBracket } from "@/components/ui/MyBracketProvider";
+
+const ARCHETYPE_COLORS: Record<string, string> = {
+  Strategist: "#3b82f6",
+  Visionary: "#a78bfa",
+  Scout: "#2dd4bf",
+  Original: "#fb923c",
+  Analyst: "#06b6d4",
+};
 
 interface ScatterPoint {
   id?: string;
@@ -14,6 +23,7 @@ interface ScatterPoint {
   fortune: number;
   champion?: string;
   logo?: string;
+  archetype?: string;
 }
 
 interface Cluster {
@@ -51,6 +61,9 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
+
+  const { isMyBracket } = useMyBracket();
+  const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
 
   // Initialize from URL params (comma-separated bracket IDs for multi-select)
   const [nameFilter, setNameFilter] = useState<string[]>(() => {
@@ -229,18 +242,33 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
             const isSingle = cluster.points.length === 1;
             const isActive = activeCluster === i;
             const point = cluster.points[0];
+            const dotColor = isSingle ? (ARCHETYPE_COLORS[point.archetype || ""] || "#00f4fe") : "#00f4fe";
+            const isMine = isSingle && point.id && isMyBracket(point.id);
+            const isHovered = isSingle && hoveredPoint === (point.id || point.name);
             return (
-              <g key={i} onClick={(e) => { e.stopPropagation(); setActiveCluster(activeCluster === i ? null : i); }} className="cursor-pointer">
+              <g
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setActiveCluster(activeCluster === i ? null : i); }}
+                onMouseEnter={() => isSingle && setHoveredPoint(point.id || point.name)}
+                onMouseLeave={() => setHoveredPoint(null)}
+                className="cursor-pointer"
+              >
                 {isSingle ? (
                   <>
+                    {isMine && <circle cx={cx} cy={cy} r={16} fill={dotColor} opacity={0.15} />}
                     {point.logo ? (
-                      <image x={cx - 12} y={cy - 12} width={24} height={24} href={point.logo} />
+                      <>
+                        <circle cx={cx} cy={cy} r={isMine ? 16 : 14} fill="#111820" stroke={isMine ? "#fff" : dotColor} strokeWidth={isMine ? 2 : 1} opacity={isHovered ? 1 : 0.9} />
+                        <image x={cx - (isMine ? 13 : 11)} y={cy - (isMine ? 13 : 11)} width={isMine ? 26 : 22} height={isMine ? 26 : 22} href={point.logo} clipPath={`circle(${isMine ? 13 : 11}px at ${isMine ? 13 : 11}px ${isMine ? 13 : 11}px)`} />
+                      </>
                     ) : (
-                      <circle cx={cx} cy={cy} r={6} fill="#00f4fe" opacity={0.8} />
+                      <circle cx={cx} cy={cy} r={isMine ? 8 : 6} fill={dotColor} opacity={isHovered ? 1 : 0.8} stroke={isMine ? "#fff" : "none"} strokeWidth={isMine ? 1.5 : 0} />
                     )}
-                    <text x={cx} y={cy + 20} textAnchor="middle" fill="#a7abb2" fontSize={8} fontFamily="Inter">
-                      {point.name.length > 18 ? point.name.slice(0, 17) + "\u2026" : point.name}
-                    </text>
+                    {(isHovered || isMine) && (
+                      <text x={cx} y={cy - (isMine ? 18 : 14)} textAnchor="middle" fill="#f0f4ff" fontSize={9} fontFamily="Inter" fontWeight={isMine ? "bold" : "normal"}>
+                        {point.name.length > 20 ? point.name.slice(0, 19) + "\u2026" : point.name}
+                      </text>
+                    )}
                   </>
                 ) : (
                   <>
@@ -255,6 +283,17 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
             );
           })}
         </svg>
+
+        {/* Archetype legend */}
+        <div className="flex items-center gap-3 flex-wrap mt-2">
+          <span className="text-[10px] text-on-surface-variant font-label">Archetype:</span>
+          {Object.entries(ARCHETYPE_COLORS).map(([name, color]) => (
+            <span key={name} className="flex items-center gap-1 text-[10px] text-on-surface-variant">
+              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+              {name}
+            </span>
+          ))}
+        </div>
 
         {/* Popover for clusters */}
         {activeCluster !== null && clusters[activeCluster] && (
@@ -282,8 +321,9 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
                     <div className="text-[10px] text-on-surface-variant truncate">
                       {p.points != null ? `${p.points} pts` : ""}
                     </div>
-                    <div className="text-[10px] text-on-surface-variant">
-                      Chalk: {p.skill}% · Upset: {p.fortune}%
+                    <div className="text-[10px] text-on-surface-variant flex items-center gap-1">
+                      {p.archetype && <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: ARCHETYPE_COLORS[p.archetype] || "#888" }} />}
+                      {p.archetype || ""} · Chalk: {p.skill}% · Upset: {p.fortune}%
                     </div>
                   </div>
                 </div>

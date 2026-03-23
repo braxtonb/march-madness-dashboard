@@ -40,7 +40,7 @@ export default function BottomSheet({ open, onClose, title, children, onPrev, on
         ref={sheetRef}
         className="
           absolute bg-surface-container border-l border-surface-bright will-change-transform
-          sm:right-0 sm:top-0 sm:h-full sm:w-full sm:max-w-md sm:animate-[slide-in-right_0.2s_ease-out]
+          sm:right-0 sm:top-0 sm:h-full sm:w-full sm:max-w-lg sm:animate-[slide-in-right_0.2s_ease-out]
           max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:max-h-[85vh] max-sm:rounded-t-2xl max-sm:bottom-sheet-enter
           flex flex-col overflow-hidden
         "

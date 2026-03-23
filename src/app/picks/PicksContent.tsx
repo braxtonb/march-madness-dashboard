@@ -42,6 +42,7 @@ export function PicksContent({
   champDistribution = [],
   brackets = [],
   bracketPicksMap = {},
+  gameTeamsMap = {},
 }: {
   games: Game[];
   pickSplits: Record<string, { team1Count: number; team2Count: number }>;
@@ -52,6 +53,7 @@ export function PicksContent({
   champDistribution?: ChampDistEntry[];
   brackets?: Bracket[];
   bracketPicksMap?: Record<string, Record<string, string>>;
+  gameTeamsMap?: Record<string, [string, string]>;
 }) {
   const searchParams = useSearchParams();
 
@@ -407,6 +409,7 @@ export function PicksContent({
             eliminatedTeams={eliminatedTeams}
             onGameClick={openDrawer}
             highlightBracketPicks={filterBracketId ? bracketPicksMap[filterBracketId] : undefined}
+            gameTeamsMap={gameTeamsMap}
           />
         </>
       )}

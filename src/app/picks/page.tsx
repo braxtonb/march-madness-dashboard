@@ -34,11 +34,28 @@ export default async function GroupPicksPage() {
     pickerDetailsMap[game.game_id] = { team1Pickers, team2Pickers };
   }
 
-  // Build bracket picks lookup for single-bracket filter on bracket view
+  // Build bracket picks lookup: game_id -> team they picked to WIN
   const bracketPicksMap: Record<string, Record<string, string>> = {};
   for (const p of data.picks) {
     if (!bracketPicksMap[p.bracket_id]) bracketPicksMap[p.bracket_id] = {};
     bracketPicksMap[p.bracket_id][p.game_id] = p.team_picked;
+  }
+
+  // Build game opponents map: for each game, the two teams that were pickable
+  // (derived from all brackets' picks — every game has exactly 2 possible outcomes)
+  const gameTeamsMap: Record<string, [string, string]> = {};
+  for (const game of data.games) {
+    if (game.team1 && game.team2) {
+      gameTeamsMap[game.game_id] = [game.team1, game.team2];
+    } else {
+      // TBD games: derive the two teams from all brackets' picks for this game
+      const teams = new Set<string>();
+      for (const p of data.picks) {
+        if (p.game_id === game.game_id && p.team_picked) teams.add(p.team_picked);
+      }
+      const arr = [...teams];
+      gameTeamsMap[game.game_id] = [arr[0] || "", arr[1] || ""];
+    }
   }
 
   // Round accuracy from pre-computed data
@@ -100,6 +117,7 @@ export default async function GroupPicksPage() {
         champDistribution={d.champ_distribution}
         brackets={data.brackets}
         bracketPicksMap={bracketPicksMap}
+        gameTeamsMap={gameTeamsMap}
       />
     </div>
   );
