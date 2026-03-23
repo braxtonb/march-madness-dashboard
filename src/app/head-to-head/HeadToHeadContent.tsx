@@ -299,11 +299,11 @@ export function HeadToHeadContent({
             <div className="rounded-card bg-surface-container px-3 py-2 space-y-1">
               <div className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-display text-base font-bold text-on-surface truncate">{b1.name}</p>
-                  {b1.full_name && b1.full_name !== b1.name && <p className="font-label text-xs text-on-surface-variant">{b1.full_name}</p>}
+                  <p className="font-display text-sm font-bold text-on-surface truncate">{b1.name}</p>
+                  {b1.full_name && b1.full_name !== b1.name && <p className="font-label text-[10px] text-on-surface-variant">{b1.full_name}</p>}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <p className="font-display text-sm font-bold text-on-surface">{b1.points} <span className="text-[10px] font-normal text-on-surface-variant">/ {b1.points + b1.max_remaining} pts</span></p>
+                  <p className="font-display text-xs font-bold text-on-surface">{b1.points} <span className="text-[9px] font-normal text-on-surface-variant">/ {b1.points + b1.max_remaining} pts</span></p>
                   <TeamPill name={b1.champion_pick} seed={b1.champion_seed} logo={teamLogos[b1.champion_pick]} eliminated={eliminatedTeams.has(b1.champion_pick)} showStatus />
                 </div>
               </div>
@@ -312,11 +312,11 @@ export function HeadToHeadContent({
             <div className="rounded-card bg-surface-container px-3 py-2 space-y-1">
               <div className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-display text-base font-bold text-on-surface truncate">{b2.name}</p>
-                  {b2.full_name && b2.full_name !== b2.name && <p className="font-label text-xs text-on-surface-variant">{b2.full_name}</p>}
+                  <p className="font-display text-sm font-bold text-on-surface truncate">{b2.name}</p>
+                  {b2.full_name && b2.full_name !== b2.name && <p className="font-label text-[10px] text-on-surface-variant">{b2.full_name}</p>}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <p className="font-display text-sm font-bold text-on-surface">{b2.points} <span className="text-[10px] font-normal text-on-surface-variant">/ {b2.points + b2.max_remaining} pts</span></p>
+                  <p className="font-display text-xs font-bold text-on-surface">{b2.points} <span className="text-[9px] font-normal text-on-surface-variant">/ {b2.points + b2.max_remaining} pts</span></p>
                   <TeamPill name={b2.champion_pick} seed={b2.champion_seed} logo={teamLogos[b2.champion_pick]} eliminated={eliminatedTeams.has(b2.champion_pick)} showStatus />
                 </div>
               </div>
@@ -473,7 +473,7 @@ export function HeadToHeadContent({
                     return (
                       <div key={round} className="space-y-2">
                         <div className="pt-3 first:pt-0">
-                          <p className="font-label text-xs font-semibold text-on-surface">
+                          <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                             {ROUND_LABELS[round]}
                           </p>
                           {stats && id1 && id2 && stats.total > 0 && (
@@ -495,7 +495,7 @@ export function HeadToHeadContent({
                         className="w-full flex items-center gap-2 pt-3 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
                       >
                         <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
-                        <p className="font-label text-xs font-semibold text-on-surface">
+                        <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                           {ROUND_LABELS[round]}
                         </p>
                         {stats && id1 && id2 && stats.total > 0 && (
@@ -588,8 +588,8 @@ export function HeadToHeadContent({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className={`rounded-md px-2.5 py-2 ${pick1Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface" title={b1 && b1.full_name && b1.full_name !== b1.name ? b1.full_name : undefined}>{b1 ? b1.name : ""}</p>
-            {b1 && b1.full_name && b1.full_name !== b1.name && <p className="text-[8px] text-on-surface-variant">{b1.full_name}</p>}
+            <p className="text-xs font-semibold text-on-surface truncate" title={b1 && b1.full_name && b1.full_name !== b1.name ? b1.full_name : undefined}>{b1 ? b1.name : ""}</p>
+            {b1 && b1.full_name && b1.full_name !== b1.name && <p className="text-[10px] text-on-surface-variant truncate">{b1.full_name}</p>}
             {pick1 ? (
               <div className="mt-1">
                 <TeamPill name={pick1} seed={teamSeeds.get(pick1)} logo={teamLogos[pick1]} eliminated={eliminatedTeams.has(pick1)} showStatus />
@@ -604,8 +604,8 @@ export function HeadToHeadContent({
             )}
           </div>
           <div className={`rounded-md px-2.5 py-2 ${pick2Correct ? "bg-secondary/10 border border-secondary/40" : "bg-surface-container"}`}>
-            <p className="text-[10px] font-semibold text-on-surface" title={b2 && b2.full_name && b2.full_name !== b2.name ? b2.full_name : undefined}>{b2 ? b2.name : ""}</p>
-            {b2 && b2.full_name && b2.full_name !== b2.name && <p className="text-[8px] text-on-surface-variant">{b2.full_name}</p>}
+            <p className="text-xs font-semibold text-on-surface truncate" title={b2 && b2.full_name && b2.full_name !== b2.name ? b2.full_name : undefined}>{b2 ? b2.name : ""}</p>
+            {b2 && b2.full_name && b2.full_name !== b2.name && <p className="text-[10px] text-on-surface-variant truncate">{b2.full_name}</p>}
             {pick2 ? (
               <div className="mt-1">
                 <TeamPill name={pick2} seed={teamSeeds.get(pick2)} logo={teamLogos[pick2]} eliminated={eliminatedTeams.has(pick2)} showStatus />

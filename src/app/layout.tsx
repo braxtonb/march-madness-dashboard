@@ -56,7 +56,9 @@ export default async function RootLayout({
           <div className="flex">
             <Sidebar />
             <main className="ml-0 md:ml-16 w-full min-h-[calc(100vh-52px)] px-4 py-4 sm:p-6">
-              {children}
+              <div className="max-w-7xl mx-auto">
+                {children}
+              </div>
             </main>
           </div>
           <CompareBar brackets={brackets} />

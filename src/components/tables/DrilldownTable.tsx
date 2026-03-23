@@ -8,6 +8,7 @@ import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
+import { SimulateLink } from "@/components/ui/SimulateLink";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
@@ -245,6 +246,7 @@ export function DrilldownTable({
                             )}
                           </span>
                           <ViewBracketLink bracketId={b.id} />
+                          <SimulateLink bracketId={b.id} />
                         </p>
                         {!path || path.remainingPicks.length === 0 ? (
                           <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>

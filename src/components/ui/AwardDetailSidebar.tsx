@@ -14,12 +14,14 @@ function CollapsibleRound({
   defaultCollapsed,
   children,
   gameCount,
+  suffix,
 }: {
   round: string;
   label: string;
   defaultCollapsed: boolean;
   children: React.ReactNode;
   gameCount?: number;
+  suffix?: string;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   return (
@@ -27,13 +29,14 @@ function CollapsibleRound({
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}
-        className="w-full flex items-center gap-2 pt-2 border-t border-surface-bright cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
+        className="w-full flex items-center gap-2 pt-2 border-t border-outline/20 first:border-t-0 first:pt-0 cursor-pointer hover:bg-surface-bright/30 -mx-1 px-1 rounded transition-colors"
       >
         <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">
           {collapsed ? "+" : "\u2212"}
         </span>
-        <p className="font-label text-xs font-semibold text-on-surface">{label}</p>
-        {collapsed && gameCount !== undefined && (
+        <p className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{label}</p>
+        {suffix && <span className="text-[10px] text-on-surface-variant ml-1">{suffix}</span>}
+        {collapsed && gameCount !== undefined && !suffix && (
           <span className="text-[10px] text-on-surface-variant/50 ml-auto">
             {gameCount} game{gameCount !== 1 ? "s" : ""}
           </span>
@@ -680,13 +683,19 @@ function PeoplesChampionContent({
         ) : (
           rounds.map((round) => {
             const roundFilteredGames = rGames.filter((g) => g.round === round);
+            const roundPicks = wPicks.filter((p) => {
+              const g = rGames.find((g) => g.game_id === p.game_id);
+              return g && g.round === round;
+            });
+            const roundMatched = roundPicks.filter((p) => pluralityPick.get(p.game_id) === p.team_picked).length;
             return (
               <CollapsibleRound
                 key={round}
                 round={round}
-                label={ROUND_LABELS[round as Round]}
+                label={`${ROUND_LABELS[round as Round]}`}
                 defaultCollapsed={completedRounds.has(round)}
                 gameCount={roundFilteredGames.length}
+                suffix={`${roundMatched}/${roundFilteredGames.length} matched`}
               >
                 <div className="space-y-2">
                   {roundFilteredGames.map(renderGameCard)}
@@ -728,7 +737,7 @@ export default function AwardDetailSidebar({
 }: AwardDetailSidebarProps) {
   const [winnerIdx, setWinnerIdx] = useState(0);
 
-  // Compute which rounds are fully completed (for default collapse state)
+  // Compute which rounds are fully completed — keep the latest one expanded
   const completedRounds = useMemo(() => {
     const set = new Set<string>();
     for (const round of ROUND_ORDER) {
@@ -737,6 +746,9 @@ export default function AwardDetailSidebar({
         set.add(round);
       }
     }
+    // Keep the most recent completed round expanded
+    const lastCompleted = ROUND_ORDER.filter((r) => set.has(r)).pop();
+    if (lastCompleted) set.delete(lastCompleted);
     return set;
   }, [games]);
 
@@ -765,7 +777,7 @@ export default function AwardDetailSidebar({
             picks={picks}
             games={games}
             teams={teams}
-            selectedRound={selectedRound}
+            selectedRound="ALL"
             completedRounds={completedRounds}
           />
         );
@@ -777,7 +789,7 @@ export default function AwardDetailSidebar({
             games={games}
             teams={teams}
             pickRates={pickRates}
-            selectedRound={selectedRound}
+            selectedRound="ALL"
             completedRounds={completedRounds}
           />
         );
@@ -791,7 +803,7 @@ export default function AwardDetailSidebar({
             winner={winner}
             picks={picks}
             games={games}
-            selectedRound={selectedRound}
+            selectedRound="ALL"
             teams={teams}
             completedRounds={completedRounds}
           />
@@ -804,7 +816,7 @@ export default function AwardDetailSidebar({
             games={games}
             teams={teams}
             pickRates={pickRates}
-            selectedRound={selectedRound}
+            selectedRound="ALL"
           />
         );
       case "The People's Champion":
@@ -815,7 +827,7 @@ export default function AwardDetailSidebar({
             games={games}
             teams={teams}
             pickRates={pickRates}
-            selectedRound={selectedRound}
+            selectedRound="ALL"
             completedRounds={completedRounds}
           />
         );

@@ -893,7 +893,7 @@ export default function SimulatorPage() {
                 setSelections(new Map());
                 setActiveScenario(null);
               }}
-              placeholder="Best case for..."
+              placeholder="Path to Victory..."
             />
           </div>
           <button
@@ -938,7 +938,7 @@ export default function SimulatorPage() {
             Clear
           </button>
           <p className="text-[10px] text-on-surface-variant leading-relaxed">
-            <span className="text-primary font-semibold">Best case for</span> simulates every remaining game in a bracket&apos;s favor. When their predicted team is still alive, it wins. When eliminated, the team with the most value to the bracket advances instead.
+            <span className="text-primary font-semibold">Path to Victory</span> simulates every remaining game in a bracket&apos;s favor. When their predicted team is still alive, it wins. When eliminated, the team with the most value to the bracket advances instead.
           </p>
         </div>
       </div>
@@ -958,8 +958,9 @@ export default function SimulatorPage() {
                   onClick={() => toggleRoundCollapse(round)}
                   className="w-full flex items-center justify-between sticky top-0 bg-surface z-10 py-2 px-1"
                 >
-                  <span className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
-                    <span className="w-4 text-center text-sm leading-none">{isCollapsed ? "+" : "\u2212"}</span> {ROUND_LABELS[round as keyof typeof ROUND_LABELS]}
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm text-on-surface-variant/60 w-4 text-center font-label leading-none shrink-0">{isCollapsed ? "+" : "\u2212"}</span>
+                    <span className="font-label text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{ROUND_LABELS[round as keyof typeof ROUND_LABELS]}</span>
                   </span>
                   <span className="font-label text-[10px] text-on-surface-variant">
                     {completedCount === games.length
@@ -1128,7 +1129,7 @@ export default function SimulatorPage() {
                                 <div className="font-semibold text-on-surface text-xs flex items-center gap-1">
                                   {r.name}
                                   {isBestCase && (
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary shrink-0" title="Pinned — best case scenario">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary shrink-0" aria-label="Pinned — best case scenario">
                                       <path d="M12 17v5" /><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76z" />
                                     </svg>
                                   )}

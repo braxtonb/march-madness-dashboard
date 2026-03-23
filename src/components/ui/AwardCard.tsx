@@ -4,8 +4,10 @@ import type { ReactNode } from "react";
 import { TeamPill } from "@/components/ui/TeamPill";
 import type { Award } from "@/lib/types";
 
+const ROUND_AGNOSTIC_AWARDS = new Set(["The Faithful"]);
+
 function getAwardDescription(title: string, roundLabel?: string): string {
-  const scope = roundLabel || "this round";
+  const scope = ROUND_AGNOSTIC_AWARDS.has(title) ? "All Rounds" : (roundLabel || "this round");
   const descriptions: Record<string, string> = {
     "The Oracle": `Most correct picks — ${scope}`,
     "The Trendsetter": `Most unique correct picks — ${scope}`,

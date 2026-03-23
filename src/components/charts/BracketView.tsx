@@ -134,7 +134,10 @@ function GameCell({
   const team2Eliminated = eliminatedTeams?.has(game.team2);
 
   // Determine the displayed pick: bracket pick if selected, otherwise consensus (most popular)
-  const consensusPick = pickSplit.team1Count >= pickSplit.team2Count ? game.team1 : game.team2;
+  // For TBD games where game.team1/team2 are empty, use gameTeams (derived from all brackets' picks)
+  const consensusPick = (game.team1 && game.team2)
+    ? (pickSplit.team1Count >= pickSplit.team2Count ? game.team1 : game.team2)
+    : (gameTeams ? (pickSplit.team1Count >= pickSplit.team2Count ? gameTeams[0] : gameTeams[1]) : "");
   const displayedPick = bracketPick || consensusPick;
   const isConsensusPick = !bracketPick;
 
@@ -146,9 +149,7 @@ function GameCell({
   const pickIncorrect = hasPick && isCompleted && (!pickInGame || displayedPick !== game.winner);
   const pickPending = hasPick && !isCompleted;
 
-  const borderClass = !isConsensusPick
-    ? (pickCorrect ? "border-emerald-500/70" : pickIncorrect ? "border-red-400/40" : "border-on-surface-variant/40")
-    : "border-on-surface-variant/40";
+  const borderClass = pickCorrect ? "border-emerald-500/70" : pickIncorrect ? "border-red-400/40" : "border-on-surface-variant/40";
 
   const pickedTeamName = displayedPick ? shortName(displayedPick) : "";
   // Always derive opponent from the bracket's predicted matchup (gameTeams), not the actual game teams
@@ -170,19 +171,17 @@ function GameCell({
   return (
     <button
       onClick={onClick}
-      className={`block rounded border ${borderClass} bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"} ${!game.team1 && !game.team2 ? "opacity-70" : ""}`}
+      className={`block rounded border ${borderClass} bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"} ${!game.team1 && !game.team2 ? "opacity-80" : ""}`}
       style={{ width: GAME_W }}
     >
       {/* Pick header — shows bracket pick or group consensus */}
       {hasPick && (
         <div className={`flex items-center justify-between px-2 py-0.5 text-[10px] font-label border-b border-outline-variant/20 ${
-          isConsensusPick
-            ? "text-on-surface-variant/60"
-            : (pickCorrect ? "bg-emerald-500/10 text-emerald-400" : pickIncorrect ? "bg-red-400/10 text-red-400" : "text-on-surface-variant/60")
+          pickCorrect ? "bg-emerald-500/10 text-emerald-400" : pickIncorrect ? "bg-red-400/10 text-red-400" : "text-on-surface-variant/60"
         }`}>
           <span className="truncate font-bold">{pickLabel}: <span className="font-extrabold">{pickedTeamName}</span>{predictedOpponent && <span className="font-semibold opacity-60"> over {predictedOpponent}</span>}</span>
-          {!isConsensusPick && pickCorrect && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M20 6L9 17l-5-5" /></svg>}
-          {!isConsensusPick && pickIncorrect && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>}
+          {pickCorrect && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M20 6L9 17l-5-5" /></svg>}
+          {pickIncorrect && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>}
         </div>
       )}
       {/* Team 1 */}
@@ -463,24 +462,31 @@ export function BracketView({
 }: BracketViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bracketRef = useRef<HTMLDivElement>(null);
+  const naturalWidthRef = useRef<number>(0);
   const [bracketScale, setBracketScale] = useState(1);
 
   const computeScale = useCallback(() => {
     if (!scrollRef.current || !bracketRef.current) return;
+    // Measure natural width once (before any scaling is applied)
+    if (naturalWidthRef.current === 0) {
+      naturalWidthRef.current = bracketRef.current.scrollWidth;
+    }
     const containerWidth = scrollRef.current.clientWidth;
-    const bracketWidth = bracketRef.current.scrollWidth;
-    if (bracketWidth > containerWidth) {
-      setBracketScale(Math.max(0.5, containerWidth / bracketWidth));
+    const naturalWidth = naturalWidthRef.current;
+    if (naturalWidth > containerWidth) {
+      setBracketScale(Math.max(0.5, containerWidth / naturalWidth));
     } else {
       setBracketScale(1);
     }
   }, []);
 
   useEffect(() => {
+    // Reset natural width when content changes so it's re-measured
+    naturalWidthRef.current = 0;
     computeScale();
     window.addEventListener("resize", computeScale);
     return () => window.removeEventListener("resize", computeScale);
-  }, [computeScale]);
+  }, [computeScale, games]);
 
   const regions = useMemo(() => {
     const regionSet = new Set<string>();
@@ -568,7 +574,7 @@ export function BracketView({
       </div>
 
       {/* Mobile: stacked list by round */}
-      <div className="md:hidden space-y-4">
+      <div className="lg:hidden space-y-4">
         {(["R64", "R32", "S16", "E8", "FF", "CHAMP"] as Round[]).map((round) => {
           const roundGames = games.filter((g) => g.round === round).sort((a, b) => a.game_id.localeCompare(b.game_id));
           if (roundGames.length === 0) return null;
@@ -624,19 +630,11 @@ export function BracketView({
       </div>
 
       {/* Desktop: full bracket — auto-scales to fit viewport width */}
-      <div ref={scrollRef} className="hidden md:block pb-16">
-        <div
-          ref={bracketRef}
-          className="origin-top-left"
-          style={bracketScale < 1 ? {
-            transform: `scale(${bracketScale})`,
-            transformOrigin: "top left",
-            width: `${100 / bracketScale}%`,
-            height: bracketRef.current ? `${bracketRef.current.scrollHeight * bracketScale}px` : undefined,
-          } : undefined}
+      <div ref={scrollRef} className="hidden lg:block pb-16">
+        {/* Column Headers — sticky, OUTSIDE the scaled container so position:sticky works */}
+        <div className="sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-2 border-b border-on-surface-variant/10 mb-6"
+          style={bracketScale < 1 ? { transform: `scale(${bracketScale})`, transformOrigin: "top left" } : undefined}
         >
-        {/* Column Headers — sticky, mirrors body flex layout exactly */}
-        <div className="sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-1 border-b border-on-surface-variant/10 mb-4">
           <div className="flex items-stretch" style={{ height: 40 }}>
             {/* Left header region — left-aligned with game cards */}
             <div className="relative shrink-0" style={{ width: GAME_W + MAX_ROUND_X }}>
@@ -670,7 +668,17 @@ export function BracketView({
           </div>
         </div>
 
-        {/* Bracket body */}
+        {/* Bracket body — scaled to fit viewport */}
+        <div
+          ref={bracketRef}
+          className="origin-top-left"
+          style={bracketScale < 1 ? {
+            transform: `scale(${bracketScale})`,
+            transformOrigin: "top left",
+            width: `${100 / bracketScale}%`,
+            height: bracketRef.current ? `${bracketRef.current.scrollHeight * bracketScale}px` : undefined,
+          } : undefined}
+        >
         <div className="flex items-stretch">
           {/* LEFT HALF: East (top) + South (bottom) flowing L→R */}
           <div className="flex flex-col shrink-0" style={{ gap: regionGap }}>
@@ -748,6 +756,7 @@ export function BracketView({
                       : undefined
                   }
                   bracketPick={highlightBracketPicks?.[game.game_id]}
+                  gameTeams={gameTeamsMap[game.game_id]}
                 />
               ))}
 

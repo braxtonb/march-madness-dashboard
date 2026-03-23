@@ -41,7 +41,7 @@ export function Sidebar() {
 
       <aside
         className={`
-          fixed left-0 top-[52px] z-40 h-[calc(100vh-52px)]
+          fixed left-0 top-[52px] z-[60] h-[calc(100vh-52px)]
           bg-surface-container transition-all duration-300
           overflow-hidden
           ${mobileOpen ? "translate-x-0 w-56" : "-translate-x-full w-56"}

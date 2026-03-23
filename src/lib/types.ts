@@ -141,7 +141,7 @@ export interface DerivedData {
     ff3Plus: number;
     ff2Plus: number;
     gamesRemaining: number;
-    gamesToWatch: unknown[];
+    gamesToWatch: { gameId: string; seed1: number; team1: string; seed2: number; team2: string; round: string; affectedCount: number; affectedBrackets: { name: string; owner: string; full_name: string; champion: string; championSeed?: number; bracketId?: string }[] }[];
     bracketFFTeamsMap: Record<string, string[]>;
   };
   champ_distribution: { name: string; count: number; alive: boolean; logo: string; seed: number; brackets: { bracketId: string; bracketName: string; fullName: string }[] }[];

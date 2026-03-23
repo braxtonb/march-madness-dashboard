@@ -20,7 +20,7 @@ function CompareCheckboxInner({ bracketId, className = "" }: CompareCheckboxProp
         transition-all duration-150 shrink-0
         ${checked
           ? "bg-secondary border border-secondary text-surface opacity-100"
-          : "border-[1.5px] border-on-surface-variant/50 sm:border-on-surface-variant/30 sm:opacity-0 sm:group-hover:opacity-100 opacity-60 hover:border-secondary hover:bg-secondary/15 hover:shadow-[0_0_6px_rgba(0,244,254,0.4)]"
+          : "border-[1.5px] border-on-surface-variant/50 opacity-40 sm:group-hover:opacity-100 hover:border-secondary hover:bg-secondary/15 hover:shadow-[0_0_6px_rgba(0,244,254,0.4)]"
         }
         ${className}
       `}

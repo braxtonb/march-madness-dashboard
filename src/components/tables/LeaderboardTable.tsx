@@ -9,6 +9,7 @@ import MobileSortDropdown from "@/components/ui/MobileSortDropdown";
 import MobileCard from "@/components/ui/MobileCard";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
+import { SimulateLink } from "@/components/ui/SimulateLink";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 function SortIcon({ direction, active }: { direction: "asc" | "desc" | "neutral"; active?: boolean }) {
@@ -246,6 +247,7 @@ export function LeaderboardTable({
                             )}
                           </span>
                           <ViewBracketLink bracketId={b.id} />
+                          <SimulateLink bracketId={b.id} />
                         </p>
                         {path.remainingPicks.length === 0 ? (
                           <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>

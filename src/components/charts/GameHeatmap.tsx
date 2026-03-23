@@ -98,7 +98,12 @@ export function GameHeatmap({ games, pickSplits, totalBrackets, round, statusFil
     return set;
   }, [games]);
 
-  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => new Set(fullyCompletedRounds));
+  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => {
+    const set = new Set(fullyCompletedRounds);
+    const lastCompleted = ROUND_ORDER.filter((r) => set.has(r)).pop();
+    if (lastCompleted) set.delete(lastCompleted);
+    return set;
+  });
 
   const toggleRoundCollapse = useCallback((r: string) => {
     setCollapsedRounds((prev) => {

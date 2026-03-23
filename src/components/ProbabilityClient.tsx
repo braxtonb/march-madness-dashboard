@@ -3,6 +3,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
+import { SimulateLink } from "@/components/ui/SimulateLink";
 import { useSearchParams } from "next/navigation";
 import { ProbabilityJourney } from "@/components/charts/ProbabilityJourney";
 import { TeamPill } from "@/components/ui/TeamPill";
@@ -218,6 +219,16 @@ export function ProbabilityClient({
     window.history.replaceState(null, "", url.toString());
   }, []);
 
+  // Tier filter for simulated finishes
+  const [finishTierFilter, setFinishTierFilter] = useState<string[]>([]);
+  const tierOptions: MultiSelectOption[] = useMemo(() =>
+    TIERS.map((t) => ({ value: t.key, label: t.label })),
+    [],
+  );
+  const handleFinishTierChange = useCallback((ids: string[]) => {
+    setFinishTierFilter(ids);
+  }, []);
+
   const sortedProbData = useMemo(() => {
     let data = [...probData];
     if (finishSearch.length > 0) {
@@ -228,12 +239,16 @@ export function ProbabilityClient({
       const champSet = new Set(finishChampionFilter);
       data = data.filter((d) => champSet.has(d.champion));
     }
+    if (finishTierFilter.length > 0) {
+      const tierSet = new Set(finishTierFilter);
+      data = data.filter((d) => tierSet.has(getTierKey(d.probability)));
+    }
     return data.sort((a, b) => {
       const aVal = a[finishSortKey] ?? 0;
       const bVal = b[finishSortKey] ?? 0;
       return finishSortAsc ? aVal - bVal : bVal - aVal;
     });
-  }, [probData, finishSortKey, finishSortAsc, finishSearch, finishChampionFilter]);
+  }, [probData, finishSortKey, finishSortAsc, finishSearch, finishChampionFilter, finishTierFilter]);
 
   function toggleFinishSort(key: FinishSort) {
     const newAsc = finishSortKey === key ? !finishSortAsc : key === "median_rank";
@@ -255,9 +270,9 @@ export function ProbabilityClient({
     setTab(t);
     const url = new URL(window.location.href);
 
-    const finishesParams = ["fsort", "fdir", "finishBrackets"];
-    for (const p of finishesParams) {
-      if (t === "finishes") continue;
+    // Clear ALL tab-specific params, then set the new tab
+    const allTabParams = ["fsort", "fdir", "finishBrackets", "finishChampion", "filter", "watch"];
+    for (const p of allTabParams) {
       url.searchParams.delete(p);
     }
 
@@ -326,36 +341,34 @@ export function ProbabilityClient({
             const entries = tierGroups.get(tier.key)!;
             if (entries.length === 0) return null;
             return (
-              <div key={tier.key} className="rounded-card bg-surface-container p-4 sm:p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-block rounded-card px-2.5 py-1 font-label text-xs font-semibold ${tier.badgeClass}`}>
+              <div key={tier.key} className="space-y-1">
+                <div className="flex items-center gap-2 pt-1">
+                  <span className={`inline-block rounded-full px-2 py-0.5 font-label text-[10px] font-semibold ${tier.badgeClass}`}>
                     {tier.label}
                   </span>
-                  <span className="text-xs text-on-surface-variant">
+                  <span className="text-[10px] text-on-surface-variant">
                     {entries.length} bracket{entries.length !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1">
                   {entries.map((entry) => (
                     <div
                       key={entry.name}
-                      className={`group flex items-center justify-between rounded-card px-3 py-2 overflow-hidden ${isMyBracket(entry.id) ? "bg-secondary/10 border-l-2 border-l-secondary" : "bg-surface-bright/50"}`}
+                      className={`flex items-center gap-1.5 rounded px-2 py-1.5 overflow-hidden ${isMyBracket(entry.id) ? "bg-[#0f2e36] border-l-2 border-l-secondary" : "bg-surface-container"}`}
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <CompareCheckbox bracketId={entry.id} />
-                        <div className="min-w-0">
-                          <div className={`font-body text-sm font-semibold truncate ${tier.colorClass}`}>
-                            {entry.name}
-                          </div>
-                          {entry.full_name && entry.full_name !== entry.name && (
-                            <div className="text-xs text-on-surface-variant truncate">
-                              {entry.full_name}
-                            </div>
-                          )}
+                      <CompareCheckbox bracketId={entry.id} />
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-xs font-semibold truncate ${tier.colorClass}`}>
+                          {entry.name}
                         </div>
+                        {entry.full_name && entry.full_name !== entry.name && (
+                          <div className="text-[10px] text-on-surface-variant truncate">
+                            {entry.full_name}
+                          </div>
+                        )}
                       </div>
                       {showExact && (
-                        <span className="font-label text-xs text-on-surface-variant ml-2 shrink-0">
+                        <span className="font-label text-[10px] text-on-surface-variant shrink-0">
                           {entry.probability.toFixed(1)}%
                         </span>
                       )}
@@ -401,8 +414,18 @@ export function ProbabilityClient({
                 placeholder="Filter by champion..."
               />
             </div>
+            <div className="w-full sm:w-48">
+              <MultiSelectSearch
+                mode="multi"
+                label="Tiers"
+                options={tierOptions}
+                selected={finishTierFilter}
+                onSelectedChange={handleFinishTierChange}
+                placeholder="Filter by tier..."
+              />
+            </div>
           </div>
-          {(finishSearch.length > 0 || finishChampionFilter.length > 0) && (
+          {(finishSearch.length > 0 || finishChampionFilter.length > 0 || finishTierFilter.length > 0) && (
             <p className="text-xs text-on-surface-variant mb-3">
               Showing {sortedProbData.length} of {probData.length} brackets
             </p>
@@ -413,6 +436,8 @@ export function ProbabilityClient({
                 <tr className="border-b border-outline-variant">
                   <th className="w-8"></th>
                   <th className="sticky left-0 bg-surface-container z-30 px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-default" title="Bracket name">Bracket</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-default" title="Current points">Pts</th>
+                  <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-default" title="Maximum possible points">Max</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-default" title="Team selected to win the championship">Champion</th>
                   <th className="px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-default" title="Championship probability tier">Tier</th>
                   <th className="group/hdr px-2 py-2 text-left font-label text-[10px] uppercase tracking-wider text-on-surface-variant !cursor-pointer hover:text-on-surface select-none" title="Chance of finishing 1st from 1,000 simulations" onClick={() => toggleFinishSort("probability")}><span className="border-b border-dotted border-on-surface-variant/40">Win %</span>{fSortIcon("probability")}</th>
@@ -428,7 +453,7 @@ export function ProbabilityClient({
                   const tierKey = getTierKey(d.probability);
                   const tier = TIERS.find((t) => t.key === tierKey)!;
                   const isExpanded = expandedFinishIds.has(d.id);
-                  const finishColSpan = 10;
+                  const finishColSpan = 12;
                   return (
                     <React.Fragment key={d.id}>
                     <tr
@@ -450,6 +475,8 @@ export function ProbabilityClient({
                           </div>
                         </div>
                       </td>
+                      <td className="px-2 py-2 font-label text-xs text-on-surface">{d.points}</td>
+                      <td className="px-2 py-2 font-label text-xs text-on-surface-variant">{d.points + d.max_remaining}</td>
                       <td className="px-2 py-2 text-xs text-on-surface-variant">
                         <TeamPill name={d.champion} seed={d.championSeed} logo={teamLogos[d.champion]} eliminated={eliminatedTeamsSet.has(d.champion)} showStatus />
                       </td>
@@ -478,6 +505,7 @@ export function ProbabilityClient({
                                   )}
                                 </span>
                                 <ViewBracketLink bracketId={d.id} />
+                                <SimulateLink bracketId={d.id} />
                               </p>
                               {!path || path.remainingPicks.length === 0 ? (
                                 <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>

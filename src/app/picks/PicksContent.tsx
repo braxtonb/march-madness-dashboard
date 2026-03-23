@@ -15,6 +15,7 @@ import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import type { PickerDetails } from "@/components/ui/GameCard";
 import { ViewBracketLink } from "@/components/ui/ViewBracketLink";
+import { SimulateLink } from "@/components/ui/SimulateLink";
 import type { Bracket } from "@/lib/types";
 
 interface ChampBracketInfo {
@@ -237,7 +238,12 @@ export function PicksContent({
     return set;
   }, [games]);
 
-  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => new Set(fullyCompletedRounds));
+  const [collapsedRounds, setCollapsedRounds] = useState<Set<string>>(() => {
+    const set = new Set(fullyCompletedRounds);
+    const lastCompleted = ROUND_ORDER.filter((r) => set.has(r)).pop();
+    if (lastCompleted) set.delete(lastCompleted);
+    return set;
+  });
 
   const toggleRoundCollapse = useCallback((r: string) => {
     setCollapsedRounds((prev) => {
