@@ -3,11 +3,7 @@ name: Scrape ESPN Brackets
 on:
   schedule:
     # Every hour, 4pm-5am UTC (covers noon-1am ET during game windows)
-    # Hourly to stay within Vercel's 100 deploys/day limit
     - cron: '0 16-23,0-5 * 3-4 *'
-  push:
-    branches:
-      - main
   workflow_dispatch: # Manual trigger
 
 permissions:
