@@ -581,9 +581,9 @@ export function HeadToHeadContent({
               seed2: g?.seed2 ?? 0,
               completed: isComplete,
               winner: g?.winner || "",
-              espn_url: g?.espn_url,
             }}
             teamLogos={teamLogos}
+            hideStatus
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -619,6 +619,13 @@ export function HeadToHeadContent({
               <p className="text-xs text-on-surface-variant italic mt-1">No pick</p>
             )}
           </div>
+        </div>
+        {/* Footer: ESPN link (left) + status (right) */}
+        <div className="flex items-center justify-between mt-2 pt-1">
+          {g?.espn_url ? (
+            <a href={g.espn_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] font-label text-on-surface-variant hover:text-secondary transition-colors">ESPN</a>
+          ) : <span />}
+          <span className="text-[10px] text-on-surface-variant/70">{isComplete ? "Final" : "Scheduled"}</span>
         </div>
       </div>
     );

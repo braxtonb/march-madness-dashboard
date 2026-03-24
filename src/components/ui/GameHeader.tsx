@@ -4,10 +4,12 @@ export function GameHeader({
   game,
   teamLogos = {},
   eliminatedTeams,
+  hideStatus = false,
 }: {
   game: { team1: string; seed1: number; team2: string; seed2: number; completed: boolean; winner: string; espnUrl?: string; espn_url?: string };
   teamLogos?: Record<string, string>;
   eliminatedTeams?: Set<string>;
+  hideStatus?: boolean;
 }) {
   const hasTeams = game.team1 && game.team2;
 
@@ -42,23 +44,25 @@ export function GameHeader({
           <p className="text-[10px] text-secondary mt-0.5">Winner: {game.winner}</p>
         )}
       </div>
-      <div className="flex items-center gap-1.5">
-        {espnLink && (
-          <a
-            href={espnLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[9px] font-label text-on-surface-variant/50 hover:text-primary transition-colors"
-            title="View on ESPN"
-            onClick={(e) => e.stopPropagation()}
-          >
-            ESPN ↗
-          </a>
-        )}
-        <span className={`text-[10px] font-label bg-surface-container rounded-full px-2 py-0.5 ${game.completed ? "text-secondary" : "text-on-surface-variant"}`}>
-          {game.completed ? "Final" : "Scheduled"}
-        </span>
-      </div>
+      {!hideStatus && (
+        <div className="flex items-center gap-1.5">
+          {espnLink && (
+            <a
+              href={espnLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-label text-on-surface-variant/50 hover:text-primary transition-colors"
+              title="View on ESPN"
+              onClick={(e) => e.stopPropagation()}
+            >
+              ESPN ↗
+            </a>
+          )}
+          <span className={`text-[10px] font-label bg-surface-container rounded-full px-2 py-0.5 ${game.completed ? "text-secondary" : "text-on-surface-variant"}`}>
+            {game.completed ? "Final" : "Scheduled"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

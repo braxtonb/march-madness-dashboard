@@ -220,7 +220,7 @@ function GameCell({
             </>
           )}
         </span>
-        {hasPicks && <span className="text-[11px] shrink-0">{pct1}% <span className="text-on-surface-variant/50">({pickSplit.team1Count})</span></span>}
+        {hasPicks && <span className="text-[11px] shrink-0">{pct1}% <span className="text-on-surface-variant/70">({pickSplit.team1Count})</span></span>}
       </div>
       {/* Team 2 */}
       <div
@@ -251,7 +251,7 @@ function GameCell({
             </>
           )}
         </span>
-        {hasPicks && <span className="text-[11px] shrink-0">{pct2}% <span className="text-on-surface-variant/50">({pickSplit.team2Count})</span></span>}
+        {hasPicks && <span className="text-[11px] shrink-0">{pct2}% <span className="text-on-surface-variant/70">({pickSplit.team2Count})</span></span>}
       </div>
       {/* ESPN link + status — fixed height so all cards match */}
       <div className="flex items-center justify-between px-1.5 pt-0.5 pb-0.5" style={{ minHeight: 16 }}>
@@ -697,11 +697,11 @@ export function BracketView({
                       <div className="flex items-center gap-2">
                         <span className={`flex-1 text-sm font-label ${game.completed && game.winner === game.team1 ? "text-on-surface font-bold" : game.completed ? "text-on-surface-variant/50 line-through" : "text-on-surface-variant"}`}>
                           {game.seed1 ? `${game.seed1} ` : ""}{shortName(t1)}
-                          {mHasPicks && <span className="text-[10px] text-on-surface-variant/50 ml-1">{mPct1}% ({split.team1Count})</span>}
+                          {mHasPicks && <span className="text-[10px] text-on-surface-variant/70 ml-1">{mPct1}% ({split.team1Count})</span>}
                         </span>
                         <span className="text-[10px] text-on-surface-variant/40">vs</span>
                         <span className={`flex-1 text-sm font-label text-right ${game.completed && game.winner === game.team2 ? "text-on-surface font-bold" : game.completed ? "text-on-surface-variant/50 line-through" : "text-on-surface-variant"}`}>
-                          {mHasPicks && <span className="text-[10px] text-on-surface-variant/50 mr-1">{mPct2}% ({split.team2Count})</span>}
+                          {mHasPicks && <span className="text-[10px] text-on-surface-variant/70 mr-1">{mPct2}% ({split.team2Count})</span>}
                           {shortName(t2)}{game.seed2 ? ` ${game.seed2}` : ""}
                         </span>
                       </div>

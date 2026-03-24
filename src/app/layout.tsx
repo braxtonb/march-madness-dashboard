@@ -17,10 +17,9 @@ export const metadata: Metadata = {
     siteName: "Bracket Lab",
     type: "website",
     url: "https://march-madness-dashboard-six.vercel.app",
-    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "Bracket Lab — March Madness Analytics" }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "DoorDash AP 2026 Bracket Lab",
     description: "March Madness bracket analytics for a 75-person pool.",
   },
