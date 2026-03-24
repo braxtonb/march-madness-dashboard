@@ -17,7 +17,9 @@ interface Checkpoint {
   gameId: string;
   round: string;
   team1: string;
+  seed1: number;
   team2: string;
+  seed2: number;
   winner: string;
   completeDate: number;
 }
@@ -257,22 +259,39 @@ export function ProbabilityJourneyChart({
 
       return (
         <div className="bg-surface-container border border-outline/20 rounded-lg px-3 py-2 shadow-lg max-w-xs">
-          {cp && gameIdx >= 0 && (
-            <p className="text-[11px] text-on-surface-variant mb-1.5">
-              {cp.round}: {cp.winner} beat {cp.winner === cp.team1 ? cp.team2 : cp.team1}
-            </p>
-          )}
+          {cp && gameIdx >= 0 && (() => {
+            const winner = cp.winner;
+            const loser = winner === cp.team1 ? cp.team2 : cp.team1;
+            const winnerSeed = winner === cp.team1 ? cp.seed1 : cp.seed2;
+            const loserSeed = loser === cp.team1 ? cp.seed1 : cp.seed2;
+            const wLogo = teamLogos[winner];
+            const lLogo = teamLogos[loser];
+            return (
+              <div className="flex items-center gap-1 text-[11px] text-on-surface-variant mb-1.5">
+                <span className="text-on-surface-variant/60">{cp.round}:</span>
+                {wLogo && <img src={wLogo} alt="" className="w-3.5 h-3.5 object-contain" />}
+                <span className="text-on-surface font-semibold">{winnerSeed} {winner}</span>
+                <span>over</span>
+                {lLogo && <img src={lLogo} alt="" className="w-3.5 h-3.5 object-contain opacity-70" />}
+                <span className="line-through">{loserSeed} {loser}</span>
+              </div>
+            );
+          })()}
           {gameIdx < 0 && (
             <p className="text-[11px] text-on-surface-variant mb-1.5">Tournament start</p>
           )}
           <div className="space-y-0.5">
             {sorted.map((entry) => {
               const line = visibleLines.find((l) => l.bracketId === entry.dataKey);
+              const champLogo = line ? teamLogos[line.champion] : undefined;
+              const champSeed = line ? teamSeeds[line.champion] : undefined;
               return (
                 <div key={entry.dataKey} className="flex items-center justify-between gap-3 text-[11px]">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
                     <span className="text-on-surface truncate">{line?.name || entry.dataKey}</span>
+                    {champLogo && <img src={champLogo} alt="" className="w-3 h-3 object-contain shrink-0 opacity-60" />}
+                    {champSeed && <span className="text-on-surface-variant/50 text-[9px] shrink-0">{champSeed}</span>}
                   </div>
                   <span className="text-on-surface font-semibold shrink-0">{entry.value.toFixed(1)}%</span>
                 </div>
