@@ -47,6 +47,8 @@ export interface Game {
   completed: boolean;
   national_pct_team1: number;
   espn_url?: string;
+  start_date?: number;
+  complete_date?: number;
 }
 
 /** Matches the `teams` Sheet tab */
@@ -73,6 +75,7 @@ export interface Snapshot {
 /** Matches the `meta` Sheet tab */
 export interface Meta {
   last_updated: string;
+  last_checked_at: number;
   current_round: Round;
   games_completed: number;
 }
@@ -149,6 +152,27 @@ export interface DerivedData {
   submitted_count: number;
   team_logos: Record<string, string>;
   team_abbrevs: Record<string, string>;
+  team_colors: Record<string, string>;
+  probability_timeline: {
+    checkpoints: {
+      gameIndex: number;
+      gameId: string;
+      round: string;
+      team1: string;
+      seed1: number;
+      team2: string;
+      seed2: number;
+      winner: string;
+      completeDate: number;
+    }[];
+    lines: {
+      bracketId: string;
+      name: string;
+      champion: string;
+      eliminatedAtGame: number;
+      probabilities: number[];
+    }[];
+  };
 }
 
 /** All data needed to render any page */

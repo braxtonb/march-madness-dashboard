@@ -98,6 +98,25 @@ interface GameToWatch {
   affectedBrackets: AffectedBracket[];
 }
 
+interface TimelineCheckpoint {
+  gameIndex: number;
+  gameId: string;
+  round: string;
+  team1: string;
+  seed1: number;
+  team2: string;
+  seed2: number;
+  winner: string;
+}
+
+interface TimelineLine {
+  bracketId: string;
+  name: string;
+  champion: string;
+  eliminatedAtGame: number;
+  probabilities: number[];
+}
+
 interface ProbabilityClientProps {
   probData: ProbEntry[];
   journeyData: JourneyPoint[];
@@ -106,6 +125,10 @@ interface ProbabilityClientProps {
   teamLogos?: Record<string, string>;
   eliminatedTeams?: string[];
   pathData?: PathEntry[];
+  timelineCheckpoints?: TimelineCheckpoint[];
+  timelineLines?: TimelineLine[];
+  embedded?: boolean;
+  initialTab?: "chances" | "finishes";
 }
 
 type ProbTab = "chances" | "finishes" | "path";
@@ -146,20 +169,29 @@ export function ProbabilityClient({
   teamLogos = {},
   eliminatedTeams: eliminatedTeamsArr = [],
   pathData = [],
+  timelineCheckpoints = [],
+  timelineLines = [],
+  embedded = false,
+  initialTab: initialTabProp,
 }: ProbabilityClientProps) {
   const { isMyBracket } = useMyBracket();
   const searchParams = useSearchParams();
 
   const eliminatedTeamsSet = useMemo(() => new Set(eliminatedTeamsArr), [eliminatedTeamsArr]);
 
-  const VALID_TABS: ProbTab[] = ["chances", "finishes", "path"];
+  const VALID_TABS: ProbTab[] = ["chances", "finishes"];
   const initialTab = (() => {
+    if (initialTabProp && VALID_TABS.includes(initialTabProp)) return initialTabProp;
     const param = searchParams.get("tab") as ProbTab;
     if (param && VALID_TABS.includes(param)) return param;
     return "chances" as ProbTab;
   })();
 
   const [tab, setTab] = useState<ProbTab>(initialTab);
+  // Sync tab when parent changes the initialTab prop (embedded mode)
+  React.useEffect(() => {
+    if (initialTabProp && VALID_TABS.includes(initialTabProp)) setTab(initialTabProp);
+  }, [initialTabProp, VALID_TABS]);
   const [showExact, setShowExact] = useState(false);
 
   // Sort state for simulated finishes table
@@ -229,8 +261,46 @@ export function ProbabilityClient({
     setFinishTierFilter(ids);
   }, []);
 
+  // Checkpoint filter for simulated finishes — -1 means "current" (latest)
+  const [checkpointIndex, setCheckpointIndex] = useState<number>(-1);
+  const [checkpointOpen, setCheckpointOpen] = useState(false);
+
+  // Build checkpoint options for the selector
+  const checkpointOptions = useMemo(() => {
+    return timelineCheckpoints.map((cp, i) => ({
+      index: i,
+      label: `Game ${i + 1}: ${cp.winner} beat ${cp.winner === cp.team1 ? cp.team2 : cp.team1}`,
+      round: cp.round,
+    }));
+  }, [timelineCheckpoints]);
+
+  // Override probData with checkpoint probabilities when a checkpoint is selected
+  const displayProbData = useMemo(() => {
+    if (checkpointIndex < 0 || timelineLines.length === 0) return probData;
+
+    // Build a map of bracketId -> win% at this checkpoint
+    const winPctMap = new Map<string, number>();
+    for (const line of timelineLines) {
+      const pct = line.probabilities[checkpointIndex] ?? 0;
+      winPctMap.set(line.bracketId, pct);
+    }
+
+    return probData.map((d) => ({
+      ...d,
+      probability: winPctMap.get(d.id) ?? 0,
+      pct_first: winPctMap.get(d.id) ?? 0,
+      // Zero out detailed rank stats since we only have win% per checkpoint
+      pct_second: 0,
+      pct_third: 0,
+      pct_top10: 0,
+      pct_top25: 0,
+      median_rank: 0,
+      best_rank: 0,
+    }));
+  }, [probData, checkpointIndex, timelineLines]);
+
   const sortedProbData = useMemo(() => {
-    let data = [...probData];
+    let data = [...displayProbData];
     if (finishSearch.length > 0) {
       const idSet = new Set(finishSearch);
       data = data.filter((d) => idSet.has(d.id));
@@ -248,7 +318,7 @@ export function ProbabilityClient({
       const bVal = b[finishSortKey] ?? 0;
       return finishSortAsc ? aVal - bVal : bVal - aVal;
     });
-  }, [probData, finishSortKey, finishSortAsc, finishSearch, finishChampionFilter, finishTierFilter]);
+  }, [displayProbData, finishSortKey, finishSortAsc, finishSearch, finishChampionFilter, finishTierFilter]);
 
   function toggleFinishSort(key: FinishSort) {
     const newAsc = finishSortKey === key ? !finishSortAsc : key === "median_rank";
@@ -304,31 +374,33 @@ export function ProbabilityClient({
 
   return (
     <div className="space-y-section">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Win Probability</h2>
-        <p className="text-on-surface-variant text-sm mt-1">
-          Estimates based on 1,000 simulated tournaments using historical seed performance. Not guarantees.
-        </p>
-      </div>
-
-      {/* Tab pills */}
-      <div className="overflow-x-auto no-scrollbar">
-        <div className="flex gap-2 min-w-max">
-          <button onClick={() => changeTab("chances")} className={tab === "chances" ? TAB_ACTIVE : TAB_INACTIVE}>
-            Championship Chances
-          </button>
-          <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
-            Simulated Finishes
-          </button>
-          {/* Path to Victory moved to leaderboard table (expandable rows) */}
+      {!embedded && (
+        <div>
+          <h2 className="font-display text-2xl font-bold">Win Probability</h2>
+          <p className="text-on-surface-variant text-sm mt-1">
+            Estimates based on 10,000 simulated tournaments using historical seed performance. Not guarantees.
+          </p>
         </div>
-      </div>
+      )}
+
+      {/* Tab pills — hidden when embedded (parent handles view switching) */}
+      {!embedded && (
+        <div className="overflow-x-auto no-scrollbar">
+          <div className="flex gap-2 min-w-max">
+            <button onClick={() => changeTab("chances")} className={tab === "chances" ? TAB_ACTIVE : TAB_INACTIVE}>
+              Championship Chances
+            </button>
+            <button onClick={() => changeTab("finishes")} className={tab === "finishes" ? TAB_ACTIVE : TAB_INACTIVE}>
+              Simulated Finishes
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Championship Chances tab */}
       {tab === "chances" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h3 className="font-display text-lg font-semibold">Championship Chances</h3>
             <button
               onClick={() => setShowExact(!showExact)}
               className="rounded-card px-3 py-1.5 font-label text-xs bg-surface-container hover:bg-surface-bright text-on-surface-variant transition-colors whitespace-nowrap min-h-[44px] flex items-center"
@@ -384,15 +456,9 @@ export function ProbabilityClient({
       {/* Simulated Finishes tab */}
       {tab === "finishes" && (
         <div className="rounded-card bg-surface-container p-3 sm:p-5">
-          <div className="mb-4">
-            <h3 className="font-display text-lg font-semibold">Simulated Finishes</h3>
-            <p className="hidden sm:block text-xs text-on-surface-variant mt-1">
-              Click any row to see details &middot; Hover any row to compare brackets
-            </p>
-            <p className="sm:hidden text-xs text-on-surface-variant mt-1">
-              Tap any row for details &middot; Tap &#9675; to compare brackets
-            </p>
-          </div>
+          <p className="text-xs text-on-surface-variant mb-4">
+            Click any row to see details &middot; Hover to compare
+          </p>
           <div className="flex flex-wrap gap-3 mb-4">
             <div className="w-full sm:w-72">
               <MultiSelectSearch
@@ -425,6 +491,97 @@ export function ProbabilityClient({
               />
             </div>
           </div>
+          {/* Checkpoint time-travel selector */}
+          {checkpointOptions.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-label text-on-surface-variant shrink-0">View as of:</span>
+                <div className="relative">
+                  <button
+                    onClick={() => setCheckpointOpen(!checkpointOpen)}
+                    className="inline-flex items-center gap-1.5 bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-on-surface font-label hover:border-secondary/40 transition-colors"
+                  >
+                    <span className="truncate inline-flex items-center gap-1">
+                      {checkpointIndex < 0
+                        ? "Current (after all games)"
+                        : (() => {
+                            const cpData = timelineCheckpoints[checkpointIndex];
+                            const winner = cpData?.winner || "";
+                            const loser = winner === cpData?.team1 ? cpData?.team2 : cpData?.team1;
+                            const winnerSeed = winner === cpData?.team1 ? cpData?.seed1 : cpData?.seed2;
+                            const loserSeed = loser === cpData?.team1 ? cpData?.seed1 : cpData?.seed2;
+                            const wLogo = teamLogos[winner];
+                            const lLogo = loser ? teamLogos[loser] : undefined;
+                            return (
+                              <>
+                                <span className="text-on-surface-variant/60">{cpData?.round}</span>
+                                {wLogo && <img src={wLogo} alt="" className="w-3.5 h-3.5 object-contain" />}
+                                <span className="font-semibold">{winnerSeed ? `${winnerSeed} ` : ""}{winner}</span>
+                                <span className="text-on-surface-variant">over</span>
+                                {lLogo && <img src={lLogo} alt="" className="w-3.5 h-3.5 object-contain opacity-70" />}
+                                <span className="text-on-surface-variant line-through">{loserSeed ? `${loserSeed} ` : ""}{loser}</span>
+                              </>
+                            );
+                          })()}
+                    </span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-on-surface-variant/60"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  {checkpointOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setCheckpointOpen(false)} />
+                      <div className="absolute top-full left-0 mt-1 z-50 w-80 max-h-72 overflow-y-auto rounded-lg bg-surface-container border border-outline-variant/30 shadow-xl">
+                        <button
+                          onClick={() => { setCheckpointIndex(-1); setCheckpointOpen(false); }}
+                          className={`w-full text-left px-3 py-2.5 text-sm font-label hover:bg-surface-bright transition-colors ${checkpointIndex < 0 ? "text-primary font-semibold bg-primary/5 border-l-2 border-l-primary" : "text-on-surface border-l-2 border-l-transparent"}`}
+                        >
+                          Current (after all games)
+                        </button>
+                        {[...checkpointOptions].reverse().map((cp) => {
+                          const cpData = timelineCheckpoints[cp.index];
+                          const winner = cpData?.winner || "";
+                          const loser = winner === cpData?.team1 ? cpData?.team2 : cpData?.team1;
+                          const winnerSeed = winner === cpData?.team1 ? cpData?.seed1 : cpData?.seed2;
+                          const loserSeed = loser === cpData?.team1 ? cpData?.seed1 : cpData?.seed2;
+                          const winnerLogo = teamLogos[winner];
+                          const loserLogo = loser ? teamLogos[loser] : undefined;
+                          const loserEliminated = loser ? eliminatedTeamsSet.has(loser) : false;
+                          return (
+                          <button
+                            key={cp.index}
+                            onClick={() => { setCheckpointIndex(cp.index); setCheckpointOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-sm font-label hover:bg-surface-bright transition-colors border-t border-outline-variant/10 ${checkpointIndex === cp.index ? "text-primary font-semibold bg-primary/5 border-l-2 border-l-primary" : "text-on-surface border-l-2 border-l-transparent"}`}
+                          >
+                            <span className="text-on-surface-variant/60 mr-1.5 text-xs">{cp.round}</span>
+                            <span className="inline-flex items-center gap-1">
+                              {winnerLogo && <img src={winnerLogo} alt="" className="w-3.5 h-3.5 inline-block object-contain" />}
+                              <span className="font-semibold">{winnerSeed ? `${winnerSeed} ` : ""}{winner}</span>
+                              <span className="text-on-surface-variant">over</span>
+                              {loserLogo && <img src={loserLogo} alt="" className="w-3.5 h-3.5 inline-block object-contain opacity-70" />}
+                              <span className={loserEliminated ? "text-on-surface-variant/60 line-through" : "text-on-surface-variant"}>{loserSeed ? `${loserSeed} ` : ""}{loser}</span>
+                            </span>
+                          </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+                {checkpointIndex >= 0 && (
+                  <button
+                    onClick={() => setCheckpointIndex(-1)}
+                    className="text-[10px] text-secondary hover:text-secondary/80 font-label transition-colors"
+                  >
+                    Reset to current
+                  </button>
+                )}
+              </div>
+              {checkpointIndex >= 0 && (
+                <p className="text-[10px] text-on-surface-variant/60 mt-1">
+                  Showing win probabilities as they were after game {checkpointIndex + 1} of {checkpointOptions.length}. Only Win% column is available for historical checkpoints.
+                </p>
+              )}
+            </div>
+          )}
           {(finishSearch.length > 0 || finishChampionFilter.length > 0 || finishTierFilter.length > 0) && (
             <p className="text-xs text-on-surface-variant mb-3">
               Showing {sortedProbData.length} of {probData.length} brackets
@@ -546,67 +703,6 @@ export function ProbabilityClient({
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* Path to Victory tab */}
-      {tab === "path" && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-display text-lg font-semibold">Path to Victory</h3>
-            <p className="text-xs text-on-surface-variant mt-1">
-              What needs to happen for each bracket to maximize their score. Shows remaining picks where the picked team is still alive.
-            </p>
-          </div>
-          {pathData.length === 0 ? (
-            <p className="text-on-surface-variant text-sm text-center py-8">No path data available.</p>
-          ) : (
-            <div className="space-y-3">
-              {pathData.slice(0, 30).map((entry) => {
-                const roundGroups = new Map<string, PathPick[]>();
-                for (const p of entry.remainingPicks) {
-                  if (!roundGroups.has(p.round)) roundGroups.set(p.round, []);
-                  roundGroups.get(p.round)!.push(p);
-                }
-                const totalPossible = entry.remainingPicks.reduce((s, p) => s + p.pts, 0);
-                return (
-                  <div key={entry.name} className="rounded-card bg-surface-container p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-display text-sm font-semibold text-on-surface">{entry.name}</p>
-                        {entry.full_name && entry.full_name !== entry.name && <p className="text-[10px] text-on-surface-variant">{entry.full_name}</p>}
-                      </div>
-                      <div className="text-right">
-                        <p className="font-label text-xs text-on-surface">{entry.points} pts <span className="text-on-surface-variant">+ {totalPossible} possible</span></p>
-                        <div className="flex items-center gap-1 justify-end">
-                          <TeamPill name={entry.champion} logo={entry.championLogo} eliminated={!entry.championAlive} showStatus />
-                        </div>
-                      </div>
-                    </div>
-                    {entry.remainingPicks.length === 0 ? (
-                      <p className="text-xs text-on-surface-variant italic">No remaining picks with alive teams</p>
-                    ) : (
-                      <div className="flex flex-wrap gap-1.5">
-                        {["R32", "S16", "E8", "FF", "CHAMP"].map((round) => {
-                          const picks = roundGroups.get(round);
-                          if (!picks) return null;
-                          return picks.map((p) => (
-                            <span key={`${round}-${p.team}`} className="inline-flex items-center gap-1">
-                              <TeamPill name={p.team} seed={p.seed} logo={p.logo} />
-                              <span className="text-on-surface-variant text-[10px]">+{p.pts}</span>
-                            </span>
-                          ));
-                        })}
-                      </div>
-                    )}
-                    {entry.eliminatedPickCount > 0 && (
-                      <p className="text-[10px] text-on-surface-variant">{entry.eliminatedPickCount} picks eliminated</p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       )}
 

@@ -2,14 +2,14 @@ import type { Meta, Bracket } from "@/lib/types";
 import MyBracketBadge from "./MyBracketBadge";
 
 export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: Bracket[] }) {
-  let lastUpdated = "—";
-  if (meta?.last_updated) {
-    const updatedAt = new Date(meta.last_updated);
-    const diffMs = Date.now() - updatedAt.getTime();
+  let lastChecked = "—";
+  if (meta?.last_checked_at) {
+    const diffMs = Date.now() - meta.last_checked_at;
     const diffMin = Math.round(diffMs / 60000);
-    if (diffMin < 1) lastUpdated = "Just now";
-    else if (diffMin < 60) lastUpdated = `${diffMin}m ago`;
-    else lastUpdated = `${Math.round(diffMin / 60)}h ago`;
+    if (diffMin < 1) lastChecked = "Just now";
+    else if (diffMin < 60) lastChecked = `${diffMin}m ago`;
+    else if (diffMin < 1440) lastChecked = `${Math.round(diffMin / 60)}h ago`;
+    else lastChecked = `${Math.round(diffMin / 1440)}d ago`;
   }
 
   return (
@@ -27,7 +27,7 @@ export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: 
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
           </span>
-          Updated {lastUpdated}
+          Checked {lastChecked}
         </span>
       </div>
     </nav>

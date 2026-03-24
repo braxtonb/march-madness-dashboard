@@ -138,3 +138,190 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
         })
 
     return results
+
+
+def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=10000):
+    """Run Monte Carlo at each completed game checkpoint to build a win% timeline.
+
+    Loads existing checkpoints from checkpoint_path (if any), only simulates
+    newly completed games, appends results, and saves back. Returns the full
+    timeline data structure.
+
+    Args:
+        brackets: list of bracket dicts
+        picks: list of pick dicts
+        games: list of game dicts (must include complete_date, start_date)
+        checkpoint_path: path to persistent JSON checkpoint file (optional)
+        iterations: MC iterations per checkpoint (default 10,000)
+
+    Returns:
+        dict with 'checkpoints' and 'lines' keys for the probability timeline
+    """
+    import json
+    import os
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    # Load existing checkpoints
+    existing = {'checkpoints': [], 'processed_game_ids': []}
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        try:
+            with open(checkpoint_path, 'r') as f:
+                existing = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    processed_ids = set(existing.get('processed_game_ids', []))
+
+    # Sort completed games chronologically by complete_date
+    completed_games = sorted(
+        [g for g in games if g.get('completed') and g.get('complete_date')],
+        key=lambda g: g['complete_date']
+    )
+
+    # Find new games to process
+    new_games = [g for g in completed_games if g['game_id'] not in processed_ids]
+
+    if new_games:
+        logger.info(f"Timeline: {len(new_games)} new games to simulate (of {len(completed_games)} total)")
+    else:
+        logger.info(f"Timeline: all {len(completed_games)} games already checkpointed")
+
+    # Group picks by bracket
+    picks_by_bracket = defaultdict(dict)
+    for p in picks:
+        picks_by_bracket[p['bracket_id']][p['game_id']] = p.get('team_picked', '')
+
+    # Build game lookup
+    game_map = {g['game_id']: g for g in games}
+
+    # Ordered list of all completed game IDs (for reconstructing state at each checkpoint)
+    completed_order = [g['game_id'] for g in completed_games]
+
+    # Process each new game
+    checkpoints = list(existing.get('checkpoints', []))
+
+    for new_game in new_games:
+        gid = new_game['game_id']
+        # Find position in chronological order
+        game_idx = completed_order.index(gid)
+
+        # Reconstruct state: games up to and including this one are completed
+        completed_at_checkpoint = set(completed_order[:game_idx + 1])
+
+        # Calculate current points for each bracket at this checkpoint
+        bracket_points = {}
+        for b in brackets:
+            bp = picks_by_bracket.get(b['id'], {})
+            pts = 0
+            for cgid in completed_at_checkpoint:
+                cg = game_map.get(cgid, {})
+                picked = bp.get(cgid)
+                if picked and picked == cg.get('winner'):
+                    pts += ROUND_POINTS.get(cg.get('round', ''), 0)
+            bracket_points[b['id']] = pts
+
+        # Remaining games = all games NOT in completed_at_checkpoint
+        remaining = [g for g in games if g['game_id'] not in completed_at_checkpoint
+                     and g.get('team1') and g.get('team2')]
+
+        # Deterministic seed per checkpoint
+        data_seed = len(brackets) * 1000 + len(completed_at_checkpoint) * 7 + len(remaining) * 31
+        random = _seeded_random(data_seed)
+
+        # Run MC
+        win_counts = defaultdict(int)
+        for _ in range(iterations):
+            sim_winners = {}
+            for g in remaining:
+                seed1 = int(g.get('seed1', 8))
+                rnd = g.get('round', 'R64')
+                rate = SEED_WIN_RATES.get(seed1, {}).get(rnd, 0.5)
+                sim_winners[g['game_id']] = g['team1'] if random() < rate else g['team2']
+
+            scores = []
+            for b in brackets:
+                bp = picks_by_bracket.get(b['id'], {})
+                bonus = sum(
+                    ROUND_POINTS.get(g.get('round', ''), 0)
+                    for g in remaining
+                    if bp.get(g['game_id']) and bp[g['game_id']] == sim_winners.get(g['game_id'])
+                )
+                scores.append((b['id'], bracket_points.get(b['id'], 0) + bonus))
+
+            scores.sort(key=lambda x: -x[1])
+            if scores:
+                win_counts[scores[0][0]] += 1
+
+        # Record checkpoint
+        checkpoints.append({
+            'gameIndex': game_idx,
+            'gameId': gid,
+            'round': new_game.get('round', ''),
+            'team1': new_game.get('team1', ''),
+            'seed1': new_game.get('seed1', 0),
+            'team2': new_game.get('team2', ''),
+            'seed2': new_game.get('seed2', 0),
+            'winner': new_game.get('winner', ''),
+            'completeDate': new_game.get('complete_date', 0),
+            'winPcts': {
+                b['id']: round(win_counts.get(b['id'], 0) / iterations * 100, 2)
+                for b in brackets
+            },
+        })
+        processed_ids.add(gid)
+        logger.info(f"  Checkpoint {game_idx + 1}/{len(completed_games)}: {new_game.get('team1')} vs {new_game.get('team2')} ({new_game.get('round')})")
+
+    # Sort checkpoints by gameIndex
+    checkpoints.sort(key=lambda c: c['gameIndex'])
+
+    # Save checkpoint file
+    if checkpoint_path:
+        os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
+        with open(checkpoint_path, 'w') as f:
+            json.dump({
+                'checkpoints': checkpoints,
+                'processed_game_ids': list(processed_ids),
+            }, f)
+        logger.info(f"Timeline: saved {len(checkpoints)} checkpoints to {checkpoint_path}")
+
+    # Build output: extract per-bracket probability arrays and champion elimination info
+    # Determine when each bracket's champion was eliminated
+    eliminated_teams = set()
+    champ_eliminated_at = {}  # team -> gameIndex
+    for cp in checkpoints:
+        loser = cp['team1'] if cp['winner'] == cp['team2'] else cp['team2']
+        if loser and loser not in eliminated_teams:
+            eliminated_teams.add(loser)
+            champ_eliminated_at[loser] = cp['gameIndex']
+
+    lines = []
+    for b in brackets:
+        champion = b.get('champion_pick', '')
+        elim_game = champ_eliminated_at.get(champion, -1)
+        probs = [cp['winPcts'].get(b['id'], 0) for cp in checkpoints]
+        lines.append({
+            'bracketId': b['id'],
+            'name': b.get('name', ''),
+            'champion': champion,
+            'eliminatedAtGame': elim_game,
+            'probabilities': probs,
+        })
+
+    checkpoint_meta = [{
+        'gameIndex': cp['gameIndex'],
+        'gameId': cp['gameId'],
+        'round': cp['round'],
+        'team1': cp['team1'],
+        'seed1': cp.get('seed1', 0),
+        'team2': cp['team2'],
+        'seed2': cp.get('seed2', 0),
+        'winner': cp['winner'],
+        'completeDate': cp['completeDate'],
+    } for cp in checkpoints]
+
+    return {
+        'checkpoints': checkpoint_meta,
+        'lines': lines,
+    }

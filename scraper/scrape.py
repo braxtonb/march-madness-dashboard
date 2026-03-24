@@ -30,9 +30,9 @@ PICKS_HEADERS = [
 ]
 GAMES_HEADERS = [
     'game_id', 'round', 'region', 'team1', 'seed1', 'team2', 'seed2',
-    'winner', 'completed', 'national_pct_team1', 'espn_url',
+    'winner', 'completed', 'national_pct_team1', 'espn_url', 'start_date', 'complete_date',
 ]
-TEAMS_HEADERS = ['name', 'abbrev', 'seed', 'region', 'conference', 'eliminated', 'eliminated_round', 'logo']
+TEAMS_HEADERS = ['name', 'abbrev', 'seed', 'region', 'conference', 'eliminated', 'eliminated_round', 'logo', 'color_primary']
 SNAPSHOTS_HEADERS = ['bracket_id', 'round', 'rank', 'points', 'max_remaining', 'win_prob']
 
 
@@ -258,6 +258,7 @@ def run():
     # Step 10: Update meta
     meta = {
         'last_updated': datetime.now(timezone.utc).isoformat(),
+        'last_checked_at': int(datetime.now(timezone.utc).timestamp() * 1000),
         'current_round': current_round,
         'games_completed': games_completed,
     }
@@ -313,9 +314,14 @@ def _export_data_json_shared(brackets, picks, games, teams, snapshots, meta):
     logger.info("Pre-computed analytics, pick splits, scatter, awards, paths, alive data")
 
     # Run Monte Carlo simulation (10,000 iterations)
-    from scraper.montecarlo import run_monte_carlo
+    from scraper.montecarlo import run_monte_carlo, simulate_timeline
     sim_results = run_monte_carlo(norm_brackets, norm_picks, norm_games, iterations=10000)
     logger.info(f"Monte Carlo: {len(sim_results)} brackets simulated (10,000 iterations)")
+
+    # Run incremental Monte Carlo timeline (win% after each game)
+    checkpoint_path = os.path.join(os.path.dirname(__file__), 'data', 'probability_checkpoints.json')
+    probability_timeline = simulate_timeline(norm_brackets, norm_picks, norm_games, checkpoint_path, iterations=10000)
+    derived['probability_timeline'] = probability_timeline
 
     data = {
         'brackets': norm_brackets,
@@ -491,6 +497,7 @@ def run_local():
 
     meta = {
         'last_updated': datetime.now(timezone.utc).isoformat(),
+        'last_checked_at': int(datetime.now(timezone.utc).timestamp() * 1000),
         'current_round': current_round,
         'games_completed': games_completed,
     }

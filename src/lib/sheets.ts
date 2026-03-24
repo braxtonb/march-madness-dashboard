@@ -12,7 +12,7 @@ const EMPTY_DATA: DashboardData = {
   games: [],
   teams: [],
   snapshots: [],
-  meta: { last_updated: "", current_round: "R64", games_completed: 0 },
+  meta: { last_updated: "", last_checked_at: 0, current_round: "R64", games_completed: 0 },
 };
 
 /**

@@ -67,7 +67,6 @@ export function displayName(b: { full_name?: string; name: string; owner?: strin
 
 export const NAV_PAGES = [
   { path: "/", label: "Leaderboard", icon: "trophy" },
-  { path: "/probability", label: "Probability", icon: "bar-chart" },
   { path: "/simulator", label: "Simulator", icon: "sliders" },
   { path: "/head-to-head", label: "Head-to-Head", icon: "scale" },
   { path: "/picks", label: "Group Picks", icon: "users" },

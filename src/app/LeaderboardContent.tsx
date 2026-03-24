@@ -7,6 +7,8 @@ import { StatCard } from "@/components/ui/StatCard";
 import { LeaderboardTable } from "@/components/tables/LeaderboardTable";
 import { MadnessGauge } from "@/components/charts/MadnessGauge";
 import { InsightFortuneScatter } from "@/components/charts/InsightFortuneScatter";
+import { ProbabilityJourneyChart } from "@/components/charts/ProbabilityJourneyChart";
+import { ProbabilityClient } from "@/components/ProbabilityClient";
 import { GamesToWatch } from "@/components/GamesToWatch";
 import { TeamPill } from "@/components/ui/TeamPill";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
@@ -14,27 +16,31 @@ import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
-type LeaderboardTab = "standings" | "insights" | "style";
+type LeaderboardTab = "standings" | "probability" | "insights" | "style";
 
 function isValidTab(value: string | null): value is LeaderboardTab {
   return (
     value === "standings" ||
+    value === "probability" ||
     value === "insights" ||
     value === "alive" || // legacy alias
     value === "calls" || // legacy alias
-    value === "style"
+    value === "style" ||
+    value === "journey" // legacy alias
   );
 }
 
 /** Map legacy tab values to current ones */
 function normalizeTab(value: string | null): LeaderboardTab {
   if (value === "alive" || value === "calls") return "insights";
-  if (value === "standings" || value === "insights" || value === "style") return value;
+  if (value === "journey") return "probability"; // legacy alias
+  if (value === "standings" || value === "probability" || value === "insights" || value === "style") return value;
   return "standings";
 }
 
 const TAB_OPTIONS: { label: string; value: LeaderboardTab }[] = [
   { label: "Standings", value: "standings" },
+  { label: "Win Probability", value: "probability" },
   { label: "Insights", value: "insights" },
   { label: "Picking Style", value: "style" },
 ];
@@ -111,8 +117,14 @@ interface LeaderboardContentProps {
   roundAccuracy: RoundAccuracy[];
   submittedCount: number;
   teamLogos?: Record<string, string>;
+  teamColors?: Record<string, string>;
   pathEntries?: { bracketId: string; remainingPicks: { round: string; team: string; seed: number; pts: number; logo: string }[]; eliminatedPickCount: number }[];
   aliveData?: AliveData;
+  probabilityTimeline?: {
+    checkpoints: { gameIndex: number; gameId: string; round: string; team1: string; seed1: number; team2: string; seed2: number; winner: string; completeDate: number }[];
+    lines: { bracketId: string; name: string; champion: string; eliminatedAtGame: number; probabilities: number[] }[];
+  };
+  probData?: { id: string; name: string; owner: string; full_name: string; probability: number; champion: string; championSeed?: number; median_rank: number; best_rank: number; max_remaining: number; points: number; pct_first: number; pct_second: number; pct_third: number; pct_top10: number; pct_top25: number }[];
 }
 
 function LeaderboardContentInner({
@@ -130,14 +142,28 @@ function LeaderboardContentInner({
   roundAccuracy,
   submittedCount,
   teamLogos = {},
+  teamColors = {},
   pathEntries = [],
   aliveData,
+  probabilityTimeline,
+  probData = [],
 }: LeaderboardContentProps) {
   const searchParams = useSearchParams();
 
   const [tab, setTab] = useState<LeaderboardTab>(
     normalizeTab(searchParams.get("tab")),
   );
+
+  const [probView, setProbView] = useState<"journey" | "chances" | "finishes">("journey");
+
+  // Build team seeds map from bracket champion picks
+  const teamSeeds = useMemo(() => {
+    const seeds: Record<string, number> = {};
+    for (const b of brackets) {
+      if (b.champion_pick && b.champion_seed) seeds[b.champion_pick] = b.champion_seed;
+    }
+    return seeds;
+  }, [brackets]);
 
   // Deep-link bracket search: initialize from searchParams (SSR-safe via Suspense)
   const [selectedSearchIds, setSelectedSearchIds] = useState<string[]>(() => {
@@ -401,12 +427,12 @@ function LeaderboardContentInner({
                 ),
               },
               {
-                href: "/probability?tab=finishes",
-                title: "Win Probability",
-                description: "Simulated championship odds",
+                href: "/?tab=probability",
+                title: "Win% Journey",
+                description: "How odds shifted each game",
                 icon: (
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                   </svg>
                 ),
               },
@@ -618,6 +644,72 @@ function LeaderboardContentInner({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {tab === "probability" && (
+        <div className="space-y-4">
+          {/* Sub-view toggle */}
+          <div className="overflow-x-auto no-scrollbar">
+            <div className="flex gap-1.5 min-w-max">
+              {([
+                { label: "Win% Journey", value: "journey" as const },
+                { label: "Championship Chances", value: "chances" as const },
+                { label: "Simulated Finishes", value: "finishes" as const },
+              ]).map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setProbView(opt.value)}
+                  className={`rounded-card px-2.5 py-1 text-xs font-label h-7 transition-colors ${
+                    probView === opt.value
+                      ? "bg-primary/15 text-primary border border-primary/30"
+                      : "text-on-surface-variant hover:text-on-surface"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Win% Journey view */}
+          {probView === "journey" && probabilityTimeline && (
+            <div className="space-y-3">
+              <p className="text-xs text-on-surface-variant">
+                Championship win probability recalculated after each completed game.
+                See how every result shifted the odds across all {submittedCount} submitted brackets.
+                {brackets.length > submittedCount && ` (${brackets.length - submittedCount} did not submit)`}
+              </p>
+              <div className="rounded-card bg-surface-container p-4 sm:p-5">
+                <ProbabilityJourneyChart
+                  checkpoints={probabilityTimeline.checkpoints}
+                  lines={probabilityTimeline.lines}
+                  teamColors={teamColors}
+                  teamLogos={teamLogos}
+                  teamSeeds={teamSeeds}
+                  eliminatedTeams={eliminatedTeams}
+                  totalBrackets={brackets.length}
+                  submittedCount={submittedCount}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Championship Chances + Simulated Finishes views */}
+          {(probView === "chances" || probView === "finishes") && (
+            <ProbabilityClient
+              probData={probData}
+              journeyData={[]}
+              journeyBracketNames={[]}
+              allSnapshotProbsZero={true}
+              teamLogos={teamLogos}
+              eliminatedTeams={Array.from(eliminatedTeams)}
+              timelineCheckpoints={probabilityTimeline?.checkpoints}
+              timelineLines={probabilityTimeline?.lines}
+              embedded
+              initialTab={probView}
+            />
+          )}
         </div>
       )}
 

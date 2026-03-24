@@ -20,6 +20,7 @@ def precompute_all(brackets, picks, games, teams):
     eliminated_teams = _compute_eliminated(games)
     team_logos = {t['name']: t.get('logo', '') for t in teams}
     team_abbrevs = {t['name']: t.get('abbrev', '') for t in teams}
+    team_colors = {t['name']: t.get('color_primary', '') for t in teams if t.get('color_primary')}
     team_seeds = {t['name']: int(t.get('seed', 0)) for t in teams}
     submitted = [b for b in brackets if b.get('champion_pick')]
     total_brackets = len(submitted)
@@ -62,6 +63,7 @@ def precompute_all(brackets, picks, games, teams):
         'submitted_count': total_brackets,
         'team_logos': team_logos,
         'team_abbrevs': team_abbrevs,
+        'team_colors': team_colors,
     }
 
 

@@ -9,6 +9,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useMemo, t
 interface MyBracketStateContextType {
   myBracketId: string | null;
   isMyBracket: (id: string) => boolean;
+  hydrated: boolean;
 }
 
 interface MyBracketActionsContextType {
@@ -18,6 +19,7 @@ interface MyBracketActionsContextType {
 const MyBracketStateContext = createContext<MyBracketStateContextType>({
   myBracketId: null,
   isMyBracket: () => false,
+  hydrated: false,
 });
 
 const MyBracketActionsContext = createContext<MyBracketActionsContextType>({
@@ -46,11 +48,13 @@ export function useMyBracket() {
 
 export default function MyBracketProvider({ children }: { children: ReactNode }) {
   const [myBracketId, setMyBracketIdState] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem("myBracketId");
     if (stored) setMyBracketIdState(stored);
+    setHydrated(true);
   }, []);
 
   const setMyBracket = useCallback((id: string | null) => {
@@ -69,8 +73,8 @@ export default function MyBracketProvider({ children }: { children: ReactNode })
 
   // State value changes only when myBracketId changes
   const stateValue = useMemo(
-    () => ({ myBracketId, isMyBracket }),
-    [myBracketId, isMyBracket]
+    () => ({ myBracketId, isMyBracket, hydrated }),
+    [myBracketId, isMyBracket, hydrated]
   );
 
   return (

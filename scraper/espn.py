@@ -194,6 +194,8 @@ def build_proposition_map(challenge_data: dict) -> dict[str, dict]:
             'completed': completed,
             'national_pct_team1': national_pct_team1,
             'espn_url': espn_url,
+            'start_date': prop.get('date', 0),
+            'complete_date': prop.get('completeDate', 0) or 0,
         }
 
     return prop_map
@@ -331,6 +333,8 @@ def parse_games(proposition_map: dict[str, dict]) -> list[dict]:
             'completed': prop['completed'],
             'national_pct_team1': prop['national_pct_team1'],
             'espn_url': prop.get('espn_url', ''),
+            'start_date': prop.get('start_date', 0),
+            'complete_date': prop.get('complete_date', 0),
         })
     return games
 
@@ -361,6 +365,7 @@ def parse_teams(outcome_map: dict[str, dict]) -> list[dict]:
             'eliminated': False,
             'eliminated_round': '',
             'logo': team.get('logo', ''),
+            'color_primary': team.get('color_primary', ''),
         })
 
     return teams

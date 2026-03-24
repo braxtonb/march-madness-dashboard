@@ -40,6 +40,35 @@ export default async function LeaderboardPage() {
     (a) => a.estimated_win_prob > 0
   ).length;
 
+  // Build probability data from Monte Carlo results
+  const simMap = new Map(
+    (data.sim_results ?? []).map((s) => [s.bracket_id, s])
+  );
+  const probData = brackets
+    .filter((b) => b.champion_pick !== "")
+    .map((b) => {
+      const sim = simMap.get(b.id);
+      return {
+        id: b.id,
+        name: b.name,
+        owner: b.owner,
+        full_name: b.full_name,
+        probability: sim?.pct_first ?? 0,
+        champion: b.champion_pick,
+        championSeed: b.champion_seed,
+        median_rank: sim?.median_rank ?? brackets.length,
+        best_rank: sim?.best_rank ?? brackets.length,
+        max_remaining: b.max_remaining,
+        points: b.points,
+        pct_first: sim?.pct_first ?? 0,
+        pct_second: sim?.pct_second ?? 0,
+        pct_third: sim?.pct_third ?? 0,
+        pct_top10: sim?.pct_top10 ?? 0,
+        pct_top25: sim?.pct_top25 ?? 0,
+      };
+    })
+    .sort((a, b) => b.probability - a.probability);
+
   return (
     <LeaderboardContent
       brackets={brackets}
@@ -56,8 +85,11 @@ export default async function LeaderboardPage() {
       roundAccuracy={d.round_accuracy}
       submittedCount={d.submitted_count}
       teamLogos={d.team_logos}
+      teamColors={d.team_colors}
       pathEntries={d.path_entries}
       aliveData={d.alive_data}
+      probabilityTimeline={d.probability_timeline}
+      probData={probData}
     />
   );
 }

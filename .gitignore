@@ -10,3 +10,5 @@ secrets/
 node_modules/
 .next/
 .vercel
+scraper/data/
+docs/stuff/
