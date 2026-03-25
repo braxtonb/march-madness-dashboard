@@ -3,6 +3,7 @@ import MyBracketBadge from "./MyBracketBadge";
 
 export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: Bracket[] }) {
   let lastChecked = "—";
+  let lastCheckedExact = "";
   if (meta?.last_checked_at) {
     const diffMs = Date.now() - meta.last_checked_at;
     const diffMin = Math.round(diffMs / 60000);
@@ -10,6 +11,13 @@ export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: 
     else if (diffMin < 60) lastChecked = `${diffMin}m ago`;
     else if (diffMin < 1440) lastChecked = `${Math.round(diffMin / 60)}h ago`;
     else lastChecked = `${Math.round(diffMin / 1440)}d ago`;
+
+    const d = new Date(meta.last_checked_at);
+    lastCheckedExact = d.toLocaleDateString("en-US", {
+      month: "long", day: "numeric", year: "numeric",
+      hour: "numeric", minute: "2-digit",
+      timeZone: "America/New_York", timeZoneName: "short",
+    });
   }
 
   return (
@@ -27,7 +35,7 @@ export function Navbar({ meta, brackets = [] }: { meta: Meta | null; brackets?: 
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
           </span>
-          Checked {lastChecked}
+          <span title={lastCheckedExact}>Checked {lastChecked}</span>
         </span>
       </div>
     </nav>
