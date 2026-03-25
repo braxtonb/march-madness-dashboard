@@ -119,13 +119,13 @@ export function ProbabilityJourneyChart({
       if (l.champion) counts.set(l.champion, (counts.get(l.champion) || 0) + 1);
     }
     return Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({
         name,
         count,
-        seed: teamSeeds[name] || 0,
+        seed: teamSeeds[name] || 99,
         alive: !eliminatedTeams?.has(name),
-      }));
+      }))
+      .sort((a, b) => a.seed - b.seed || a.name.localeCompare(b.name));
   }, [lines, teamSeeds, eliminatedTeams]);
 
   // Assign unique colors: brackets sharing a champion get hue-shifted variants
