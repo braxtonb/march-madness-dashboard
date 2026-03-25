@@ -2,8 +2,8 @@ name: Scrape ESPN Brackets
 
 on:
   schedule:
-    # Every hour, 4pm-5am UTC (covers noon-1am ET during game windows)
-    - cron: '0 16-23,0-5 * 3-4 *'
+    # Every hour, all day during March Madness (24 deploys/day, well within Vercel 100/day limit)
+    - cron: '0 * * 3-4 *'
   workflow_dispatch: # Manual trigger
 
 permissions:
