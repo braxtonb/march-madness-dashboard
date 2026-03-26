@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import type { Game, Round } from "@/lib/types";
+import type { LiveGame } from "@/lib/useLiveScores";
 import { ROUND_LABELS, ROUND_POINTS } from "@/lib/constants";
 
 /* ------------------------------------------------------------------ */
@@ -20,6 +21,8 @@ interface BracketViewProps {
   highlightBracketPicks?: Record<string, string>;
   /** For each game, the two teams that were pickable (derived from all brackets' picks) */
   gameTeamsMap?: Record<string, [string, string]>;
+  /** Live game scores keyed by ESPN game ID */
+  liveGames?: Map<string, LiveGame>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -114,6 +117,7 @@ function GameCell({
   gameTeams,
   teamLogos = {},
   teamAbbrevs = {},
+  liveGame,
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
@@ -127,6 +131,7 @@ function GameCell({
   gameTeams?: [string, string];
   teamLogos?: Record<string, string>;
   teamAbbrevs?: Record<string, string>;
+  liveGame?: LiveGame;
 }) {
   const total = pickSplit.team1Count + pickSplit.team2Count;
   const hasPicks = total > 0;
@@ -253,9 +258,9 @@ function GameCell({
         </span>
         {hasPicks && <span className="text-[11px] shrink-0">{pct2}% <span className="text-on-surface-variant/70">({pickSplit.team2Count})</span></span>}
       </div>
-      {/* ESPN link + status — fixed height so all cards match */}
+      {/* ESPN link + status + live score */}
       <div className="flex items-center justify-between px-1.5 pt-0.5 pb-0.5" style={{ minHeight: 16 }}>
-        {game.espn_url && isCompleted ? (
+        {game.espn_url ? (
           <a
             href={game.espn_url}
             target="_blank"
@@ -268,8 +273,18 @@ function GameCell({
         ) : (
           <span />
         )}
-        {isCompleted ? (
+        {liveGame && liveGame.status === "in" ? (
+          <span className="text-[10px] font-label text-primary font-semibold flex items-center gap-1">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+            </span>
+            {liveGame.team1.score}–{liveGame.team2.score} {liveGame.statusDetail}
+          </span>
+        ) : isCompleted ? (
           <span className="text-[10px] text-on-surface-variant/70">Final</span>
+        ) : liveGame && liveGame.status === "pre" ? (
+          <span className="text-[10px] text-on-surface-variant/70">{liveGame.statusDetail}</span>
         ) : (
           <span className="text-[10px] text-on-surface-variant/70">Scheduled</span>
         )}
@@ -330,6 +345,7 @@ function RegionBracket({
   gameTeamsMap = {},
   teamLogos = {},
   teamAbbrevs = {},
+  getLiveGame,
 }: {
   games: Game[];
   region: string;
@@ -342,6 +358,7 @@ function RegionBracket({
   gameTeamsMap?: Record<string, [string, string]>;
   teamLogos?: Record<string, string>;
   teamAbbrevs?: Record<string, string>;
+  getLiveGame?: (game: Game) => LiveGame | undefined;
 }) {
   const regionGames = useMemo(
     () => games.filter((g) => g.region === region),
@@ -464,6 +481,7 @@ function RegionBracket({
                     gameTeams={gameTeamsMap[game.game_id]}
                     teamLogos={teamLogos}
                     teamAbbrevs={teamAbbrevs}
+                    liveGame={getLiveGame?.(game)}
                   />
                 </div>
               ))}
@@ -489,6 +507,7 @@ export function BracketView({
   onGameClick,
   highlightBracketPicks,
   gameTeamsMap = {},
+  liveGames,
 }: BracketViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bracketRef = useRef<HTMLDivElement>(null);
@@ -542,6 +561,13 @@ export function BracketView({
     () => games.some((g) => g.round === "FF" || g.round === "CHAMP"),
     [games],
   );
+
+  // Helper to look up live game data from ESPN URL
+  const getLiveGame = useCallback((game: Game): LiveGame | undefined => {
+    if (!liveGames || !game.espn_url) return undefined;
+    const match = game.espn_url.match(/gameId\/(\d+)/);
+    return match ? liveGames.get(match[1]) : undefined;
+  }, [liveGames]);
 
   const ffGames = useMemo(
     () =>
@@ -784,6 +810,7 @@ export function BracketView({
                 gameTeamsMap={gameTeamsMap}
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
+                getLiveGame={getLiveGame}
               />
             )}
             {hasR2 && (
@@ -799,6 +826,7 @@ export function BracketView({
                 gameTeamsMap={gameTeamsMap}
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
+                getLiveGame={getLiveGame}
               />
             )}
           </div>
@@ -828,6 +856,7 @@ export function BracketView({
                     gameTeams={gameTeamsMap[ffLeft.game_id]}
                     teamLogos={teamLogos}
                     teamAbbrevs={teamAbbrevs}
+                    liveGame={getLiveGame(ffLeft)}
                   />
                 </div>
               )}
@@ -854,6 +883,7 @@ export function BracketView({
                   gameTeams={gameTeamsMap[game.game_id]}
                   teamLogos={teamLogos}
                   teamAbbrevs={teamAbbrevs}
+                  liveGame={getLiveGame(game)}
                 />
               ))}
 
@@ -880,6 +910,7 @@ export function BracketView({
                     gameTeams={gameTeamsMap[ffRight.game_id]}
                     teamLogos={teamLogos}
                     teamAbbrevs={teamAbbrevs}
+                    liveGame={getLiveGame(ffRight)}
                   />
                 </div>
               )}
@@ -901,6 +932,7 @@ export function BracketView({
                 gameTeamsMap={gameTeamsMap}
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
+                getLiveGame={getLiveGame}
               />
             )}
             {hasR4 && (
@@ -916,6 +948,7 @@ export function BracketView({
                 gameTeamsMap={gameTeamsMap}
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
+                getLiveGame={getLiveGame}
               />
             )}
           </div>

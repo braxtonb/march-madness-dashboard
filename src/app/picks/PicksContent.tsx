@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Game, Round } from "@/lib/types";
 import { ROUND_ORDER, ROUND_LABELS } from "@/lib/constants";
+import { useLiveScores } from "@/lib/useLiveScores";
 import { RoundSelector } from "@/components/ui/RoundSelector";
 import { GameCard, PicksDrawer } from "@/components/ui/GameCard";
 import { TeamPill } from "@/components/ui/TeamPill";
@@ -59,6 +60,7 @@ export function PicksContent({
   gameTeamsMap?: Record<string, [string, string]>;
 }) {
   const searchParams = useSearchParams();
+  const { liveGames } = useLiveScores();
 
   const eliminatedTeams = useMemo(() => {
     const set = new Set<string>();
@@ -419,6 +421,7 @@ export function PicksContent({
             onGameClick={openDrawer}
             highlightBracketPicks={filterBracketId ? bracketPicksMap[filterBracketId] : undefined}
             gameTeamsMap={gameTeamsMap}
+            liveGames={liveGames}
           />
         </>
       )}
