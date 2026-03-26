@@ -463,14 +463,20 @@ export default function SimulatorPage() {
       } else { baseRankMap.set(baseRanked[i].id, i + 1); }
     }
 
+    // Build a max_remaining lookup for tiebreaking
+    const maxRemainingMap = new Map(data.brackets.map((b) => [b.id, b.max_remaining]));
+
     const simRanked = [...scored].sort((a, b) => {
       if (b.simPoints !== a.simPoints) return b.simPoints - a.simPoints;
+      const aMax = maxRemainingMap.get(a.id) || 0;
+      const bMax = maxRemainingMap.get(b.id) || 0;
+      if (bMax !== aMax) return bMax - aMax;
       return a.name.localeCompare(b.name);
     });
     const simRankList: number[] = [];
     for (let i = 0; i < simRanked.length; i++) {
       if (i === 0) { simRankList.push(1); }
-      else if (simRanked[i].simPoints === simRanked[i - 1].simPoints) { simRankList.push(simRankList[i - 1]); }
+      else if (simRanked[i].simPoints === simRanked[i - 1].simPoints && (maxRemainingMap.get(simRanked[i].id) || 0) === (maxRemainingMap.get(simRanked[i - 1].id) || 0)) { simRankList.push(simRankList[i - 1]); }
       else { simRankList.push(i + 1); }
     }
 
