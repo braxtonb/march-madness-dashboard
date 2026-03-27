@@ -744,7 +744,7 @@ export function BracketView({
       {/* Desktop: full bracket — auto-scales to fit viewport width */}
       <div ref={scrollRef} className="hidden lg:block pb-16">
         {/* Column Headers — sticky, OUTSIDE the scaled container so position:sticky works */}
-        <div className="sticky top-[52px] z-10 bg-surface/95 backdrop-blur-sm pb-2 border-b border-on-surface-variant/10 mb-6"
+        <div className={`sticky ${liveGames && liveGames.size > 0 && Array.from(liveGames.values()).some(g => g.status === "in") ? "top-[88px]" : "top-[52px]"} z-10 bg-surface/95 backdrop-blur-sm pb-2 border-b border-on-surface-variant/10 mb-6`}
           style={bracketScale < 1 ? { transform: `scale(${bracketScale})`, transformOrigin: "top left" } : undefined}
         >
           <div className="flex items-stretch" style={{ height: 56 }}>
