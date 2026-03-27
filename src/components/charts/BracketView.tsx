@@ -183,7 +183,7 @@ function GameCell({
   return (
     <button
       onClick={onClick}
-      className={`block rounded border ${borderClass} bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"} ${!game.team1 && !game.team2 ? "opacity-80" : ""}`}
+      className={`block rounded border ${liveGame?.status === "in" ? "border-primary/60 shadow-[0_0_8px_rgba(255,107,53,0.3),0_0_16px_rgba(255,107,53,0.15)]" : borderClass} bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"} ${!game.team1 && !game.team2 ? "opacity-80" : ""}`}
       style={{ width: GAME_W }}
     >
       {/* Pick header — shows bracket pick or group consensus */}

@@ -6,6 +6,7 @@ import { fetchDashboardData } from "@/lib/sheets";
 import CompareProvider from "@/components/ui/CompareProvider";
 import CompareBar from "@/components/ui/CompareBar";
 import MyBracketProvider from "@/components/ui/MyBracketProvider";
+import { LiveTicker } from "@/components/layout/LiveTicker";
 
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
@@ -34,10 +35,12 @@ export default async function RootLayout({
 }) {
   let meta = null;
   let brackets: import("@/lib/types").Bracket[] = [];
+  let games: import("@/lib/types").Game[] = [];
   try {
     const data = await fetchDashboardData();
     meta = data.meta;
     brackets = data.brackets;
+    games = data.games;
   } catch {
     // Layout still renders without data — pages handle their own errors
   }
@@ -54,6 +57,7 @@ export default async function RootLayout({
         <MyBracketProvider>
         <CompareProvider>
           <Navbar meta={meta} brackets={brackets} />
+          <LiveTicker games={games} />
           <div className="flex">
             <Sidebar />
             <main className="ml-0 md:ml-16 w-full min-h-[calc(100vh-52px)] px-4 py-4 sm:p-6">
