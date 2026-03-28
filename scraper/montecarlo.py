@@ -31,6 +31,21 @@ SEED_WIN_RATES = {
 ROUND_POINTS = {"R64": 10, "R32": 20, "S16": 40, "E8": 80, "FF": 160, "CHAMP": 320}
 
 
+def _h2h_rate(seed1: int, seed2: int, rnd: str) -> float:
+    """Head-to-head win probability for seed1 vs seed2 in a given round.
+
+    SEED_WIN_RATES are cumulative tournament advancement rates (e.g., "38% of
+    1-seeds reach the FF"). To get H2H probability, normalize:
+    rate = advancement_rate_seed1 / (advancement_rate_seed1 + advancement_rate_seed2)
+    """
+    r1 = SEED_WIN_RATES.get(seed1, {}).get(rnd, 0.5)
+    r2 = SEED_WIN_RATES.get(seed2, {}).get(rnd, 0.5)
+    total = r1 + r2
+    if total == 0:
+        return 0.5
+    return r1 / total
+
+
 def _seeded_random(seed: int):
     """Park-Miller LCG — same algorithm as the TypeScript version."""
     s = seed
@@ -166,8 +181,9 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
                 continue
 
             seed1 = team_seeds.get(t1, 8)
+            seed2 = team_seeds.get(t2, 8)
             rnd = g.get('round', 'R64')
-            rate = SEED_WIN_RATES.get(seed1, {}).get(rnd, 0.5)
+            rate = _h2h_rate(seed1, seed2, rnd)
             sim_winners[gid] = t1 if random() < rate else t2
 
         # Score each bracket
@@ -385,8 +401,9 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
                     sim_winners[gid_inner] = t1 or t2 or ''
                     continue
                 seed1 = cp_team_seeds.get(t1, 8)
+                seed2 = cp_team_seeds.get(t2, 8)
                 rnd = g.get('round', 'R64')
-                rate = SEED_WIN_RATES.get(seed1, {}).get(rnd, 0.5)
+                rate = _h2h_rate(seed1, seed2, rnd)
                 sim_winners[gid_inner] = t1 if random() < rate else t2
 
             scores = []
