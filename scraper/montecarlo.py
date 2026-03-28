@@ -307,23 +307,87 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
                     pts += ROUND_POINTS.get(cg.get('round', ''), 0)
             bracket_points[b['id']] = pts
 
-        # Remaining games = all games NOT in completed_at_checkpoint
-        remaining = [g for g in games if g['game_id'] not in completed_at_checkpoint
-                     and g.get('team1') and g.get('team2')]
+        # Remaining games = all games NOT in completed_at_checkpoint (including TBD)
+        remaining = [g for g in games if g['game_id'] not in completed_at_checkpoint]
+        round_idx = {r: i for i, r in enumerate(ROUND_POINTS.keys())}
+        remaining.sort(key=lambda g: round_idx.get(g.get('round', ''), 0))
+
+        # Build feeder map for this checkpoint's remaining games
+        cp_game_by_rr = defaultdict(list)
+        for g in games:
+            cp_game_by_rr[(g.get('region', ''), g.get('round', ''))].append(g)
+        ROUND_SEQ = list(ROUND_POINTS.keys())
+        cp_ff_games = [g for g in remaining if g.get('round') == 'FF']
+        cp_e8_games = [g for g in games if g.get('round') == 'E8']
+        cp_feeders = {}
+        for g in remaining:
+            if g.get('team1') and g.get('team2'):
+                continue
+            rnd = g.get('round', '')
+            region = g.get('region', '')
+            ri = ROUND_SEQ.index(rnd) if rnd in ROUND_SEQ else -1
+            if ri <= 0:
+                continue
+            prev_round = ROUND_SEQ[ri - 1]
+            if rnd == 'FF':
+                ff_sorted = sorted(cp_ff_games, key=lambda x: x['game_id'])
+                e8_sorted = sorted(cp_e8_games, key=lambda x: x['game_id'])
+                idx = ff_sorted.index(g) if g in ff_sorted else -1
+                if idx == 0 and len(e8_sorted) >= 2:
+                    cp_feeders[g['game_id']] = [e8_sorted[0]['game_id'], e8_sorted[1]['game_id']]
+                elif idx == 1 and len(e8_sorted) >= 4:
+                    cp_feeders[g['game_id']] = [e8_sorted[2]['game_id'], e8_sorted[3]['game_id']]
+            elif rnd == 'CHAMP':
+                ff_ids = sorted([fg['game_id'] for fg in cp_ff_games])
+                if len(ff_ids) >= 2:
+                    cp_feeders[g['game_id']] = ff_ids
+            else:
+                prev_games = sorted(cp_game_by_rr.get((region, prev_round), []), key=lambda x: x['game_id'])
+                if len(prev_games) >= 2:
+                    cp_feeders[g['game_id']] = [pg['game_id'] for pg in prev_games[:2]]
+
+        # Build completed winners for this checkpoint
+        cp_completed_winners = {}
+        for cgid in completed_at_checkpoint:
+            cg = game_map.get(cgid, {})
+            if cg.get('winner'):
+                cp_completed_winners[cgid] = cg['winner']
+
+        # Build seed lookup
+        cp_team_seeds = {}
+        for g in games:
+            if g.get('team1') and g.get('seed1'):
+                cp_team_seeds[g['team1']] = int(g['seed1'])
+            if g.get('team2') and g.get('seed2'):
+                cp_team_seeds[g['team2']] = int(g['seed2'])
 
         # Deterministic seed per checkpoint
         data_seed = len(brackets) * 1000 + len(completed_at_checkpoint) * 7 + len(remaining) * 31
         random = _seeded_random(data_seed)
 
-        # Run MC
+        # Run MC with propagation
         win_counts = defaultdict(int)
         for _ in range(iterations):
-            sim_winners = {}
+            sim_winners = dict(cp_completed_winners)
             for g in remaining:
-                seed1 = int(g.get('seed1', 8))
+                gid_inner = g['game_id']
+                t1 = g.get('team1', '')
+                t2 = g.get('team2', '')
+                if not t1 or not t2:
+                    feeder_ids = cp_feeders.get(gid_inner, [])
+                    feeder_winners = [sim_winners.get(fid, '') for fid in feeder_ids]
+                    feeder_winners = [w for w in feeder_winners if w]
+                    if len(feeder_winners) >= 2:
+                        t1, t2 = feeder_winners[0], feeder_winners[1]
+                    elif len(feeder_winners) == 1:
+                        t1 = feeder_winners[0]
+                if not t1 or not t2:
+                    sim_winners[gid_inner] = t1 or t2 or ''
+                    continue
+                seed1 = cp_team_seeds.get(t1, 8)
                 rnd = g.get('round', 'R64')
                 rate = SEED_WIN_RATES.get(seed1, {}).get(rnd, 0.5)
-                sim_winners[g['game_id']] = g['team1'] if random() < rate else g['team2']
+                sim_winners[gid_inner] = t1 if random() < rate else t2
 
             scores = []
             for b in brackets:
