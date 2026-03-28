@@ -60,7 +60,72 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
     completed_ids = {g['game_id'] for g in games if g.get('completed')}
     remaining = [g for g in games if not g.get('completed')]
 
-    # Deterministic seed (mirrors TS: brackets.length * 1000 + completed * 7 + remaining * 31)
+    # Build bracket tree: map each game to its feeder games
+    # Sort remaining by round order so we simulate earlier rounds first
+    round_idx = {r: i for i, r in enumerate(ROUND_POINTS.keys())}
+    remaining.sort(key=lambda g: round_idx.get(g.get('round', ''), 0))
+
+    # Build feeder map: for each TBD game, find the 2 games from the previous round
+    # that feed into it (same region, previous round)
+    ROUND_SEQUENCE = list(ROUND_POINTS.keys())  # R64, R32, S16, E8, FF, CHAMP
+    game_by_region_round = defaultdict(list)
+    for g in games:
+        game_by_region_round[(g.get('region', ''), g.get('round', ''))].append(g)
+
+    # Map completed game winners for seeding later rounds
+    completed_winners = {}
+    for g in games:
+        if g.get('completed') and g.get('winner'):
+            completed_winners[g['game_id']] = g['winner']
+
+    # Build seed lookup: team name -> seed
+    team_seeds = {}
+    for g in games:
+        if g.get('team1') and g.get('seed1'):
+            team_seeds[g['team1']] = int(g['seed1'])
+        if g.get('team2') and g.get('seed2'):
+            team_seeds[g['team2']] = int(g['seed2'])
+
+    # For FF games, feeders come from specific region pairs
+    # FF game 1 feeds from E8 winners of R1 + R2
+    # FF game 2 feeds from E8 winners of R3 + R4
+    ff_games = [g for g in remaining if g.get('round') == 'FF']
+    e8_games = [g for g in games if g.get('round') == 'E8']
+    champ_games = [g for g in remaining if g.get('round') == 'CHAMP']
+
+    # Build feeder relationships for TBD games
+    feeders = {}  # game_id -> list of 2 feeder game_ids
+    for g in remaining:
+        if g.get('team1') and g.get('team2'):
+            continue  # Already has teams, no feeders needed
+        rnd = g.get('round', '')
+        region = g.get('region', '')
+        ri = ROUND_SEQUENCE.index(rnd) if rnd in ROUND_SEQUENCE else -1
+        if ri <= 0:
+            continue
+        prev_round = ROUND_SEQUENCE[ri - 1]
+
+        if rnd == 'FF':
+            # FF feeders are E8 games; assign by sorted order
+            ff_sorted = sorted(ff_games, key=lambda x: x['game_id'])
+            e8_sorted = sorted(e8_games, key=lambda x: x['game_id'])
+            idx = ff_sorted.index(g) if g in ff_sorted else -1
+            if idx == 0 and len(e8_sorted) >= 2:
+                feeders[g['game_id']] = [e8_sorted[0]['game_id'], e8_sorted[1]['game_id']]
+            elif idx == 1 and len(e8_sorted) >= 4:
+                feeders[g['game_id']] = [e8_sorted[2]['game_id'], e8_sorted[3]['game_id']]
+        elif rnd == 'CHAMP':
+            ff_ids = sorted([fg['game_id'] for fg in ff_games])
+            if len(ff_ids) >= 2:
+                feeders[g['game_id']] = ff_ids
+        else:
+            # Regional rounds: feeders are same-region previous-round games
+            prev_games = sorted(game_by_region_round.get((region, prev_round), []), key=lambda x: x['game_id'])
+            if len(prev_games) >= 2:
+                # For S16->E8: 2 S16 games feed 1 E8 game
+                feeders[g['game_id']] = [pg['game_id'] for pg in prev_games[:2]]
+
+    # Deterministic seed
     data_seed = len(brackets) * 1000 + len(completed_ids) * 7 + len(remaining) * 31
     random = _seeded_random(data_seed)
 
@@ -77,13 +142,33 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
     rank_lists = defaultdict(list)
 
     for _ in range(iterations):
-        # Simulate remaining games
-        sim_winners = {}
+        # Simulate remaining games with propagation
+        sim_winners = dict(completed_winners)  # Start with known winners
+
         for g in remaining:
-            seed1 = int(g.get('seed1', 8))
+            gid = g['game_id']
+            t1 = g.get('team1', '')
+            t2 = g.get('team2', '')
+
+            # Fill in teams from feeder games if TBD
+            if not t1 or not t2:
+                feeder_ids = feeders.get(gid, [])
+                feeder_winners = [sim_winners.get(fid, '') for fid in feeder_ids]
+                feeder_winners = [w for w in feeder_winners if w]  # filter empty
+                if len(feeder_winners) >= 2:
+                    t1, t2 = feeder_winners[0], feeder_winners[1]
+                elif len(feeder_winners) == 1:
+                    t1 = feeder_winners[0]
+
+            if not t1 or not t2:
+                # Still can't determine teams — skip this game
+                sim_winners[gid] = t1 or t2 or ''
+                continue
+
+            seed1 = team_seeds.get(t1, 8)
             rnd = g.get('round', 'R64')
             rate = SEED_WIN_RATES.get(seed1, {}).get(rnd, 0.5)
-            sim_winners[g['game_id']] = g['team1'] if random() < rate else g['team2']
+            sim_winners[gid] = t1 if random() < rate else t2
 
         # Score each bracket
         scores = []

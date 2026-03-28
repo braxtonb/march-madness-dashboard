@@ -202,12 +202,6 @@ export function LeaderboardTable({
                   <td className="w-8 px-1 py-2"><CompareCheckbox bracketId={b.id} /></td>
                   <td className="px-2 py-2 font-label">
                     <span className="text-on-surface">{a.rank}</span>
-                    {a.rank_delta > 0 && (
-                      <span className="ml-1 text-secondary text-xs">+{a.rank_delta}</span>
-                    )}
-                    {a.rank_delta === 0 && (
-                      <span className="ml-1 text-on-surface-variant text-xs">—</span>
-                    )}
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-1.5">

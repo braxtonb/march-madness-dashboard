@@ -60,8 +60,8 @@
     "periodResultsNotificationsEnabled": true,
     "periodStartNotificationsEnabled": false,
     "supportedNotificationChannels": [
-      "TC",
-      "GAMBIT"
+      "GAMBIT",
+      "TC"
     ]
   },
   "clientFlags": {
@@ -74,8 +74,8 @@
     "showGameWinnerBadge": "false",
     "showGroupPicks": "false",
     "showMatchupLayoutOptions": "false",
-    "supportsPerfectBracketsModule": "true",
-    "supportsTotalBracketsCreatedModule": "true"
+    "supportsPerfectBracketsModule": "false",
+    "supportsTotalBracketsCreatedModule": "false"
   },
   "creationInfo": {
     "clientAddress": "10.164.39.217",
@@ -84,15 +84,15 @@
     "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
   },
   "currentScoringPeriod": {
-    "abbrev": "R32",
+    "abbrev": "S16",
     "allPropositionsAutomated": true,
     "allPropositionsLocked": true,
-    "endDate": 1774267200000,
-    "firstPropositionLockDate": 1774109400000,
-    "id": 2,
-    "label": "Round of 32",
-    "startDate": 1774094400000,
-    "subLabel": "Mar 21 - 22",
+    "endDate": 1774699200000,
+    "firstPropositionLockDate": 1774566600000,
+    "id": 3,
+    "label": "Sweet 16",
+    "startDate": 1774267200000,
+    "subLabel": "Mar 26 - 27",
     "subLabelShort": ""
   },
   "defaultGroupSettings": {
@@ -313,8 +313,8 @@
   ],
   "key": "tournament-challenge-bracket-2026",
   "lastUpdateInfo": {
-    "clientAddress": "10.164.45.100",
-    "date": 1774101911692,
+    "clientAddress": "10.164.95.109",
+    "date": 1774566597380,
     "platform": "chui-admin",
     "source": "{63B28B58-F202-4BC0-9344-A37E22D6C867}"
   },
@@ -482,40 +482,24 @@
         "sendInProgress": false,
         "sentDate": 1774108117525,
         "type": "GAME_RESULTS"
+      },
+      {
+        "numberSent": 14824532,
+        "scoringPeriodId": 2,
+        "sendInProgress": false,
+        "sentDate": 1774271368718,
+        "type": "GAME_RESULTS_PUSH"
+      },
+      {
+        "numberSent": 8350000,
+        "scoringPeriodId": 2,
+        "sendInProgress": false,
+        "sentDate": 1774282068676,
+        "type": "GAME_RESULTS"
       }
     ]
   },
-  "promoSettings": [
-    {
-      "id": "f9ec43d0-252e-11f1-a315-fda5bda317d2",
-      "lastUpdateInfo": {
-        "clientAddress": "10.164.45.100",
-        "date": 1774101911692,
-        "platform": "chui-admin",
-        "source": "{63B28B58-F202-4BC0-9344-A37E22D6C867}"
-      },
-      "templateMetadata": {
-        "additionalData": {
-          "ctaType": "IN_APP",
-          "ctaUrl": "https://fantasy.espn.com/games/mens-tournament-challenge-second-chance-bracket-2026/ ",
-          "isDismissible": "true"
-        },
-        "images": {
-          "iconDark": "https://chui-assets-cdn.espn.com/26b7d513-1352-4db2-bf54-047ff1756a57.png",
-          "iconLight": "https://chui-assets-cdn.espn.com/84c69f54-7205-4284-b215-05d608b0fd4f.png"
-        },
-        "style": {
-          "colorSlashDark": "#DD0000",
-          "colorSlashLight": "#FF3E3E"
-        },
-        "text": {
-          "ctaText": "Create ",
-          "description": "Bracket Busted? Create a new one starting at the Sweet 16!",
-          "title": "Create a Second Chance Bracket"
-        }
-      }
-    }
-  ],
+  "promoSettings": [],
   "propositionLockDate": 1773937440000,
   "propositionLockDatePassed": true,
   "propositions": [
@@ -531,6 +515,10 @@
       "bye": false,
       "cardType": "DENSE",
       "challengeId": 277,
+      "completeDate": 1774661101146,
+      "correctOutcomes": [
+        "c9131201-0695-11f1-af21-ff98afcfd072"
+      ],
       "creationInfo": {
         "clientAddress": "10.164.39.217",
         "date": 1770737581332,
@@ -547,7 +535,7 @@
       "id": "c9131200-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774239486534,
+        "date": 1774661101146,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -570,11 +558,11 @@
         },
         {
           "type": "URL_DESKTOP",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856570/st-johns-duke"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856570"
         },
         {
           "type": "URL_MOBILE",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856570/st-johns-duke"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856570"
         },
         {
           "type": "TV_INFO_PRIMARY",
@@ -595,7 +583,7 @@
       "possibleOutcomes": [
         {
           "abbrev": "DUKE",
-          "additionalInfo": "34-2",
+          "additionalInfo": "35-2",
           "choiceCounters": [
             {
               "count": 16133768,
@@ -649,7 +637,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-310"
+              "value": "-298"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -669,6 +657,7 @@
           "regionCompetitorId": "1.1",
           "regionId": 1,
           "regionSeed": 1,
+          "score": 80.0,
           "status": "OPEN",
           "subType": "HOME",
           "tieScoreWinner": false,
@@ -912,7 +901,7 @@
         },
         {
           "abbrev": "SJU",
-          "additionalInfo": "30-6",
+          "additionalInfo": "30-7",
           "choiceCounters": [
             {
               "count": 2310266,
@@ -966,7 +955,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "250"
+              "value": "240"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -986,6 +975,7 @@
           "regionCompetitorId": "1.5",
           "regionId": 1,
           "regionSeed": 5,
+          "score": 75.0,
           "status": "OPEN",
           "subType": "AWAY",
           "tieScoreWinner": false,
@@ -1226,7 +1216,7 @@
       ],
       "scoringPeriodId": 3,
       "scoringPeriodMatchupId": 1,
-      "status": "LOCKED",
+      "status": "COMPLETE",
       "type": "COMPETITION",
       "weight": 1.0
     },
@@ -1248,7 +1238,7 @@
         "platform": "chui-admin",
         "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
       },
-      "date": 1774662300000,
+      "date": 1774662900000,
       "dateTBD": false,
       "deleted": false,
       "description": "Who will win this matchup?",
@@ -1258,7 +1248,7 @@
       "id": "c9136020-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774241262707,
+        "date": 1774661774571,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -1516,7 +1506,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "100"
+              "value": "120"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1833,7 +1823,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-120"
+              "value": "-142"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1957,6 +1947,10 @@
       "bye": false,
       "cardType": "DENSE",
       "challengeId": 277,
+      "completeDate": 1774574782159,
+      "correctOutcomes": [
+        "c9138734-0695-11f1-af21-ff98afcfd072"
+      ],
       "creationInfo": {
         "clientAddress": "10.164.39.217",
         "date": 1770737581332,
@@ -1973,7 +1967,7 @@
       "id": "c9138730-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774250739569,
+        "date": 1774574782160,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -1996,11 +1990,11 @@
         },
         {
           "type": "URL_DESKTOP",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856567/iowa-nebraska"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856567"
         },
         {
           "type": "URL_MOBILE",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856567/iowa-nebraska"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856567"
         },
         {
           "type": "TV_INFO_PRIMARY",
@@ -2259,7 +2253,7 @@
         },
         {
           "abbrev": "IOWA",
-          "additionalInfo": "23-12",
+          "additionalInfo": "24-12",
           "choiceCounters": [
             {
               "count": 431382,
@@ -2313,7 +2307,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "130"
+              "value": "105"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2333,6 +2327,7 @@
           "regionCompetitorId": "2.9",
           "regionId": 2,
           "regionSeed": 9,
+          "score": 77.0,
           "status": "OPEN",
           "subType": "AWAY",
           "tieScoreWinner": false,
@@ -2498,7 +2493,7 @@
         },
         {
           "abbrev": "NEB",
-          "additionalInfo": "28-6",
+          "additionalInfo": "28-7",
           "choiceCounters": [
             {
               "count": 1644616,
@@ -2552,7 +2547,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-155"
+              "value": "-125"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2572,6 +2567,7 @@
           "regionCompetitorId": "2.4",
           "regionId": 2,
           "regionSeed": 4,
+          "score": 71.0,
           "status": "OPEN",
           "subType": "HOME",
           "tieScoreWinner": false,
@@ -2660,7 +2656,7 @@
       ],
       "scoringPeriodId": 3,
       "scoringPeriodMatchupId": 3,
-      "status": "LOCKED",
+      "status": "COMPLETE",
       "type": "COMPETITION",
       "weight": 1.0
     },
@@ -2676,6 +2672,10 @@
       "bye": false,
       "cardType": "DENSE",
       "challengeId": 277,
+      "completeDate": 1774585054111,
+      "correctOutcomes": [
+        "c913d553-0695-11f1-af21-ff98afcfd072"
+      ],
       "creationInfo": {
         "clientAddress": "10.164.39.217",
         "date": 1770737581332,
@@ -2692,7 +2692,7 @@
       "id": "c913d550-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774235986790,
+        "date": 1774585054111,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -2715,11 +2715,11 @@
         },
         {
           "type": "URL_DESKTOP",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856566/illinois-houston"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856566"
         },
         {
           "type": "URL_MOBILE",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856566/illinois-houston"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856566"
         },
         {
           "type": "TV_INFO_PRIMARY",
@@ -2900,7 +2900,7 @@
         },
         {
           "abbrev": "ILL",
-          "additionalInfo": "26-8",
+          "additionalInfo": "27-8",
           "choiceCounters": [
             {
               "count": 5255304,
@@ -2954,7 +2954,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "124"
+              "value": "120"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2974,6 +2974,7 @@
           "regionCompetitorId": "2.3",
           "regionId": 2,
           "regionSeed": 3,
+          "score": 65.0,
           "status": "OPEN",
           "subType": "AWAY",
           "tieScoreWinner": false,
@@ -3217,7 +3218,7 @@
         },
         {
           "abbrev": "HOU",
-          "additionalInfo": "30-6",
+          "additionalInfo": "30-7",
           "choiceCounters": [
             {
               "count": 12867739,
@@ -3271,7 +3272,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-148"
+              "value": "-142"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3291,6 +3292,7 @@
           "regionCompetitorId": "2.2",
           "regionId": 2,
           "regionSeed": 2,
+          "score": 55.0,
           "status": "OPEN",
           "subType": "HOME",
           "tieScoreWinner": false,
@@ -3379,7 +3381,7 @@
       ],
       "scoringPeriodId": 3,
       "scoringPeriodMatchupId": 4,
-      "status": "LOCKED",
+      "status": "COMPLETE",
       "type": "COMPETITION",
       "weight": 1.0
     },
@@ -3395,13 +3397,17 @@
       "bye": false,
       "cardType": "DENSE",
       "challengeId": 277,
+      "completeDate": 1774585522154,
+      "correctOutcomes": [
+        "c913fc61-0695-11f1-af21-ff98afcfd072"
+      ],
       "creationInfo": {
         "clientAddress": "10.164.39.217",
         "date": 1770737581332,
         "platform": "chui-admin",
         "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
       },
-      "date": 1774575900000,
+      "date": 1774577160000,
       "dateTBD": false,
       "deleted": false,
       "description": "Who will win this matchup?",
@@ -3411,7 +3417,7 @@
       "id": "c913fc60-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774241176959,
+        "date": 1774585522155,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -3434,11 +3440,11 @@
         },
         {
           "type": "URL_DESKTOP",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856569/arkansas-arizona"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856569"
         },
         {
           "type": "URL_MOBILE",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856569/arkansas-arizona"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856569"
         },
         {
           "type": "TV_INFO_PRIMARY",
@@ -3459,7 +3465,7 @@
       "possibleOutcomes": [
         {
           "abbrev": "ARIZ",
-          "additionalInfo": "34-2",
+          "additionalInfo": "35-2",
           "choiceCounters": [
             {
               "count": 15620078,
@@ -3513,7 +3519,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-380"
+              "value": "-425"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3533,6 +3539,7 @@
           "regionCompetitorId": "3.1",
           "regionId": 3,
           "regionSeed": 1,
+          "score": 109.0,
           "status": "OPEN",
           "subType": "HOME",
           "tieScoreWinner": false,
@@ -3932,7 +3939,7 @@
         },
         {
           "abbrev": "ARK",
-          "additionalInfo": "28-8",
+          "additionalInfo": "28-9",
           "choiceCounters": [
             {
               "count": 2998767,
@@ -3986,7 +3993,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "300"
+              "value": "330"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4006,6 +4013,7 @@
           "regionCompetitorId": "3.4",
           "regionId": 3,
           "regionSeed": 4,
+          "score": 88.0,
           "status": "OPEN",
           "subType": "AWAY",
           "tieScoreWinner": false,
@@ -4094,7 +4102,7 @@
       ],
       "scoringPeriodId": 3,
       "scoringPeriodMatchupId": 5,
-      "status": "LOCKED",
+      "status": "COMPLETE",
       "type": "COMPETITION",
       "weight": 1.0
     },
@@ -4110,6 +4118,10 @@
       "bye": false,
       "cardType": "DENSE",
       "challengeId": 277,
+      "completeDate": 1774575142498,
+      "correctOutcomes": [
+        "c9144a87-0695-11f1-af21-ff98afcfd072"
+      ],
       "creationInfo": {
         "clientAddress": "10.164.39.217",
         "date": 1770737581332,
@@ -4126,7 +4138,7 @@
       "id": "c9144a80-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774234910541,
+        "date": 1774575142498,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -4149,11 +4161,11 @@
         },
         {
           "type": "URL_DESKTOP",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856568/texas-purdue"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856568"
         },
         {
           "type": "URL_MOBILE",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856568/texas-purdue"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856568"
         },
         {
           "type": "TV_INFO_PRIMARY",
@@ -4176,9 +4188,9 @@
           "abbrev": "BYU",
           "choiceCounters": [
             {
-              "count": 2305039,
+              "count": 2308755,
               "outcomeId": "c9144a81-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.1089880678761474,
+              "percentage": 0.10900234939389868,
               "scoringFormatId": 5
             }
           ],
@@ -4252,12 +4264,12 @@
         },
         {
           "abbrev": "TEX",
-          "additionalInfo": "21-14",
+          "additionalInfo": "21-15",
           "choiceCounters": [
             {
-              "count": 351072,
+              "count": 352014,
               "outcomeId": "c9144a82-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.016599571185309584,
+              "percentage": 0.01661949969552588,
               "scoringFormatId": 5
             }
           ],
@@ -4306,7 +4318,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "285"
+              "value": "350"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4326,6 +4338,7 @@
           "regionCompetitorId": "3.11",
           "regionId": 3,
           "regionSeed": 11,
+          "score": 77.0,
           "status": "OPEN",
           "subType": "AWAY",
           "tieScoreWinner": false,
@@ -4337,9 +4350,9 @@
           "abbrev": "GONZ",
           "choiceCounters": [
             {
-              "count": 6572369,
+              "count": 6581850,
               "outcomeId": "c9144a83-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.3107582121947121,
+              "percentage": 0.31074631710953826,
               "scoringFormatId": 5
             }
           ],
@@ -4415,9 +4428,9 @@
           "abbrev": "KENN",
           "choiceCounters": [
             {
-              "count": 81154,
+              "count": 81342,
               "outcomeId": "c9144a84-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.0038371661652669936,
+              "percentage": 0.003840368122385661,
               "scoringFormatId": 5
             }
           ],
@@ -4493,9 +4506,9 @@
           "abbrev": "MIA",
           "choiceCounters": [
             {
-              "count": 1060308,
+              "count": 1062106,
               "outcomeId": "c9144a85-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.050134041234713204,
+              "percentage": 0.05014479635360016,
               "scoringFormatId": 5
             }
           ],
@@ -4571,9 +4584,9 @@
           "abbrev": "MIZ",
           "choiceCounters": [
             {
-              "count": 347506,
+              "count": 348150,
               "outcomeId": "c9144a86-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.01643096169538497,
+              "percentage": 0.01643707017049701,
               "scoringFormatId": 5
             }
           ],
@@ -4647,12 +4660,12 @@
         },
         {
           "abbrev": "PUR",
-          "additionalInfo": "29-8",
+          "additionalInfo": "30-8",
           "choiceCounters": [
             {
-              "count": 10255083,
+              "count": 10269366,
               "outcomeId": "c9144a87-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.484886234931177,
+              "percentage": 0.48484357187567484,
               "scoringFormatId": 5
             }
           ],
@@ -4701,7 +4714,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-360"
+              "value": "-455"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4721,6 +4734,7 @@
           "regionCompetitorId": "3.2",
           "regionId": 3,
           "regionSeed": 2,
+          "score": 79.0,
           "status": "OPEN",
           "subType": "HOME",
           "tieScoreWinner": false,
@@ -4732,9 +4746,9 @@
           "abbrev": "QUC",
           "choiceCounters": [
             {
-              "count": 176931,
+              "count": 177199,
               "outcomeId": "c9144a88-0695-11f1-af21-ff98afcfd072",
-              "percentage": 0.00836574471728879,
+              "percentage": 0.008366027278879504,
               "scoringFormatId": 5
             }
           ],
@@ -4809,7 +4823,7 @@
       ],
       "scoringPeriodId": 3,
       "scoringPeriodMatchupId": 6,
-      "status": "LOCKED",
+      "status": "COMPLETE",
       "type": "COMPETITION",
       "weight": 1.0
     },
@@ -4825,6 +4839,10 @@
       "bye": false,
       "cardType": "DENSE",
       "challengeId": 277,
+      "completeDate": 1774663387926,
+      "correctOutcomes": [
+        "c9147191-0695-11f1-af21-ff98afcfd072"
+      ],
       "creationInfo": {
         "clientAddress": "10.164.39.217",
         "date": 1770737581332,
@@ -4841,7 +4859,7 @@
       "id": "c9147190-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774241796001,
+        "date": 1774663387926,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -4864,11 +4882,11 @@
         },
         {
           "type": "URL_DESKTOP",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856572/alabama-michigan"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856572"
         },
         {
           "type": "URL_MOBILE",
-          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856572/alabama-michigan"
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856572"
         },
         {
           "type": "TV_INFO_PRIMARY",
@@ -4893,7 +4911,7 @@
       "possibleOutcomes": [
         {
           "abbrev": "MICH",
-          "additionalInfo": "33-3",
+          "additionalInfo": "34-3",
           "choiceCounters": [
             {
               "count": 16992674,
@@ -4947,7 +4965,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-535"
+              "value": "-500"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4967,6 +4985,7 @@
           "regionCompetitorId": "4.1",
           "regionId": 4,
           "regionSeed": 1,
+          "score": 90.0,
           "status": "OPEN",
           "subType": "HOME",
           "tieScoreWinner": false,
@@ -5366,7 +5385,7 @@
         },
         {
           "abbrev": "ALA",
-          "additionalInfo": "25-9",
+          "additionalInfo": "25-10",
           "choiceCounters": [
             {
               "count": 1782607,
@@ -5420,7 +5439,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "400"
+              "value": "380"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -5440,6 +5459,7 @@
           "regionCompetitorId": "4.4",
           "regionId": 4,
           "regionSeed": 4,
+          "score": 77.0,
           "status": "OPEN",
           "subType": "AWAY",
           "tieScoreWinner": false,
@@ -5528,7 +5548,7 @@
       ],
       "scoringPeriodId": 3,
       "scoringPeriodMatchupId": 7,
-      "status": "LOCKED",
+      "status": "COMPLETE",
       "type": "COMPETITION",
       "weight": 1.0
     },
@@ -5550,7 +5570,7 @@
         "platform": "chui-admin",
         "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
       },
-      "date": 1774663800000,
+      "date": 1774665300000,
       "dateTBD": false,
       "deleted": false,
       "description": "Who will win this matchup?",
@@ -5560,7 +5580,7 @@
       "id": "c91498a0-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1774245542115,
+        "date": 1774665257289,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -5666,7 +5686,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "160"
+              "value": "130"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -6139,7 +6159,7 @@
             },
             {
               "type": "BETTING_LINE",
-              "value": "-192"
+              "value": "-155"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -6298,7 +6318,7 @@
       "allPropositionsAutomated": true,
       "allPropositionsLocked": true,
       "endDate": 1774872000000,
-      "firstPropositionLockDate": 1774872000000,
+      "firstPropositionLockDate": 1774735740000,
       "id": 4,
       "label": "Elite 8",
       "startDate": 1774699200000,
@@ -6333,28 +6353,28 @@
   ],
   "scoringStatus": {
     "anyPropositionScored": true,
-    "completionDate": 1774240601756,
+    "completionDate": 1774664407108,
     "entryCount": 27968488,
-    "groupCount": 1983551,
+    "groupCount": 1984489,
     "groupEntryRankSummaryByLeaderboard": {
       "2228cbba-0301-4975-ab9c-eb7cfa6c3859": {
         "rankByScore": {
           "540.0": {
-            "count": 90112,
-            "percentile": 0.9980521,
-            "rank": 53714,
+            "count": 1063527,
+            "percentile": 0.39316027,
+            "rank": 16733495,
             "score": 540.0
           },
           "530.0": {
-            "count": 297434,
-            "percentile": 0.99478419,
-            "rank": 143826,
+            "count": 985046,
+            "percentile": 0.35459149,
+            "rank": 17797022,
             "score": 530.0
           },
           "520.0": {
-            "count": 390342,
-            "percentile": 0.98399775,
-            "rank": 441260,
+            "count": 910807,
+            "percentile": 0.31886882,
+            "rank": 18782068,
             "score": 520.0
           },
           "0.0": {
@@ -6364,52 +6384,184 @@
             "score": 0.0
           },
           "570.0": {
-            "count": 3913,
-            "percentile": 0.99994455,
-            "rank": 1530,
+            "count": 1331057,
+            "percentile": 0.52694212,
+            "rank": 13044485,
             "score": 570.0
           },
           "560.0": {
-            "count": 12658,
-            "percentile": 0.99980265,
-            "rank": 5443,
+            "count": 1223955,
+            "percentile": 0.47867137,
+            "rank": 14375542,
             "score": 560.0
           },
           "550.0": {
-            "count": 35613,
-            "percentile": 0.9993436,
-            "rank": 18101,
+            "count": 1133998,
+            "percentile": 0.43428467,
+            "rank": 15599497,
             "score": 550.0
           },
           "600.0": {
-            "count": 71,
-            "percentile": 0.99999938,
-            "rank": 18,
+            "count": 1471634,
+            "percentile": 0.68008381,
+            "rank": 8821631,
             "score": 600.0
           },
           "590.0": {
-            "count": 290,
-            "percentile": 0.99999681,
-            "rank": 89,
+            "count": 1373930,
+            "percentile": 0.62671504,
+            "rank": 10293265,
             "score": 590.0
           },
           "580.0": {
-            "count": 1151,
-            "percentile": 0.99998629,
-            "rank": 379,
+            "count": 1377290,
+            "percentile": 0.57688951,
+            "rank": 11667195,
             "score": 580.0
           },
+          "630.0": {
+            "count": 1087089,
+            "percentile": 0.81409435,
+            "rank": 5126315,
+            "score": 630.0
+          },
           "620.0": {
-            "count": 2,
-            "percentile": 1.0,
-            "rank": 1,
+            "count": 1252325,
+            "percentile": 0.7746711,
+            "rank": 6213404,
             "score": 620.0
           },
           "610.0": {
-            "count": 15,
-            "percentile": 0.99999993,
-            "rank": 3,
+            "count": 1355902,
+            "percentile": 0.72925556,
+            "rank": 7465729,
             "score": 610.0
+          },
+          "670.0": {
+            "count": 488406,
+            "percentile": 0.96149657,
+            "rank": 1061726,
+            "score": 670.0
+          },
+          "660.0": {
+            "count": 856201,
+            "percentile": 0.94378454,
+            "rank": 1550132,
+            "score": 660.0
+          },
+          "650.0": {
+            "count": 1146724,
+            "percentile": 0.91273443,
+            "rank": 2406333,
+            "score": 650.0
+          },
+          "640.0": {
+            "count": 1573258,
+            "percentile": 0.87114851,
+            "rank": 3553057,
+            "score": 640.0
+          },
+          "700.0": {
+            "count": 159880,
+            "percentile": 0.98832812,
+            "rank": 321851,
+            "score": 700.0
+          },
+          "690.0": {
+            "count": 235304,
+            "percentile": 0.98253007,
+            "rank": 481731,
+            "score": 690.0
+          },
+          "680.0": {
+            "count": 344691,
+            "percentile": 0.97399678,
+            "rank": 717035,
+            "score": 680.0
+          },
+          "730.0": {
+            "count": 134749,
+            "percentile": 0.99881983,
+            "rank": 32544,
+            "score": 730.0
+          },
+          "720.0": {
+            "count": 56809,
+            "percentile": 0.99393316,
+            "rank": 167293,
+            "score": 720.0
+          },
+          "710.0": {
+            "count": 97749,
+            "percentile": 0.99187298,
+            "rank": 224102,
+            "score": 710.0
+          },
+          "760.0": {
+            "count": 3277,
+            "percentile": 0.99990952,
+            "rank": 2496,
+            "score": 760.0
+          },
+          "750.0": {
+            "count": 7926,
+            "percentile": 0.99979068,
+            "rank": 5773,
+            "score": 750.0
+          },
+          "740.0": {
+            "count": 18845,
+            "percentile": 0.99950324,
+            "rank": 13699,
+            "score": 740.0
+          },
+          "790.0": {
+            "count": 293,
+            "percentile": 0.99999275,
+            "rank": 201,
+            "score": 790.0
+          },
+          "780.0": {
+            "count": 648,
+            "percentile": 0.99998212,
+            "rank": 494,
+            "score": 780.0
+          },
+          "770.0": {
+            "count": 1354,
+            "percentile": 0.99995862,
+            "rank": 1142,
+            "score": 770.0
+          },
+          "830.0": {
+            "count": 5,
+            "percentile": 0.99999985,
+            "rank": 5,
+            "score": 830.0
+          },
+          "820.0": {
+            "count": 22,
+            "percentile": 0.99999967,
+            "rank": 10,
+            "score": 820.0
+          },
+          "810.0": {
+            "count": 49,
+            "percentile": 0.99999888,
+            "rank": 32,
+            "score": 810.0
+          },
+          "800.0": {
+            "count": 120,
+            "percentile": 0.9999971,
+            "rank": 81,
+            "score": 800.0
+          },
+          "840.0": {
+            "count": 4,
+            "percentile": 1.0,
+            "rank": 1,
+            "score": 840.0
           },
           "10.0": {
             "count": 2,
@@ -6430,348 +6582,354 @@
             "score": 30.0
           },
           "40.0": {
-            "count": 1130,
-            "percentile": 0.03655796,
-            "rank": 26566738,
+            "count": 1129,
+            "percentile": 0.03655792,
+            "rank": 26566739,
             "score": 40.0
           },
           "50.0": {
-            "count": 2700,
-            "percentile": 0.03665587,
-            "rank": 26564038,
+            "count": 2699,
+            "percentile": 0.0366558,
+            "rank": 26564040,
             "score": 50.0
           },
           "60.0": {
-            "count": 6595,
-            "percentile": 0.03689504,
-            "rank": 26557443,
+            "count": 6584,
+            "percentile": 0.03689457,
+            "rank": 26557456,
             "score": 60.0
           },
           "70.0": {
-            "count": 9500,
-            "percentile": 0.03723956,
-            "rank": 26547943,
+            "count": 9453,
+            "percentile": 0.03723738,
+            "rank": 26548003,
             "score": 70.0
           },
           "80.0": {
-            "count": 71121,
-            "percentile": 0.03981876,
-            "rank": 26476822,
+            "count": 70968,
+            "percentile": 0.03981104,
+            "rank": 26477035,
             "score": 80.0
           },
           "90.0": {
-            "count": 7188,
-            "percentile": 0.04007943,
-            "rank": 26469634,
+            "count": 6734,
+            "percentile": 0.04005524,
+            "rank": 26470301,
             "score": 90.0
           },
           "100.0": {
-            "count": 13603,
-            "percentile": 0.04057275,
-            "rank": 26456031,
+            "count": 11444,
+            "percentile": 0.04047026,
+            "rank": 26458857,
             "score": 100.0
           },
           "110.0": {
-            "count": 7751,
-            "percentile": 0.04085384,
-            "rank": 26448280,
+            "count": 5885,
+            "percentile": 0.04068368,
+            "rank": 26452972,
             "score": 110.0
           },
           "120.0": {
-            "count": 16262,
-            "percentile": 0.04144358,
-            "rank": 26432018,
+            "count": 9165,
+            "percentile": 0.04101605,
+            "rank": 26443807,
             "score": 120.0
           },
           "130.0": {
-            "count": 10640,
-            "percentile": 0.04182944,
-            "rank": 26421378,
+            "count": 8497,
+            "percentile": 0.04132419,
+            "rank": 26435310,
             "score": 130.0
           },
           "140.0": {
-            "count": 14234,
-            "percentile": 0.04234563,
-            "rank": 26407144,
+            "count": 12590,
+            "percentile": 0.04178077,
+            "rank": 26422720,
             "score": 140.0
           },
           "150.0": {
-            "count": 19717,
-            "percentile": 0.04306067,
-            "rank": 26387427,
+            "count": 15605,
+            "percentile": 0.04234668,
+            "rank": 26407115,
             "score": 150.0
           },
           "160.0": {
-            "count": 25829,
-            "percentile": 0.04399736,
-            "rank": 26361598,
+            "count": 24683,
+            "percentile": 0.04324181,
+            "rank": 26382432,
             "score": 160.0
           },
           "170.0": {
-            "count": 34073,
-            "percentile": 0.04523301,
-            "rank": 26327525,
+            "count": 24464,
+            "percentile": 0.044129,
+            "rank": 26357968,
             "score": 170.0
           },
           "180.0": {
-            "count": 43016,
-            "percentile": 0.04679299,
-            "rank": 26284509,
+            "count": 29703,
+            "percentile": 0.04520618,
+            "rank": 26328265,
             "score": 180.0
           },
           "190.0": {
-            "count": 52509,
-            "percentile": 0.04869722,
-            "rank": 26232000,
+            "count": 35530,
+            "percentile": 0.04649467,
+            "rank": 26292735,
             "score": 190.0
           },
           "200.0": {
-            "count": 64187,
-            "percentile": 0.05102496,
-            "rank": 26167813,
+            "count": 40991,
+            "percentile": 0.04798121,
+            "rank": 26251744,
             "score": 200.0
           },
           "210.0": {
-            "count": 70040,
-            "percentile": 0.05356496,
-            "rank": 26097773,
+            "count": 45854,
+            "percentile": 0.0496441,
+            "rank": 26205890,
             "score": 210.0
           },
           "220.0": {
-            "count": 78368,
-            "percentile": 0.05640698,
-            "rank": 26019405,
+            "count": 50735,
+            "percentile": 0.05148401,
+            "rank": 26155155,
             "score": 220.0
           },
           "230.0": {
-            "count": 84825,
-            "percentile": 0.05948315,
-            "rank": 25934580,
+            "count": 55363,
+            "percentile": 0.05349174,
+            "rank": 26099792,
             "score": 230.0
           },
           "240.0": {
-            "count": 94615,
-            "percentile": 0.06291436,
-            "rank": 25839965,
+            "count": 61063,
+            "percentile": 0.05570619,
+            "rank": 26038729,
             "score": 240.0
           },
           "250.0": {
-            "count": 92871,
-            "percentile": 0.06628233,
-            "rank": 25747094,
+            "count": 62080,
+            "percentile": 0.05795752,
+            "rank": 25976649,
             "score": 250.0
           },
           "270.0": {
-            "count": 100194,
-            "percentile": 0.07346276,
-            "rank": 25549095,
+            "count": 67381,
+            "percentile": 0.06276383,
+            "rank": 25844116,
             "score": 270.0
           },
           "260.0": {
-            "count": 97805,
-            "percentile": 0.06982922,
-            "rank": 25649289,
+            "count": 65152,
+            "percentile": 0.06032026,
+            "rank": 25911497,
             "score": 260.0
           },
           "280.0": {
-            "count": 108182,
-            "percentile": 0.07738597,
-            "rank": 25440913,
+            "count": 70522,
+            "percentile": 0.06532131,
+            "rank": 25773594,
             "score": 280.0
           },
           "300.0": {
-            "count": 132713,
-            "percentile": 0.08632645,
-            "rank": 25194381,
+            "count": 72793,
+            "percentile": 0.07049944,
+            "rank": 25630808,
             "score": 300.0
           },
           "290.0": {
-            "count": 113819,
-            "percentile": 0.08151362,
-            "rank": 25327094,
+            "count": 69993,
+            "percentile": 0.0678596,
+            "rank": 25703601,
             "score": 290.0
           },
           "310.0": {
-            "count": 146913,
-            "percentile": 0.09165425,
-            "rank": 25047468,
+            "count": 73390,
+            "percentile": 0.07316092,
+            "rank": 25557418,
             "score": 310.0
           },
           "330.0": {
-            "count": 212736,
-            "percentile": 0.1057367,
-            "rank": 24659147,
+            "count": 78830,
+            "percentile": 0.07880539,
+            "rank": 25401773,
             "score": 330.0
           },
           "320.0": {
-            "count": 175585,
-            "percentile": 0.09802183,
-            "rank": 24871883,
+            "count": 76815,
+            "percentile": 0.07594662,
+            "rank": 25480603,
             "score": 320.0
           },
           "350.0": {
-            "count": 337437,
-            "percentile": 0.12809028,
-            "rank": 24042751,
+            "count": 90447,
+            "percentile": 0.08529029,
+            "rank": 25222953,
             "score": 350.0
           },
           "340.0": {
-            "count": 278959,
-            "percentile": 0.11585314,
-            "rank": 24380188,
+            "count": 88373,
+            "percentile": 0.08201023,
+            "rank": 25313400,
             "score": 340.0
           },
           "360.0": {
-            "count": 432081,
-            "percentile": 0.14375969,
-            "rank": 23610670,
+            "count": 103611,
+            "percentile": 0.08904774,
+            "rank": 25119342,
             "score": 360.0
           },
           "380.0": {
-            "count": 695526,
-            "percentile": 0.18881975,
-            "rank": 22368147,
+            "count": 123012,
+            "percentile": 0.09742154,
+            "rank": 24888436,
             "score": 380.0
           },
           "370.0": {
-            "count": 546997,
-            "percentile": 0.16359652,
-            "rank": 23063673,
+            "count": 107894,
+            "percentile": 0.09296051,
+            "rank": 25011448,
             "score": 370.0
           },
           "390.0": {
-            "count": 867738,
-            "percentile": 0.22028825,
-            "rank": 21500409,
+            "count": 139247,
+            "percentile": 0.10247133,
+            "rank": 24749189,
             "score": 390.0
           },
           "410.0": {
-            "count": 1404262,
-            "percentile": 0.31024682,
-            "rank": 19019818,
+            "count": 187527,
+            "percentile": 0.11513633,
+            "rank": 24399954,
             "score": 410.0
           },
           "400.0": {
-            "count": 1076329,
-            "percentile": 0.2593213,
-            "rank": 20424080,
+            "count": 161708,
+            "percentile": 0.10833566,
+            "rank": 24587481,
             "score": 400.0
           },
           "430.0": {
-            "count": 1780992,
-            "percentile": 0.43283607,
-            "rank": 15639442,
+            "count": 256445,
+            "percentile": 0.13241677,
+            "rank": 23923449,
             "score": 430.0
           },
           "420.0": {
-            "count": 1599384,
-            "percentile": 0.36824844,
-            "rank": 17420434,
+            "count": 220060,
+            "percentile": 0.1231168,
+            "rank": 24179894,
             "score": 420.0
           },
           "440.0": {
-            "count": 2065338,
-            "percentile": 0.5077355,
-            "rank": 13574104,
+            "count": 302578,
+            "percentile": 0.14338975,
+            "rank": 23620871,
             "score": 440.0
           },
           "460.0": {
-            "count": 2237121,
-            "percentile": 0.66754335,
-            "rank": 9167432,
+            "count": 424807,
+            "percentile": 0.17153355,
+            "rank": 22844811,
             "score": 460.0
           },
           "450.0": {
-            "count": 2169551,
-            "percentile": 0.58641421,
-            "rank": 11404553,
+            "count": 351253,
+            "percentile": 0.15612793,
+            "rank": 23269618,
             "score": 450.0
           },
           "470.0": {
-            "count": 2085457,
-            "percentile": 0.74317239,
-            "rank": 7081975,
+            "count": 473806,
+            "percentile": 0.18871611,
+            "rank": 22371005,
             "score": 470.0
           },
           "490.0": {
-            "count": 1790892,
-            "percentile": 0.89959512,
-            "rank": 2768647,
+            "count": 621121,
+            "percentile": 0.23112796,
+            "rank": 21201506,
             "score": 490.0
           },
           "480.0": {
-            "count": 2522436,
-            "percentile": 0.83464847,
-            "rank": 4559539,
+            "count": 548378,
+            "percentile": 0.20860302,
+            "rank": 21822627,
             "score": 480.0
           },
           "510.0": {
-            "count": 675308,
-            "percentile": 0.96984201,
-            "rank": 831602,
+            "count": 792296,
+            "percentile": 0.28583843,
+            "rank": 19692875,
             "score": 510.0
           },
           "500.0": {
-            "count": 1261737,
-            "percentile": 0.94535198,
-            "rank": 1506910,
+            "count": 716335,
+            "percentile": 0.25710583,
+            "rank": 20485171,
             "score": 500.0
           }
         },
         "totalCount": 27574816
       }
     },
-    "latestScoringId": "a3a8209e-5ff5-4adb-b2ba-e6e650ac5495",
+    "latestScoringId": "01a2fa04-781b-4244-b7b2-ad7c9a470bde",
     "scoringExecuted": true,
     "scoringExecutionDetails": {
       "correctOutcomeIds": [
         "c912eaf3-0695-11f1-af21-ff98afcfd072",
         "c911b273-0695-11f1-af21-ff98afcfd072",
-        "c9111633-0695-11f1-af21-ff98afcfd072",
         "c91079f3-0695-11f1-af21-ff98afcfd072",
-        "c9124eb1-0695-11f1-af21-ff98afcfd072",
         "c9068ee1-0695-11f1-af21-ff98afcfd072",
         "c908ffe1-0695-11f1-af21-ff98afcfd072",
         "c90b70e1-0695-11f1-af21-ff98afcfd072",
-        "c9099c22-0695-11f1-af21-ff98afcfd072",
-        "c90c0d21-0695-11f1-af21-ff98afcfd072",
         "c90f1a61-0695-11f1-af21-ff98afcfd072",
-        "c90fb6a1-0695-11f1-af21-ff98afcfd072",
-        "c90d45a2-0695-11f1-af21-ff98afcfd072",
         "c9118b61-0695-11f1-af21-ff98afcfd072",
-        "c91227a3-0695-11f1-af21-ff98afcfd072",
+        "c913fc61-0695-11f1-af21-ff98afcfd072",
         "c912c3e1-0695-11f1-af21-ff98afcfd072",
         "c91052e3-0695-11f1-af21-ff98afcfd072",
-        "c910ef23-0695-11f1-af21-ff98afcfd072",
         "c907ee71-0695-11f1-af21-ff98afcfd072",
-        "c9088ab1-0695-11f1-af21-ff98afcfd072",
         "c90cd071-0695-11f1-af21-ff98afcfd072",
         "c90f4171-0695-11f1-af21-ff98afcfd072",
-        "c90fddb1-0695-11f1-af21-ff98afcfd072",
-        "c90c3432-0695-11f1-af21-ff98afcfd072",
         "c90e08f1-0695-11f1-af21-ff98afcfd072",
-        "c90ea531-0695-11f1-af21-ff98afcfd072",
+        "c913d553-0695-11f1-af21-ff98afcfd072",
         "c9077941-0695-11f1-af21-ff98afcfd072",
         "c909ea41-0695-11f1-af21-ff98afcfd072",
-        "c9094e01-0695-11f1-af21-ff98afcfd072",
-        "c90bbf02-0695-11f1-af21-ff98afcfd072",
         "c90d93c1-0695-11f1-af21-ff98afcfd072",
         "c90ecc41-0695-11f1-af21-ff98afcfd072",
-        "c90e3001-0695-11f1-af21-ff98afcfd072",
         "c91275c3-0695-11f1-af21-ff98afcfd072",
         "c91004c1-0695-11f1-af21-ff98afcfd072",
         "c9113d43-0695-11f1-af21-ff98afcfd072",
-        "c911d982-0695-11f1-af21-ff98afcfd072",
-        "c910a104-0695-11f1-af21-ff98afcfd072",
-        "c9070412-0695-11f1-af21-ff98afcfd072",
         "c907a051-0695-11f1-af21-ff98afcfd072",
         "c90b49d2-0695-11f1-af21-ff98afcfd072",
-        "c9083c91-0695-11f1-af21-ff98afcfd072",
-        "c90be611-0695-11f1-af21-ff98afcfd072",
         "c90a1151-0695-11f1-af21-ff98afcfd072",
         "c90dbad1-0695-11f1-af21-ff98afcfd072",
-        "c90e5712-0695-11f1-af21-ff98afcfd072",
         "c90c8252-0695-11f1-af21-ff98afcfd072",
+        "c9111633-0695-11f1-af21-ff98afcfd072",
+        "c9124eb1-0695-11f1-af21-ff98afcfd072",
+        "c9138734-0695-11f1-af21-ff98afcfd072",
+        "c9099c22-0695-11f1-af21-ff98afcfd072",
+        "c90c0d21-0695-11f1-af21-ff98afcfd072",
+        "c90fb6a1-0695-11f1-af21-ff98afcfd072",
+        "c90d45a2-0695-11f1-af21-ff98afcfd072",
+        "c91227a3-0695-11f1-af21-ff98afcfd072",
+        "c910ef23-0695-11f1-af21-ff98afcfd072",
+        "c9088ab1-0695-11f1-af21-ff98afcfd072",
+        "c90fddb1-0695-11f1-af21-ff98afcfd072",
+        "c90c3432-0695-11f1-af21-ff98afcfd072",
+        "c90ea531-0695-11f1-af21-ff98afcfd072",
+        "c9147191-0695-11f1-af21-ff98afcfd072",
+        "c9094e01-0695-11f1-af21-ff98afcfd072",
+        "c90bbf02-0695-11f1-af21-ff98afcfd072",
+        "c90e3001-0695-11f1-af21-ff98afcfd072",
+        "c9131201-0695-11f1-af21-ff98afcfd072",
+        "c911d982-0695-11f1-af21-ff98afcfd072",
+        "c9144a87-0695-11f1-af21-ff98afcfd072",
+        "c910a104-0695-11f1-af21-ff98afcfd072",
+        "c9070412-0695-11f1-af21-ff98afcfd072",
+        "c9083c91-0695-11f1-af21-ff98afcfd072",
+        "c90be611-0695-11f1-af21-ff98afcfd072",
+        "c90e5712-0695-11f1-af21-ff98afcfd072",
         "c90f8f91-0695-11f1-af21-ff98afcfd072"
       ],
       "outcomeRankByOutcome": {},
@@ -6779,50 +6937,56 @@
       "propositionIds": [
         "c91079f0-0695-11f1-af21-ff98afcfd072",
         "c911b270-0695-11f1-af21-ff98afcfd072",
-        "c9111630-0695-11f1-af21-ff98afcfd072",
         "c912eaf0-0695-11f1-af21-ff98afcfd072",
-        "c9124eb0-0695-11f1-af21-ff98afcfd072",
         "c9068ee0-0695-11f1-af21-ff98afcfd072",
         "c908ffe0-0695-11f1-af21-ff98afcfd072",
-        "c9099c20-0695-11f1-af21-ff98afcfd072",
         "c90b70e0-0695-11f1-af21-ff98afcfd072",
-        "c90c0d20-0695-11f1-af21-ff98afcfd072",
-        "c90d45a0-0695-11f1-af21-ff98afcfd072",
         "c90f1a60-0695-11f1-af21-ff98afcfd072",
-        "c90fb6a0-0695-11f1-af21-ff98afcfd072",
         "c91052e0-0695-11f1-af21-ff98afcfd072",
-        "c910ef20-0695-11f1-af21-ff98afcfd072",
         "c9118b60-0695-11f1-af21-ff98afcfd072",
         "c912c3e0-0695-11f1-af21-ff98afcfd072",
-        "c91227a0-0695-11f1-af21-ff98afcfd072",
+        "c913fc60-0695-11f1-af21-ff98afcfd072",
         "c907ee70-0695-11f1-af21-ff98afcfd072",
-        "c9088ab0-0695-11f1-af21-ff98afcfd072",
         "c90cd070-0695-11f1-af21-ff98afcfd072",
-        "c90c3430-0695-11f1-af21-ff98afcfd072",
         "c90e08f0-0695-11f1-af21-ff98afcfd072",
-        "c90ea530-0695-11f1-af21-ff98afcfd072",
         "c90f4170-0695-11f1-af21-ff98afcfd072",
-        "c90fddb0-0695-11f1-af21-ff98afcfd072",
+        "c913d550-0695-11f1-af21-ff98afcfd072",
         "c9077940-0695-11f1-af21-ff98afcfd072",
         "c909ea40-0695-11f1-af21-ff98afcfd072",
-        "c9094e00-0695-11f1-af21-ff98afcfd072",
-        "c90bbf00-0695-11f1-af21-ff98afcfd072",
         "c90d93c0-0695-11f1-af21-ff98afcfd072",
         "c90ecc40-0695-11f1-af21-ff98afcfd072",
-        "c90e3000-0695-11f1-af21-ff98afcfd072",
         "c91004c0-0695-11f1-af21-ff98afcfd072",
-        "c910a100-0695-11f1-af21-ff98afcfd072",
         "c9113d40-0695-11f1-af21-ff98afcfd072",
-        "c911d980-0695-11f1-af21-ff98afcfd072",
         "c91275c0-0695-11f1-af21-ff98afcfd072",
         "c907a050-0695-11f1-af21-ff98afcfd072",
-        "c9070410-0695-11f1-af21-ff98afcfd072",
-        "c9083c90-0695-11f1-af21-ff98afcfd072",
         "c90a1150-0695-11f1-af21-ff98afcfd072",
         "c90b49d0-0695-11f1-af21-ff98afcfd072",
-        "c90be610-0695-11f1-af21-ff98afcfd072",
         "c90c8250-0695-11f1-af21-ff98afcfd072",
         "c90dbad0-0695-11f1-af21-ff98afcfd072",
+        "c9111630-0695-11f1-af21-ff98afcfd072",
+        "c9124eb0-0695-11f1-af21-ff98afcfd072",
+        "c9138730-0695-11f1-af21-ff98afcfd072",
+        "c9099c20-0695-11f1-af21-ff98afcfd072",
+        "c90c0d20-0695-11f1-af21-ff98afcfd072",
+        "c90d45a0-0695-11f1-af21-ff98afcfd072",
+        "c90fb6a0-0695-11f1-af21-ff98afcfd072",
+        "c910ef20-0695-11f1-af21-ff98afcfd072",
+        "c91227a0-0695-11f1-af21-ff98afcfd072",
+        "c9088ab0-0695-11f1-af21-ff98afcfd072",
+        "c90c3430-0695-11f1-af21-ff98afcfd072",
+        "c90ea530-0695-11f1-af21-ff98afcfd072",
+        "c90fddb0-0695-11f1-af21-ff98afcfd072",
+        "c9147190-0695-11f1-af21-ff98afcfd072",
+        "c9094e00-0695-11f1-af21-ff98afcfd072",
+        "c90bbf00-0695-11f1-af21-ff98afcfd072",
+        "c90e3000-0695-11f1-af21-ff98afcfd072",
+        "c910a100-0695-11f1-af21-ff98afcfd072",
+        "c911d980-0695-11f1-af21-ff98afcfd072",
+        "c9131200-0695-11f1-af21-ff98afcfd072",
+        "c9144a80-0695-11f1-af21-ff98afcfd072",
+        "c9070410-0695-11f1-af21-ff98afcfd072",
+        "c9083c90-0695-11f1-af21-ff98afcfd072",
+        "c90be610-0695-11f1-af21-ff98afcfd072",
         "c90e5710-0695-11f1-af21-ff98afcfd072",
         "c90f8f90-0695-11f1-af21-ff98afcfd072"
       ],
@@ -6959,13 +7123,13 @@
   "templateMetadata": {
     "additionalData": {
       "betYourBracketURL": "https://dksb.sng.link/As9kz/oqwr?_dl=https%3A%2F%2Fsportsbook.draftkings.com%2Fgateway%3Fs%3D597418936&pcid=428967&psn=413&pcn=ESPN&pscn=AppPop&pcrn=MensNCAABetYourBracket&pscid=xx&pcrid=xx&wpcid=428967&wpsrc=413&wpcn=ESPN&wpscn=AppPop&wpcrn=MensNCAABetYourBracket&wpscid=xx&wpcrid=xx&_forward_params=1",
-      "smartBracketData": "https://chui-assets-cdn.espn.com/tournament-challenge-bracket-2026/smart-bracket-b995a23b-f020-4285-909f-0fc754f63378.json",
+      "smartBracketData": "https://chui-assets-cdn.espn.com/tournament-challenge-bracket-2026/smart-bracket-99ff7f21-7878-4d6d-9702-7f3a986d68f4.json",
       "appSwitcherLabel": "MEN'S",
       "appSwitcherSubLabel": "Tournament",
       "mmLiveDemotedUrl": "https://www.ncaa.com/",
       "mmLiveUrl": "https://www.ncaa.com/march-madness-live/watch?cid=mml_partner_espn_generic&ko_click_id=ko_ad5okawfqxlvz9yyo",
       "tcPerfectBracketTrackerURL": "https://www.espn.com/perfect-bracket/2026/mens/coming-soon?addata=tcmens2026_ncaam_tcmengameperfectbracketsmodule",
-      "challengeSwitcherSettings": "[{\"colorDark\":\"#DD0000\",\"colorLight\":\"#FF3E3E\",\"gameId\":72,\"id\":277,\"key\":\"tournament-challenge-bracket-2026\",\"label\":\"MEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/baffb637-fbd5-4639-9dc0-648da4498cf9.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/baffb637-fbd5-4639-9dc0-648da4498cf9.png\",\"name\":\"Men's Tournament Challenge\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Tournament\",\"tcGameType\":\"tc\"},{\"colorDark\":\"#0C7BB3\",\"colorLight\":\"#38B3F2\",\"gameId\":73,\"id\":278,\"key\":\"tournament-challenge-bracket-women-2026\",\"label\":\"WOMEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/43df9ed8-aae2-4ef7-8b0a-1a429ec98f9c.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/43df9ed8-aae2-4ef7-8b0a-1a429ec98f9c.png\",\"name\":\"Women's Tournament Challenge\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Tournament\",\"tcGameType\":\"tcw\"},{\"colorDark\":\"#DD0000\",\"colorLight\":\"#FF3E3E\",\"gameId\":79,\"id\":275,\"key\":\"mens-tournament-challenge-eliminator-2026\",\"label\":\"MEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/19e7f1fb-6620-481a-9fdb-5b000b7d8bfb.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/19e7f1fb-6620-481a-9fdb-5b000b7d8bfb.png\",\"name\":\"Men's Tournament Challenge Eliminator\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Eliminator\",\"tcGameType\":\"tce\"},{\"colorDark\":\"#0C7BB3\",\"colorLight\":\"#38B3F2\",\"gameId\":78,\"id\":276,\"key\":\"womens-tournament-challenge-eliminator-2026\",\"label\":\"WOMEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/a07ba6ea-8e7c-483f-b6a3-0e692bb764fe.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/a07ba6ea-8e7c-483f-b6a3-0e692bb764fe.png\",\"name\":\"Women's Tournament Challenge Eliminator\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Eliminator\",\"tcGameType\":\"tcew\"},{\"colorDark\":\"#DD0000\",\"colorLight\":\"#FF3E3E\",\"gameId\":67,\"id\":279,\"key\":\"mens-tournament-challenge-second-chance-bracket-2026\",\"label\":\"MEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/3a1702e5-9735-4128-873a-21ba2e2bc66f.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/3a1702e5-9735-4128-873a-21ba2e2bc66f.png\",\"name\":\"Men's Tournament Challenge Second Chance\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Second Chance\",\"tcGameType\":\"tc2\"},{\"colorDark\":\"#0C7BB3\",\"colorLight\":\"#38B3F2\",\"gameId\":71,\"id\":280,\"key\":\"womens-tournament-challenge-second-chance-bracket-2026\",\"label\":\"WOMEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/826e034c-91d5-4927-a6c9-03858306280b.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/826e034c-91d5-4927-a6c9-03858306280b.png\",\"name\":\"Women's Tournament Challenge Second Chance\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Second Chance\",\"tcGameType\":\"tcw2\"}]",
+      "challengeSwitcherSettings": "[{\"colorDark\":\"#DD0000\",\"colorLight\":\"#FF3E3E\",\"gameId\":72,\"id\":277,\"key\":\"tournament-challenge-bracket-2026\",\"label\":\"MEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/baffb637-fbd5-4639-9dc0-648da4498cf9.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/baffb637-fbd5-4639-9dc0-648da4498cf9.png\",\"name\":\"Men's Tournament Challenge\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Tournament\",\"tcGameType\":\"tc\"},{\"colorDark\":\"#0C7BB3\",\"colorLight\":\"#38B3F2\",\"gameId\":73,\"id\":278,\"key\":\"tournament-challenge-bracket-women-2026\",\"label\":\"WOMEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/43df9ed8-aae2-4ef7-8b0a-1a429ec98f9c.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/43df9ed8-aae2-4ef7-8b0a-1a429ec98f9c.png\",\"name\":\"Women's Tournament Challenge\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Tournament\",\"tcGameType\":\"tcw\"},{\"colorDark\":\"#DD0000\",\"colorLight\":\"#FF3E3E\",\"gameId\":67,\"id\":279,\"key\":\"mens-tournament-challenge-second-chance-bracket-2026\",\"label\":\"MEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/3a1702e5-9735-4128-873a-21ba2e2bc66f.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/3a1702e5-9735-4128-873a-21ba2e2bc66f.png\",\"name\":\"Men's Tournament Challenge Second Chance\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Second Chance\",\"tcGameType\":\"tc2\"},{\"colorDark\":\"#0C7BB3\",\"colorLight\":\"#38B3F2\",\"gameId\":71,\"id\":280,\"key\":\"womens-tournament-challenge-second-chance-bracket-2026\",\"label\":\"WOMEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/826e034c-91d5-4927-a6c9-03858306280b.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/826e034c-91d5-4927-a6c9-03858306280b.png\",\"name\":\"Women's Tournament Challenge Second Chance\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Second Chance\",\"tcGameType\":\"tcw2\"},{\"colorDark\":\"#dd0000\",\"colorLight\":\"#FF3E3E\",\"gameId\":79,\"id\":275,\"key\":\"mens-tournament-challenge-eliminator-2026\",\"label\":\"MEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/19e7f1fb-6620-481a-9fdb-5b000b7d8bfb.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/19e7f1fb-6620-481a-9fdb-5b000b7d8bfb.png\",\"name\":\"Men's Tournament Challenge Eliminator\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Eliminator\",\"tcGameType\":\"tce\"},{\"colorDark\":\"#0C7BB3\",\"colorLight\":\"#38B3F2\",\"gameId\":78,\"id\":276,\"key\":\"womens-tournament-challenge-eliminator-2026\",\"label\":\"WOMEN'S\",\"logo1x1Dark\":\"https://chui-assets-cdn.espn.com/a07ba6ea-8e7c-483f-b6a3-0e692bb764fe.png\",\"logo1x1Light\":\"https://chui-assets-cdn.espn.com/a07ba6ea-8e7c-483f-b6a3-0e692bb764fe.png\",\"name\":\"Women's Tournament Challenge Eliminator\",\"prefetch\":[],\"sport\":\"basketball\",\"subLabel\":\"Eliminator\",\"tcGameType\":\"tcew\"}]",
       "totalBracketsCreatedModuleAdditionalGameId": "73",
       "seedFact_1vs13": "https://chui-assets-cdn.espn.com/tournament-challenge-bracket-2026/1vs13.png",
       "seedFact_1vs16": "https://chui-assets-cdn.espn.com/tournament-challenge-bracket-2026/1vs16.png",
