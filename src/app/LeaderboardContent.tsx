@@ -717,6 +717,7 @@ function LeaderboardContentInner({
               allSnapshotProbsZero={true}
               teamLogos={teamLogos}
               eliminatedTeams={Array.from(eliminatedTeams)}
+              pathData={pathEntries}
               timelineCheckpoints={probabilityTimeline?.checkpoints}
               timelineLines={probabilityTimeline?.lines}
               embedded
