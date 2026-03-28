@@ -1,5 +1,17 @@
 import { redirect } from "next/navigation";
 
-export default function ProbabilityPage() {
-  redirect("/?tab=probability");
+const TAB_MAP: Record<string, string> = {
+  chances: "chances",
+  championship: "chances",
+  finishes: "finishes",
+};
+
+export default async function ProbabilityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
+  const pview = TAB_MAP[params.tab || ""] || "journey";
+  redirect(`/?tab=probability&pview=${pview}`);
 }

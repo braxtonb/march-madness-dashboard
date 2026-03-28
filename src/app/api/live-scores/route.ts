@@ -5,8 +5,8 @@ import { fetchDashboardData } from "@/lib/sheets";
 const TOURNAMENT_START = new Date("2026-03-19T00:00:00-04:00").getTime();
 const TOURNAMENT_END = new Date("2026-04-08T00:00:00-04:00").getTime();
 
-// Quiet hours: 1am-10am ET — no games happening
-const QUIET_START_HOUR_ET = 1;
+// Quiet hours: 3am-10am ET — games can run past midnight with OT/late tips
+const QUIET_START_HOUR_ET = 3;
 const QUIET_END_HOUR_ET = 10;
 
 // How far ahead of a game start time to begin checking (ms)
@@ -99,21 +99,35 @@ export async function GET(): Promise<NextResponse<LiveScoresResponse>> {
     );
   }
 
-  // 5. Games are near — fetch ESPN scoreboard
+  // 5. Games are near — fetch ESPN scoreboard (today + yesterday to catch games past midnight)
   try {
-    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" }).replace(/-/g, "");
-    const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${today}&groups=100`;
+    const nowET = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const today = nowET.toISOString().slice(0, 10).replace(/-/g, "");
+    const yesterday = new Date(nowET.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10).replace(/-/g, "");
 
-    const res = await fetch(espnUrl, { next: { revalidate: 30 } });
-    if (!res.ok) {
+    const baseUrl = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard";
+    const [resToday, resYesterday] = await Promise.all([
+      fetch(`${baseUrl}?dates=${today}&groups=100`, { next: { revalidate: 30 } }),
+      etHour < 3 ? fetch(`${baseUrl}?dates=${yesterday}&groups=100`, { next: { revalidate: 30 } }) : Promise.resolve(null),
+    ]);
+
+    if (!resToday.ok) {
       return NextResponse.json(
         { games: [], nextCheckMs: 60 * 1000, reason: "espn_error" },
         { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=30" } }
       );
     }
 
-    const espnData = await res.json();
-    const events = espnData.events || [];
+    const espnDataToday = await resToday.json();
+    const espnDataYesterday = resYesterday && resYesterday.ok ? await resYesterday.json() : { events: [] };
+    // Deduplicate by event ID in case same game appears on both dates
+    const seenIds = new Set<string>();
+    const events = [...(espnDataToday.events || []), ...(espnDataYesterday.events || [])].filter((e: Record<string, unknown>) => {
+      const id = String(e.id || "");
+      if (seenIds.has(id)) return false;
+      seenIds.add(id);
+      return true;
+    });
 
     const games: LiveGame[] = events
       .filter((e: Record<string, unknown>) => {

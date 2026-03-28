@@ -39,11 +39,12 @@ interface PathPick {
 }
 
 interface PathEntry {
-  name: string;
-  owner: string;
-  full_name: string;
-  points: number;
-  maxRemaining: number;
+  bracketId?: string;
+  name?: string;
+  owner?: string;
+  full_name?: string;
+  points?: number;
+  maxRemaining?: number;
   champion: string;
   championLogo: string;
   championAlive: boolean;
@@ -91,10 +92,11 @@ export function DrilldownTable({
     }));
   }, [brackets]);
 
-  const pathByName = useMemo(() => {
+  const pathByBracketId = useMemo(() => {
     const map = new Map<string, PathEntry>();
     for (const p of pathData) {
-      map.set(p.name, p);
+      if (p.bracketId) map.set(p.bracketId, p);
+      else if (p.name) map.set(p.name, p);
     }
     return map;
   }, [pathData]);
@@ -206,7 +208,7 @@ export function DrilldownTable({
             {filtered.map((b) => {
               const a = analytics.get(b.id);
               const isExpanded = expandedIds.has(b.id);
-              const path = pathByName.get(b.name);
+              const path = pathByBracketId.get(b.id);
               return (
                 <React.Fragment key={b.id}>
                 <tr

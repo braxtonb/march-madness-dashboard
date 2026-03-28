@@ -66,14 +66,15 @@ interface PathPick {
 }
 
 interface PathEntry {
-  name: string;
-  owner: string;
-  full_name: string;
-  points: number;
-  maxRemaining: number;
-  champion: string;
-  championLogo: string;
-  championAlive: boolean;
+  bracketId?: string;
+  name?: string;
+  owner?: string;
+  full_name?: string;
+  points?: number;
+  maxRemaining?: number;
+  champion?: string;
+  championLogo?: string;
+  championAlive?: boolean;
   remainingPicks: PathPick[];
   eliminatedPickCount: number;
 }
@@ -351,10 +352,11 @@ export function ProbabilityClient({
   }
 
   // Build path lookup by bracket name for expanded rows
-  const pathByName = useMemo(() => {
+  const pathByBracketId = useMemo(() => {
     const map = new Map<string, PathEntry>();
     for (const p of pathData) {
-      map.set(p.name, p);
+      if (p.bracketId) map.set(p.bracketId, p);
+      else if (p.name) map.set(p.name, p);
     }
     return map;
   }, [pathData]);
@@ -650,7 +652,7 @@ export function ProbabilityClient({
                       <td className="px-2 py-2 font-label text-xs text-on-surface-variant">#{d.median_rank}</td>
                     </tr>
                     {isExpanded && (() => {
-                      const path = pathByName.get(d.name);
+                      const path = pathByBracketId.get(d.id);
                       return (
                         <tr>
                           <td colSpan={finishColSpan} className="px-4 py-3 bg-surface-bright/50">

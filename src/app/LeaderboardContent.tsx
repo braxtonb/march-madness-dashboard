@@ -154,7 +154,20 @@ function LeaderboardContentInner({
     normalizeTab(searchParams.get("tab")),
   );
 
-  const [probView, setProbView] = useState<"journey" | "chances" | "finishes">("journey");
+  const [probView, setProbView] = useState<"journey" | "chances" | "finishes">(() => {
+    const pv = searchParams.get("pview");
+    if (pv === "journey" || pv === "chances" || pv === "finishes") return pv;
+    return "journey";
+  });
+
+  // Sync pview to URL
+  const setProbViewWithUrl = useCallback((view: "journey" | "chances" | "finishes") => {
+    setProbView(view);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", "probability");
+    url.searchParams.set("pview", view);
+    window.history.replaceState({}, "", url.toString());
+  }, []);
 
   // Build team seeds map from bracket champion picks
   const teamSeeds = useMemo(() => {
@@ -659,7 +672,7 @@ function LeaderboardContentInner({
               ]).map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => setProbView(opt.value)}
+                  onClick={() => setProbViewWithUrl(opt.value)}
                   className={`rounded-card px-2.5 py-1 text-xs font-label h-7 transition-colors ${
                     probView === opt.value
                       ? "bg-primary/15 text-primary border border-primary/30"
