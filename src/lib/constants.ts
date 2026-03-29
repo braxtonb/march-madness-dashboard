@@ -69,6 +69,6 @@ export const NAV_PAGES = [
   { path: "/", label: "Standings", icon: "trophy" },
   { path: "/picks", label: "Bracket", icon: "bracket" },
   { path: "/simulator", label: "Simulator", icon: "sliders" },
-  { path: "/head-to-head", label: "H2H", icon: "scale" },
+  { path: "/head-to-head", label: "Head-to-Head", icon: "scale" },
   { path: "/awards", label: "Awards", icon: "award" },
 ] as const;

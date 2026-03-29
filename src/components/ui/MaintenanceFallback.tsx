@@ -3,16 +3,26 @@
 import { useState, useEffect } from "react";
 
 const BASKETBALL_FACTS = [
-  "The first March Madness tournament was held in 1939 with just 8 teams.",
-  "A 16-seed has only beaten a 1-seed twice in tournament history.",
-  "The most common Final Four seed is a 1-seed, appearing over 60% of the time.",
-  "Villanova's 2018 championship team shot 67.3% in the title game — a record.",
-  "The term 'March Madness' was first used for high school basketball in 1939.",
-  "Duke and North Carolina are the only teams to have 5+ championships.",
-  "The biggest upset by seed differential was a 15-seed beating a 2-seed.",
-  "No team has ever gone 6-0 in the tournament with all games decided by 1 point.",
-  "The tournament expanded to 64 teams in 1985, creating the bracket we know today.",
-  "Loyola Chicago's Sister Jean became a celebrity at age 98 during the 2018 tournament.",
+  "The first NCAA tournament was held in 1939 with just 8 teams. Oregon won the inaugural championship.",
+  "UMBC became the first 16-seed to beat a 1-seed in 2018, defeating Virginia 74–54.",
+  "UCLA holds the record with 11 national championships, including 7 straight from 1967–1973.",
+  "The term 'March Madness' was coined by Illinois high school official Henry V. Porter in 1939.",
+  "Christian Laettner's buzzer-beater against Kentucky in 1992 is often called the greatest game ever played.",
+  "The tournament expanded to 64 teams in 1985, creating the bracket format we know today.",
+  "Loyola Chicago's Sister Jean became a celebrity at age 98 cheering her team to the 2018 Final Four.",
+  "In 2023, the odds of picking a perfect bracket were estimated at 1 in 9.2 quintillion.",
+  "The lowest seed to ever reach the Final Four is an 11-seed — it's happened 5 times.",
+  "Villanova's Kris Jenkins hit a buzzer-beating three to win the 2016 championship — one of the most iconic shots in history.",
+  "The 'Cinderella' term for tournament underdogs dates back to the 1950s tournament coverage.",
+  "George Mason, an 11-seed, shocked the world by reaching the 2006 Final Four.",
+  "North Carolina and Duke are only 8 miles apart — the closest rivalry in college basketball.",
+  "The tournament generates over $1 billion in TV ad revenue, making it one of the most lucrative sporting events.",
+  "Steph Curry led 10-seed Davidson on a Cinderella run to the Elite Eight in 2008, launching his career.",
+  "The First Four (play-in games) were added in 2011, expanding the field to 68 teams.",
+  "Coach John Wooden won 10 NCAA championships with UCLA, a record that may never be broken.",
+  "In 2011, Butler played the championship game in their home city of Indianapolis — and lost by 2.",
+  "The 'One Shining Moment' song has been played at the end of every tournament since 1987.",
+  "Warren Buffett once offered $1 billion for a perfect bracket. Nobody has ever come close.",
 ];
 
 export function MaintenanceFallback() {
