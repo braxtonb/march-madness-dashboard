@@ -250,7 +250,7 @@ export function ProbabilityClient({
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
         return a[0].localeCompare(b[0]);
       })
-      .map(([c, seed]) => ({ value: c, label: `${seed || ""} ${c}`.trim(), logo: teamLogos[c], group: eliminatedTeamsSet.has(c) ? "eliminated" : "alive" }));
+      .map(([c, seed]) => ({ value: c, label: c, logo: teamLogos[c], seed, eliminated: eliminatedTeamsSet.has(c), group: eliminatedTeamsSet.has(c) ? "eliminated" : "alive" }));
   }, [probData, eliminatedTeamsSet]);
   const handleFinishChampionChange = useCallback((ids: string[]) => {
     setFinishChampionFilter(ids);

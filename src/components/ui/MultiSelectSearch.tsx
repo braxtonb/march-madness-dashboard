@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useMyBracketState } from "./MyBracketProvider";
+import { TeamPill } from "./TeamPill";
 
 /* -- types -- */
 
@@ -11,6 +12,8 @@ export interface MultiSelectOption {
   sublabel?: string;
   logo?: string;
   group?: string;
+  seed?: number;
+  eliminated?: boolean;
 }
 
 export interface MultiSelectGroup {
@@ -311,15 +314,22 @@ function MultiSelectSearchInner({
           <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
         )}
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          {o.logo && (
-            <img src={o.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px] shrink-0" />
+          {o.logo ? (
+            <TeamPill
+              name={o.value}
+              seed={o.seed}
+              logo={o.logo}
+              eliminated={o.eliminated}
+              showStatus={o.eliminated !== undefined}
+            />
+          ) : (
+            <div className="min-w-0">
+              <div className="text-on-surface truncate">{highlightMatch(o.label, query)}</div>
+              {o.sublabel && o.sublabel !== o.label && (
+                <div className="text-[10px] text-on-surface-variant truncate">{highlightMatch(o.sublabel, query)}</div>
+              )}
+            </div>
           )}
-          <div className="min-w-0">
-            <div className="text-on-surface truncate">{highlightMatch(o.label, query)}</div>
-            {o.sublabel && o.sublabel !== o.label && (
-              <div className="text-[10px] text-on-surface-variant truncate">{highlightMatch(o.sublabel, query)}</div>
-            )}
-          </div>
         </div>
       </button>
     );

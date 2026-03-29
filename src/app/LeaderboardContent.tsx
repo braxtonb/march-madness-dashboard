@@ -246,7 +246,7 @@ function LeaderboardContentInner({
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
         return a[0].localeCompare(b[0]);
       })
-      .map(([c]) => ({ value: c, label: `${teamSeeds[c] || ""} ${c}`.trim(), logo: teamLogos[c], group: eliminatedTeams.has(c) ? "eliminated" : "alive" }));
+      .map(([c]) => ({ value: c, label: c, logo: teamLogos[c], seed: teamSeeds[c], eliminated: eliminatedTeams.has(c), group: eliminatedTeams.has(c) ? "eliminated" : "alive" }));
   }, [brackets, eliminatedTeams, teamLogos, teamSeeds]);
   const changeChampionFilter = useCallback((ids: string[]) => {
     setChampionFilter(ids);

@@ -503,7 +503,7 @@ export default function SimulatorPage() {
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
         return a[0].localeCompare(b[0]);
       })
-      .map(([c, seed]) => ({ value: c, label: `${seed || ""} ${c}`.trim(), logo: logos[c], group: elim.has(c) ? "eliminated" : "alive" }));
+      .map(([c, seed]) => ({ value: c, label: c, logo: logos[c], seed, eliminated: elim.has(c), group: elim.has(c) ? "eliminated" : "alive" }));
   }, [simResults, data]);
 
   // Filter and sort sim results

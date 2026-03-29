@@ -120,7 +120,7 @@ export function InsightFortuneScatter({ data, eliminatedTeams = [], teamSeeds = 
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
         return a[0].localeCompare(b[0]);
       })
-      .map(([c, logo]) => ({ value: c, label: `${teamSeeds[c] || ""} ${c}`.trim(), logo, group: elim.has(c) ? "eliminated" : "alive" }));
+      .map(([c, logo]) => ({ value: c, label: c, logo, seed: teamSeeds[c], eliminated: elim.has(c), group: elim.has(c) ? "eliminated" : "alive" }));
   }, [data, eliminatedTeams, teamSeeds]);
 
   // Apply filters
