@@ -118,6 +118,7 @@ function GameCell({
   teamLogos = {},
   teamAbbrevs = {},
   liveGame,
+  derivedTeam,
 }: {
   game: Game;
   pickSplit: { team1Count: number; team2Count: number };
@@ -132,17 +133,24 @@ function GameCell({
   teamLogos?: Record<string, string>;
   teamAbbrevs?: Record<string, string>;
   liveGame?: LiveGame;
+  derivedTeam?: { team1?: string; seed1?: number; team2?: string; seed2?: number };
 }) {
+  // Merge derived teams for TBD games (display only)
+  const dTeam1 = game.team1 || derivedTeam?.team1 || "";
+  const dSeed1 = game.seed1 || derivedTeam?.seed1 || 0;
+  const dTeam2 = game.team2 || derivedTeam?.team2 || "";
+  const dSeed2 = game.seed2 || derivedTeam?.seed2 || 0;
+
   const total = pickSplit.team1Count + pickSplit.team2Count;
   const hasPicks = total > 0;
   const pct1 = hasPicks ? Math.round((pickSplit.team1Count / total) * 100) : 0;
   const pct2 = hasPicks ? 100 - pct1 : 0;
   const isCompleted = game.completed;
 
-  const team1IsWinner = isCompleted && game.winner === game.team1;
-  const team2IsWinner = isCompleted && game.winner === game.team2;
-  const team1Eliminated = eliminatedTeams?.has(game.team1);
-  const team2Eliminated = eliminatedTeams?.has(game.team2);
+  const team1IsWinner = isCompleted && game.winner === dTeam1;
+  const team2IsWinner = isCompleted && game.winner === dTeam2;
+  const team1Eliminated = dTeam1 ? eliminatedTeams?.has(dTeam1) : false;
+  const team2Eliminated = dTeam2 ? eliminatedTeams?.has(dTeam2) : false;
 
   // Determine the displayed pick: bracket pick if selected, otherwise consensus (most popular)
   // For TBD games where game.team1/team2 are empty, use gameTeams (derived from all brackets' picks)
@@ -183,7 +191,7 @@ function GameCell({
   return (
     <button
       onClick={onClick}
-      className={`block rounded border ${liveGame?.status === "in" ? "border-primary/60 shadow-[0_0_8px_rgba(255,107,53,0.3),0_0_16px_rgba(255,107,53,0.15)]" : borderClass} bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"} ${!game.team1 && !game.team2 ? "opacity-80" : ""}`}
+      className={`block rounded border ${liveGame?.status === "in" ? "border-primary/60 shadow-[0_0_8px_rgba(255,107,53,0.3),0_0_16px_rgba(255,107,53,0.15)]" : borderClass} bg-surface-container hover:bg-surface-bright transition-colors cursor-pointer shrink-0 ${mirror ? "text-right" : "text-left"} ${!dTeam1 && !dTeam2 ? "opacity-80" : ""}`}
       style={{ width: GAME_W }}
     >
       {/* Pick header — shows bracket pick or group consensus */}
@@ -209,19 +217,19 @@ function GameCell({
         <span className="truncate flex items-center gap-1">
           {mirror ? (
             <>
-              {teamLogos[game.team1] && <img src={teamLogos[game.team1]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
-              {abbr(game.team1)}{" "}
+              {teamLogos[dTeam1] && <img src={teamLogos[dTeam1]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {dTeam1 ? abbr(dTeam1) : "TBD"}{" "}
               <span className="text-on-surface-variant/60 ml-0.5">
-                {game.seed1 || ""}
+                {dSeed1 || ""}
               </span>
             </>
           ) : (
             <>
               <span className="text-on-surface-variant/60 mr-0.5">
-                {game.seed1 || ""}
+                {dSeed1 || ""}
               </span>
-              {teamLogos[game.team1] && <img src={teamLogos[game.team1]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
-              {abbr(game.team1)}
+              {teamLogos[dTeam1] && <img src={teamLogos[dTeam1]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {dTeam1 ? abbr(dTeam1) : "TBD"}
             </>
           )}
         </span>
@@ -240,19 +248,19 @@ function GameCell({
         <span className="truncate flex items-center gap-1">
           {mirror ? (
             <>
-              {teamLogos[game.team2] && <img src={teamLogos[game.team2]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
-              {abbr(game.team2)}{" "}
+              {teamLogos[dTeam2] && <img src={teamLogos[dTeam2]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {dTeam2 ? abbr(dTeam2) : "TBD"}{" "}
               <span className="text-on-surface-variant/60 ml-0.5">
-                {game.seed2 || ""}
+                {dSeed2 || ""}
               </span>
             </>
           ) : (
             <>
               <span className="text-on-surface-variant/60 mr-0.5">
-                {game.seed2 || ""}
+                {dSeed2 || ""}
               </span>
-              {teamLogos[game.team2] && <img src={teamLogos[game.team2]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
-              {abbr(game.team2)}
+              {teamLogos[dTeam2] && <img src={teamLogos[dTeam2]} alt="" className="w-4 h-4 shrink-0 object-contain" />}
+              {dTeam2 ? abbr(dTeam2) : "TBD"}
             </>
           )}
         </span>
@@ -346,6 +354,7 @@ function RegionBracket({
   teamLogos = {},
   teamAbbrevs = {},
   getLiveGame,
+  derivedTeams,
 }: {
   games: Game[];
   region: string;
@@ -359,6 +368,7 @@ function RegionBracket({
   teamLogos?: Record<string, string>;
   teamAbbrevs?: Record<string, string>;
   getLiveGame?: (game: Game) => LiveGame | undefined;
+  derivedTeams?: Map<string, { team1?: string; seed1?: number; team2?: string; seed2?: number }>;
 }) {
   const regionGames = useMemo(
     () => games.filter((g) => g.region === region),
@@ -482,6 +492,7 @@ function RegionBracket({
                     teamLogos={teamLogos}
                     teamAbbrevs={teamAbbrevs}
                     liveGame={getLiveGame?.(game)}
+                    derivedTeam={derivedTeams?.get(game.game_id)}
                   />
                 </div>
               ))}
@@ -555,6 +566,56 @@ export function BracketView({
       }
     }
     return Array.from(regionSet).sort();
+  }, [games]);
+
+  // Derive known teams for TBD games from completed feeder games
+  const derivedTeams = useMemo(() => {
+    const ROUND_SEQ: Round[] = ["R64", "R32", "S16", "E8", "FF", "CHAMP"];
+    const byRegionRound = new Map<string, Game[]>();
+    for (const g of games) {
+      const key = `${g.region}-${g.round}`;
+      if (!byRegionRound.has(key)) byRegionRound.set(key, []);
+      byRegionRound.get(key)!.push(g);
+    }
+    const e8Games = games.filter((g) => g.round === "E8").sort((a, b) => a.game_id.localeCompare(b.game_id));
+    const ffGamesAll = games.filter((g) => g.round === "FF").sort((a, b) => a.game_id.localeCompare(b.game_id));
+
+    const derived = new Map<string, { team1?: string; seed1?: number; team2?: string; seed2?: number }>();
+
+    for (const g of games) {
+      if (g.team1 && g.team2) continue; // Already has both teams
+      if (g.completed) continue;
+
+      const ri = ROUND_SEQ.indexOf(g.round as Round);
+      if (ri <= 0) continue;
+
+      let feeders: Game[] = [];
+      if (g.round === "FF") {
+        const idx = ffGamesAll.indexOf(g);
+        if (idx === 0 && e8Games.length >= 2) feeders = [e8Games[0], e8Games[1]];
+        else if (idx === 1 && e8Games.length >= 4) feeders = [e8Games[2], e8Games[3]];
+      } else if (g.round === "CHAMP") {
+        feeders = ffGamesAll;
+      } else {
+        const prevRound = ROUND_SEQ[ri - 1];
+        feeders = (byRegionRound.get(`${g.region}-${prevRound}`) || []).sort((a, b) => a.game_id.localeCompare(b.game_id));
+      }
+
+      const winners = feeders.filter((f) => f.completed && f.winner).map((f) => ({
+        name: f.winner,
+        seed: f.winner === f.team1 ? f.seed1 : f.seed2,
+      }));
+
+      if (winners.length > 0) {
+        derived.set(g.game_id, {
+          team1: winners[0]?.name || undefined,
+          seed1: winners[0]?.seed || undefined,
+          team2: winners[1]?.name || undefined,
+          seed2: winners[1]?.seed || undefined,
+        });
+      }
+    }
+    return derived;
   }, [games]);
 
   const hasFinalRounds = useMemo(
@@ -674,8 +735,9 @@ export function BracketView({
                 {roundGames.map((game) => {
                   const split = pickSplits[game.game_id] || { team1Count: 0, team2Count: 0 };
                   const pick = highlightBracketPicks?.[game.game_id];
-                  const t1 = game.team1 || "TBD";
-                  const t2 = game.team2 || "TBD";
+                  const dt = derivedTeams.get(game.game_id);
+                  const t1 = game.team1 || dt?.team1 || "TBD";
+                  const t2 = game.team2 || dt?.team2 || "TBD";
                   const gt = gameTeamsMap[game.game_id];
                   const pickName = pick || (gt
                     ? (split.team1Count >= split.team2Count ? gt[0] : gt[1])
@@ -703,13 +765,23 @@ export function BracketView({
                   const mPct1 = mHasPicks ? Math.round((split.team1Count / mTotal) * 100) : 0;
                   const mPct2 = mHasPicks ? 100 - mPct1 : 0;
 
+                  const mobileLive = getLiveGame(game);
+                  const mobileIsLive = mobileLive?.status === "in";
+                  const mobileBorderClass = mobileIsLive
+                    ? "border border-primary/60 shadow-[0_0_8px_rgba(255,107,53,0.3)]"
+                    : pickIsCorrect
+                      ? "border border-emerald-500/40"
+                      : (pickIsWrong || pickEliminated)
+                        ? "border border-red-400/30"
+                        : "";
+
                   return (
                     <button
                       key={game.game_id}
                       onClick={onGameClick ? () => onGameClick(game.game_id) : undefined}
                       className={`w-full text-left rounded-lg px-3 py-2 transition-colors ${
                         game.completed ? "bg-surface-container" : "bg-surface-container/70"
-                      } ${onGameClick ? "cursor-pointer hover:bg-surface-bright" : ""}`}
+                      } ${mobileBorderClass} ${onGameClick ? "cursor-pointer hover:bg-surface-bright" : ""}`}
                     >
                       {pickName && (
                         <div className={`text-xs font-label font-bold mb-1 flex items-center gap-1 ${
@@ -731,6 +803,22 @@ export function BracketView({
                           {shortName(t2)}{game.seed2 ? ` ${game.seed2}` : ""}
                         </span>
                       </div>
+                      {/* Live score / status footer */}
+                      {mobileIsLive && mobileLive && (
+                        <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-outline-variant/10">
+                          <span className="text-[10px] font-label text-primary font-semibold flex items-center gap-1">
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                            </span>
+                            {mobileLive.team1.score}–{mobileLive.team2.score}
+                          </span>
+                          <span className="text-[10px] text-primary font-label">{mobileLive.statusDetail}</span>
+                        </div>
+                      )}
+                      {!mobileIsLive && mobileLive?.status === "pre" && (
+                        <div className="mt-1 text-[10px] text-on-surface-variant/70 text-right">{mobileLive.statusDetail}</div>
+                      )}
                     </button>
                   );
                 })}
@@ -811,6 +899,7 @@ export function BracketView({
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
                 getLiveGame={getLiveGame}
+                derivedTeams={derivedTeams}
               />
             )}
             {hasR2 && (
@@ -827,6 +916,7 @@ export function BracketView({
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
                 getLiveGame={getLiveGame}
+                derivedTeams={derivedTeams}
               />
             )}
           </div>
@@ -857,6 +947,7 @@ export function BracketView({
                     teamLogos={teamLogos}
                     teamAbbrevs={teamAbbrevs}
                     liveGame={getLiveGame(ffLeft)}
+                    derivedTeam={derivedTeams.get(ffLeft.game_id)}
                   />
                 </div>
               )}
@@ -884,6 +975,7 @@ export function BracketView({
                   teamLogos={teamLogos}
                   teamAbbrevs={teamAbbrevs}
                   liveGame={getLiveGame(game)}
+                  derivedTeam={derivedTeams.get(game.game_id)}
                 />
               ))}
 
@@ -911,6 +1003,7 @@ export function BracketView({
                     teamLogos={teamLogos}
                     teamAbbrevs={teamAbbrevs}
                     liveGame={getLiveGame(ffRight)}
+                    derivedTeam={derivedTeams.get(ffRight.game_id)}
                   />
                 </div>
               )}
@@ -933,6 +1026,7 @@ export function BracketView({
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
                 getLiveGame={getLiveGame}
+                derivedTeams={derivedTeams}
               />
             )}
             {hasR4 && (
@@ -949,6 +1043,7 @@ export function BracketView({
                 teamLogos={teamLogos}
                 teamAbbrevs={teamAbbrevs}
                 getLiveGame={getLiveGame}
+                derivedTeams={derivedTeams}
               />
             )}
           </div>

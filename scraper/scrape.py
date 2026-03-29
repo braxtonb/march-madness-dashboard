@@ -75,10 +75,10 @@ def run():
         with open(users_path) as f:
             users_lookup = json.load(f)
 
-    # Merge full names from users.json (prefer over API since API may not return fullName without auth)
+    # Merge full names from users.json (always prefer users.json since API requires auth for real names)
     for bracket in brackets:
         user = users_lookup.get(bracket['id'], {})
-        if user.get('fullName') and not bracket.get('full_name'):
+        if user.get('fullName'):
             bracket['full_name'] = user['fullName']
 
     # Apply prev_rank from stored state

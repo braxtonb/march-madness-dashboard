@@ -7,6 +7,7 @@ import CompareProvider from "@/components/ui/CompareProvider";
 import CompareBar from "@/components/ui/CompareBar";
 import MyBracketProvider from "@/components/ui/MyBracketProvider";
 import { LiveTicker } from "@/components/layout/LiveTicker";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
@@ -60,13 +61,14 @@ export default async function RootLayout({
           <LiveTicker games={games} />
           <div className="flex">
             <Sidebar />
-            <main className="ml-0 md:ml-16 w-full min-h-[calc(100vh-52px)] px-4 py-4 sm:p-6">
+            <main className="ml-0 md:ml-16 w-full min-h-[calc(100vh-52px)] px-4 py-4 sm:p-6 pb-20 md:pb-6">
               <div className="max-w-7xl mx-auto">
                 {children}
               </div>
             </main>
           </div>
           <CompareBar brackets={brackets} />
+          <BottomNav />
         </CompareProvider>
         </MyBracketProvider>
       </body>
