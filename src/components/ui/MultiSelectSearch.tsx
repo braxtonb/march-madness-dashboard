@@ -443,37 +443,7 @@ function MultiSelectSearchInner({
 
             {/* Scrollable list -- scroll position preserved on item toggle */}
             <div ref={listRef} className="overflow-y-auto flex-1">
-              {groups && !query ? (
-                // Grouped rendering
-                <>
-                  {groups.map((group) => {
-                    const groupItems = filtered.filter((o) => o.group === group.key);
-                    if (groupItems.length === 0) return null;
-                    return (
-                      <div key={group.key}>
-                        <div className="sticky top-0 bg-surface-container/95 backdrop-blur-sm px-3 py-1 border-b border-outline-variant/10">
-                          <span className="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">{group.label} ({groupItems.length})</span>
-                        </div>
-                        {groupItems.map((o) => {
-                          const globalIdx = filtered.indexOf(o);
-                          return renderItem(o, globalIdx);
-                        })}
-                      </div>
-                    );
-                  })}
-                  {/* Ungrouped items */}
-                  {filtered.filter((o) => !o.group || !groups.some((g) => g.key === o.group)).length > 0 && (
-                    <div>
-                      {filtered.filter((o) => !o.group || !groups.some((g) => g.key === o.group)).map((o) => {
-                        const globalIdx = filtered.indexOf(o);
-                        return renderItem(o, globalIdx);
-                      })}
-                    </div>
-                  )}
-                </>
-              ) : (
-              filtered.map((o, idx) => renderItem(o, idx))
-              )}
+              {filtered.map((o, idx) => renderItem(o, idx))}
               {filtered.length === 0 && (
                 <p className="text-on-surface-variant text-xs text-center py-4">
                   No matches

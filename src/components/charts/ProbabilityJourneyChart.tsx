@@ -388,9 +388,7 @@ export function ProbabilityJourneyChart({
             const elimTeams = championOptions.filter((o) => !o.alive);
             return (
               <>
-                {aliveTeams.length > 0 && <span className="text-[10px] font-label text-on-surface-variant/60 mr-1">Still in it:</span>}
                 {aliveTeams.map((o) => renderChampPill(o))}
-                {elimTeams.length > 0 && <span className="text-[10px] font-label text-on-surface-variant/40 ml-2 mr-1">Eliminated:</span>}
                 {elimTeams.map((o) => renderChampPill(o))}
               </>
             );
