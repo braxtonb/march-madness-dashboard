@@ -246,8 +246,8 @@ function LeaderboardContentInner({
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
         return a[0].localeCompare(b[0]);
       })
-      .map(([c]) => ({ value: c, label: c, group: eliminatedTeams.has(c) ? "eliminated" : "alive" }));
-  }, [brackets, eliminatedTeams]);
+      .map(([c]) => ({ value: c, label: `${teamSeeds[c] || ""} ${c}`.trim(), logo: teamLogos[c], group: eliminatedTeams.has(c) ? "eliminated" : "alive" }));
+  }, [brackets, eliminatedTeams, teamLogos, teamSeeds]);
   const changeChampionFilter = useCallback((ids: string[]) => {
     setChampionFilter(ids);
     const url = new URL(window.location.href);
@@ -641,7 +641,7 @@ function LeaderboardContentInner({
           {/* Chart + legend side by side on large screens */}
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="rounded-card bg-surface-container p-5 flex-1 min-w-0">
-              <InsightFortuneScatter data={scatterData} eliminatedTeams={Array.from(eliminatedTeams)} />
+              <InsightFortuneScatter data={scatterData} eliminatedTeams={Array.from(eliminatedTeams)} teamSeeds={teamSeeds} />
             </div>
             <div className="lg:w-64 shrink-0 space-y-2">
               <div className="rounded-card bg-surface-container p-3">

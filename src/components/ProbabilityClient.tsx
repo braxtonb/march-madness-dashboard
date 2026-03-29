@@ -241,16 +241,16 @@ export function ProbabilityClient({
     return v ? v.split(",").filter(Boolean) : [];
   });
   const finishChampionOptions: MultiSelectOption[] = useMemo(() => {
-    const map = new Set<string>();
-    for (const d of probData) if (d.champion) map.add(d.champion);
-    return [...map]
+    const champSeeds = new Map<string, number>();
+    for (const d of probData) if (d.champion) champSeeds.set(d.champion, d.championSeed || 0);
+    return [...champSeeds.entries()]
       .sort((a, b) => {
-        const aAlive = !eliminatedTeamsSet.has(a);
-        const bAlive = !eliminatedTeamsSet.has(b);
+        const aAlive = !eliminatedTeamsSet.has(a[0]);
+        const bAlive = !eliminatedTeamsSet.has(b[0]);
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
-        return a.localeCompare(b);
+        return a[0].localeCompare(b[0]);
       })
-      .map((c) => ({ value: c, label: c, group: eliminatedTeamsSet.has(c) ? "eliminated" : "alive" }));
+      .map(([c, seed]) => ({ value: c, label: `${seed || ""} ${c}`.trim(), logo: teamLogos[c], group: eliminatedTeamsSet.has(c) ? "eliminated" : "alive" }));
   }, [probData, eliminatedTeamsSet]);
   const handleFinishChampionChange = useCallback((ids: string[]) => {
     setFinishChampionFilter(ids);

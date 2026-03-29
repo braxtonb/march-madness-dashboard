@@ -489,18 +489,21 @@ export default function SimulatorPage() {
   }, [data, selections]);
 
   const simChampionOptions: MultiSelectOption[] = useMemo(() => {
-    const map = new Set<string>();
-    for (const r of simResults) if (r.champion) map.add(r.champion);
+    const champSeeds = new Map<string, number>();
+    for (const r of simResults) if (r.champion) champSeeds.set(r.champion, 0);
+    // Get seeds from brackets
+    for (const b of (data?.brackets || [])) if (b.champion_pick && champSeeds.has(b.champion_pick)) champSeeds.set(b.champion_pick, b.champion_seed || 0);
     const elimList: string[] = data?.derived?.eliminated_teams || [];
     const elim = new Set(elimList);
-    return [...map]
+    const logos: Record<string, string> = data?.derived?.team_logos || {};
+    return [...champSeeds.entries()]
       .sort((a, b) => {
-        const aAlive = !elim.has(a);
-        const bAlive = !elim.has(b);
+        const aAlive = !elim.has(a[0]);
+        const bAlive = !elim.has(b[0]);
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
-        return a.localeCompare(b);
+        return a[0].localeCompare(b[0]);
       })
-      .map((c) => ({ value: c, label: c, group: elim.has(c) ? "eliminated" : "alive" }));
+      .map(([c, seed]) => ({ value: c, label: `${seed || ""} ${c}`.trim(), logo: logos[c], group: elim.has(c) ? "eliminated" : "alive" }));
   }, [simResults, data]);
 
   // Filter and sort sim results

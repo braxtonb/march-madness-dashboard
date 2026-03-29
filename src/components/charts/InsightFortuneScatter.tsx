@@ -57,7 +57,7 @@ function clusterPoints(data: ScatterPoint[], radius: number = 5): Cluster[] {
 
 type PointsOp = "gte" | "lte" | "eq";
 
-export function InsightFortuneScatter({ data, eliminatedTeams = [] }: { data: ScatterPoint[]; eliminatedTeams?: string[] }) {
+export function InsightFortuneScatter({ data, eliminatedTeams = [], teamSeeds = {} }: { data: ScatterPoint[]; eliminatedTeams?: string[]; teamSeeds?: Record<string, number> }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
@@ -120,8 +120,8 @@ export function InsightFortuneScatter({ data, eliminatedTeams = [] }: { data: Sc
         if (aAlive !== bAlive) return aAlive ? -1 : 1;
         return a[0].localeCompare(b[0]);
       })
-      .map(([c, logo]) => ({ value: c, label: c, logo, group: elim.has(c) ? "eliminated" : "alive" }));
-  }, [data, eliminatedTeams]);
+      .map(([c, logo]) => ({ value: c, label: `${teamSeeds[c] || ""} ${c}`.trim(), logo, group: elim.has(c) ? "eliminated" : "alive" }));
+  }, [data, eliminatedTeams, teamSeeds]);
 
   // Apply filters
   const filtered = useMemo(() => {
