@@ -12,4 +12,3 @@ node_modules/
 .vercel
 scraper/data/
 docs/
-public/data.json
