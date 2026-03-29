@@ -462,7 +462,11 @@ export function PicksContent({
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {champDistribution.map((entry) => (
+            {[...champDistribution].sort((a, b) => {
+              if (a.alive !== b.alive) return a.alive ? -1 : 1;
+              if (a.seed !== b.seed) return a.seed - b.seed;
+              return a.name.localeCompare(b.name);
+            }).map((entry) => (
               <div
                 key={entry.name}
                 className="rounded-card bg-surface-container overflow-hidden"

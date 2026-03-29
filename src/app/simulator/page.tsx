@@ -959,6 +959,20 @@ export default function SimulatorPage() {
           <p className="text-[10px] text-on-surface-variant leading-relaxed">
             <span className="text-primary font-semibold">Path to Victory</span> simulates every remaining game in a bracket&apos;s favor. When their predicted team is still alive, it wins. When eliminated, the team with the most value to the bracket advances instead.
           </p>
+          <div className="flex items-center gap-4 text-[10px] text-on-surface-variant mt-2 pt-2 border-t border-outline-variant/10">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-3 rounded-sm bg-secondary/15 border-l-2 border-l-secondary" />
+              <span>Completed (winner)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-3 rounded-sm border-l-2 border-l-tertiary/40" />
+              <span>Your pick (simulated)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-3 rounded-sm bg-surface-container" />
+              <span>Not yet picked</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -995,14 +1009,14 @@ export default function SimulatorPage() {
 
                       if (g.completed) {
                         return (
-                          <div key={g.game_id} className="flex items-center gap-1.5 py-1 px-1 opacity-50">
-                            <span className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label inline-flex items-center gap-1 ${g.winner === g.team1 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
-                              {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+                          <div key={g.game_id} className="flex items-center gap-1.5 py-1 px-1">
+                            <span className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label inline-flex items-center gap-1 ${g.winner === g.team1 ? "bg-secondary/15 text-secondary font-semibold" : "text-on-surface-variant/50 line-through"}`}>
+                              {teamLogos[g.team1] && <img src={teamLogos[g.team1]} alt="" className={`w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px] ${g.winner !== g.team1 ? "opacity-40" : ""}`} />}
                               <span className="text-on-surface-variant/60">{g.seed1}</span> {g.team1}{g.winner === g.team1 && " \u2713"}
                             </span>
-                            <span className="text-[9px] text-on-surface-variant shrink-0">vs</span>
-                            <span className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label inline-flex items-center gap-1 ${g.winner === g.team2 ? "bg-secondary/10 text-secondary" : "text-on-surface-variant"}`}>
-                              {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className="w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px]" />}
+                            <span className="text-[9px] text-on-surface-variant/40 shrink-0">vs</span>
+                            <span className={`flex-1 rounded px-1.5 py-1 text-[11px] font-label inline-flex items-center gap-1 ${g.winner === g.team2 ? "bg-secondary/15 text-secondary font-semibold" : "text-on-surface-variant/50 line-through"}`}>
+                              {teamLogos[g.team2] && <img src={teamLogos[g.team2]} alt="" className={`w-4 h-4 inline-block rounded-full bg-on-surface/10 p-[1px] ${g.winner !== g.team2 ? "opacity-40" : ""}`} />}
                               <span className="text-on-surface-variant/60">{g.seed2}</span> {g.team2}{g.winner === g.team2 && " \u2713"}
                             </span>
                             {g.espn_url && (
