@@ -60,8 +60,8 @@
     "periodResultsNotificationsEnabled": true,
     "periodStartNotificationsEnabled": false,
     "supportedNotificationChannels": [
-      "TC",
-      "GAMBIT"
+      "GAMBIT",
+      "TC"
     ]
   },
   "clientFlags": {
@@ -84,15 +84,15 @@
     "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
   },
   "currentScoringPeriod": {
-    "abbrev": "S16",
+    "abbrev": "E8",
     "allPropositionsAutomated": true,
     "allPropositionsLocked": true,
-    "endDate": 1774699200000,
-    "firstPropositionLockDate": 1774566600000,
-    "id": 3,
-    "label": "Sweet 16",
-    "startDate": 1774267200000,
-    "subLabel": "Mar 26 - 27",
+    "endDate": 1774872000000,
+    "firstPropositionLockDate": 1774735740000,
+    "id": 4,
+    "label": "Elite 8",
+    "startDate": 1774699200000,
+    "subLabel": "Mar 28 - 29",
     "subLabelShort": ""
   },
   "defaultGroupSettings": {
@@ -495,6 +495,20 @@
         "scoringPeriodId": 2,
         "sendInProgress": false,
         "sentDate": 1774282068676,
+        "type": "GAME_RESULTS"
+      },
+      {
+        "numberSent": 18045812,
+        "scoringPeriodId": 3,
+        "sendInProgress": false,
+        "sentDate": 1774703402709,
+        "type": "GAME_RESULTS_PUSH"
+      },
+      {
+        "numberSent": 10622000,
+        "scoringPeriodId": 3,
+        "sendInProgress": false,
+        "sentDate": 1774712784057,
         "type": "GAME_RESULTS"
       }
     ]
@@ -5088,7 +5102,7 @@
       "allPropositionsAutomated": true,
       "allPropositionsLocked": true,
       "endDate": 1775390400000,
-      "firstPropositionLockDate": 1775390400000,
+      "firstPropositionLockDate": 1775275200000,
       "id": 5,
       "label": "Final Four",
       "startDate": 1774872000000,
@@ -5111,215 +5125,17 @@
   ],
   "scoringStatus": {
     "anyPropositionScored": true,
-    "completionDate": 1774664407108,
+    "completionDate": 1774754534266,
     "entryCount": 27968488,
-    "groupCount": 1984489,
+    "groupCount": 1984612,
     "groupEntryRankSummaryByLeaderboard": {
       "2228cbba-0301-4975-ab9c-eb7cfa6c3859": {
         "rankByScore": {
-          "540.0": {
-            "count": 1063527,
-            "percentile": 0.39316027,
-            "rank": 16733495,
-            "score": 540.0
-          },
-          "530.0": {
-            "count": 985046,
-            "percentile": 0.35459149,
-            "rank": 17797022,
-            "score": 530.0
-          },
-          "520.0": {
-            "count": 910807,
-            "percentile": 0.31886882,
-            "rank": 18782068,
-            "score": 520.0
-          },
           "0.0": {
             "count": 1006690,
             "percentile": 0.0,
             "rank": 26568127,
             "score": 0.0
-          },
-          "570.0": {
-            "count": 1331057,
-            "percentile": 0.52694212,
-            "rank": 13044485,
-            "score": 570.0
-          },
-          "560.0": {
-            "count": 1223955,
-            "percentile": 0.47867137,
-            "rank": 14375542,
-            "score": 560.0
-          },
-          "550.0": {
-            "count": 1133998,
-            "percentile": 0.43428467,
-            "rank": 15599497,
-            "score": 550.0
-          },
-          "600.0": {
-            "count": 1471634,
-            "percentile": 0.68008381,
-            "rank": 8821631,
-            "score": 600.0
-          },
-          "590.0": {
-            "count": 1373930,
-            "percentile": 0.62671504,
-            "rank": 10293265,
-            "score": 590.0
-          },
-          "580.0": {
-            "count": 1377290,
-            "percentile": 0.57688951,
-            "rank": 11667195,
-            "score": 580.0
-          },
-          "630.0": {
-            "count": 1087089,
-            "percentile": 0.81409435,
-            "rank": 5126315,
-            "score": 630.0
-          },
-          "620.0": {
-            "count": 1252325,
-            "percentile": 0.7746711,
-            "rank": 6213404,
-            "score": 620.0
-          },
-          "610.0": {
-            "count": 1355902,
-            "percentile": 0.72925556,
-            "rank": 7465729,
-            "score": 610.0
-          },
-          "670.0": {
-            "count": 488406,
-            "percentile": 0.96149657,
-            "rank": 1061726,
-            "score": 670.0
-          },
-          "660.0": {
-            "count": 856201,
-            "percentile": 0.94378454,
-            "rank": 1550132,
-            "score": 660.0
-          },
-          "650.0": {
-            "count": 1146724,
-            "percentile": 0.91273443,
-            "rank": 2406333,
-            "score": 650.0
-          },
-          "640.0": {
-            "count": 1573258,
-            "percentile": 0.87114851,
-            "rank": 3553057,
-            "score": 640.0
-          },
-          "700.0": {
-            "count": 159880,
-            "percentile": 0.98832812,
-            "rank": 321851,
-            "score": 700.0
-          },
-          "690.0": {
-            "count": 235304,
-            "percentile": 0.98253007,
-            "rank": 481731,
-            "score": 690.0
-          },
-          "680.0": {
-            "count": 344691,
-            "percentile": 0.97399678,
-            "rank": 717035,
-            "score": 680.0
-          },
-          "730.0": {
-            "count": 134749,
-            "percentile": 0.99881983,
-            "rank": 32544,
-            "score": 730.0
-          },
-          "720.0": {
-            "count": 56809,
-            "percentile": 0.99393316,
-            "rank": 167293,
-            "score": 720.0
-          },
-          "710.0": {
-            "count": 97749,
-            "percentile": 0.99187298,
-            "rank": 224102,
-            "score": 710.0
-          },
-          "760.0": {
-            "count": 3277,
-            "percentile": 0.99990952,
-            "rank": 2496,
-            "score": 760.0
-          },
-          "750.0": {
-            "count": 7926,
-            "percentile": 0.99979068,
-            "rank": 5773,
-            "score": 750.0
-          },
-          "740.0": {
-            "count": 18845,
-            "percentile": 0.99950324,
-            "rank": 13699,
-            "score": 740.0
-          },
-          "790.0": {
-            "count": 293,
-            "percentile": 0.99999275,
-            "rank": 201,
-            "score": 790.0
-          },
-          "780.0": {
-            "count": 648,
-            "percentile": 0.99998212,
-            "rank": 494,
-            "score": 780.0
-          },
-          "770.0": {
-            "count": 1354,
-            "percentile": 0.99995862,
-            "rank": 1142,
-            "score": 770.0
-          },
-          "830.0": {
-            "count": 5,
-            "percentile": 0.99999985,
-            "rank": 5,
-            "score": 830.0
-          },
-          "820.0": {
-            "count": 22,
-            "percentile": 0.99999967,
-            "rank": 10,
-            "score": 820.0
-          },
-          "810.0": {
-            "count": 49,
-            "percentile": 0.99999888,
-            "rank": 32,
-            "score": 810.0
-          },
-          "800.0": {
-            "count": 120,
-            "percentile": 0.9999971,
-            "rank": 81,
-            "score": 800.0
-          },
-          "840.0": {
-            "count": 4,
-            "percentile": 1.0,
-            "rank": 1,
-            "score": 840.0
           },
           "10.0": {
             "count": 2,
@@ -5352,286 +5168,616 @@
             "score": 50.0
           },
           "60.0": {
-            "count": 6584,
-            "percentile": 0.03689457,
-            "rank": 26557456,
+            "count": 6580,
+            "percentile": 0.03689443,
+            "rank": 26557460,
             "score": 60.0
           },
           "70.0": {
-            "count": 9453,
-            "percentile": 0.03723738,
-            "rank": 26548003,
+            "count": 9440,
+            "percentile": 0.03723677,
+            "rank": 26548020,
             "score": 70.0
           },
           "80.0": {
-            "count": 70968,
-            "percentile": 0.03981104,
-            "rank": 26477035,
+            "count": 70936,
+            "percentile": 0.03980926,
+            "rank": 26477084,
             "score": 80.0
           },
           "90.0": {
-            "count": 6734,
-            "percentile": 0.04005524,
-            "rank": 26470301,
+            "count": 6652,
+            "percentile": 0.04005049,
+            "rank": 26470432,
             "score": 90.0
           },
           "100.0": {
-            "count": 11444,
-            "percentile": 0.04047026,
-            "rank": 26458857,
+            "count": 11287,
+            "percentile": 0.04045982,
+            "rank": 26459145,
             "score": 100.0
           },
           "110.0": {
-            "count": 5885,
-            "percentile": 0.04068368,
-            "rank": 26452972,
+            "count": 5519,
+            "percentile": 0.04065996,
+            "rank": 26453626,
             "score": 110.0
           },
           "120.0": {
-            "count": 9165,
-            "percentile": 0.04101605,
-            "rank": 26443807,
+            "count": 8725,
+            "percentile": 0.04097637,
+            "rank": 26444901,
             "score": 120.0
           },
           "130.0": {
-            "count": 8497,
-            "percentile": 0.04132419,
-            "rank": 26435310,
+            "count": 7799,
+            "percentile": 0.04125921,
+            "rank": 26437102,
             "score": 130.0
           },
           "140.0": {
-            "count": 12590,
-            "percentile": 0.04178077,
-            "rank": 26422720,
+            "count": 11484,
+            "percentile": 0.04167567,
+            "rank": 26425618,
             "score": 140.0
           },
           "150.0": {
-            "count": 15605,
-            "percentile": 0.04234668,
-            "rank": 26407115,
+            "count": 13909,
+            "percentile": 0.04218008,
+            "rank": 26411709,
             "score": 150.0
           },
           "160.0": {
-            "count": 24683,
-            "percentile": 0.04324181,
-            "rank": 26382432,
+            "count": 22343,
+            "percentile": 0.04299035,
+            "rank": 26389366,
             "score": 160.0
           },
           "170.0": {
-            "count": 24464,
-            "percentile": 0.044129,
-            "rank": 26357968,
+            "count": 21169,
+            "percentile": 0.04375804,
+            "rank": 26368197,
             "score": 170.0
           },
           "180.0": {
-            "count": 29703,
-            "percentile": 0.04520618,
-            "rank": 26328265,
+            "count": 25410,
+            "percentile": 0.04467954,
+            "rank": 26342787,
             "score": 180.0
           },
           "190.0": {
-            "count": 35530,
-            "percentile": 0.04649467,
-            "rank": 26292735,
+            "count": 29930,
+            "percentile": 0.04576495,
+            "rank": 26312857,
             "score": 190.0
           },
           "200.0": {
-            "count": 40991,
-            "percentile": 0.04798121,
-            "rank": 26251744,
+            "count": 34289,
+            "percentile": 0.04700844,
+            "rank": 26278568,
             "score": 200.0
           },
           "210.0": {
-            "count": 45854,
-            "percentile": 0.0496441,
-            "rank": 26205890,
+            "count": 38346,
+            "percentile": 0.04839905,
+            "rank": 26240222,
             "score": 210.0
           },
           "220.0": {
-            "count": 50735,
-            "percentile": 0.05148401,
-            "rank": 26155155,
+            "count": 42379,
+            "percentile": 0.04993593,
+            "rank": 26197843,
             "score": 220.0
           },
           "230.0": {
-            "count": 55363,
-            "percentile": 0.05349174,
-            "rank": 26099792,
+            "count": 46378,
+            "percentile": 0.05161782,
+            "rank": 26151465,
             "score": 230.0
           },
           "240.0": {
-            "count": 61063,
-            "percentile": 0.05570619,
-            "rank": 26038729,
+            "count": 51114,
+            "percentile": 0.05347147,
+            "rank": 26100351,
             "score": 240.0
           },
           "250.0": {
-            "count": 62080,
-            "percentile": 0.05795752,
-            "rank": 25976649,
+            "count": 51778,
+            "percentile": 0.0553492,
+            "rank": 26048573,
             "score": 250.0
           },
           "270.0": {
-            "count": 67381,
-            "percentile": 0.06276383,
-            "rank": 25844116,
+            "count": 55994,
+            "percentile": 0.05934397,
+            "rank": 25938418,
             "score": 270.0
           },
           "260.0": {
-            "count": 65152,
-            "percentile": 0.06032026,
-            "rank": 25911497,
+            "count": 54161,
+            "percentile": 0.05731335,
+            "rank": 25994412,
             "score": 260.0
           },
           "280.0": {
-            "count": 70522,
-            "percentile": 0.06532131,
-            "rank": 25773594,
+            "count": 57486,
+            "percentile": 0.0614287,
+            "rank": 25880932,
             "score": 280.0
           },
           "300.0": {
-            "count": 72793,
-            "percentile": 0.07049944,
-            "rank": 25630808,
+            "count": 59944,
+            "percentile": 0.06570368,
+            "rank": 25763050,
             "score": 300.0
           },
           "290.0": {
-            "count": 69993,
-            "percentile": 0.0678596,
-            "rank": 25703601,
+            "count": 57938,
+            "percentile": 0.06352982,
+            "rank": 25822994,
             "score": 290.0
           },
           "310.0": {
-            "count": 73390,
-            "percentile": 0.07316092,
-            "rank": 25557418,
+            "count": 61078,
+            "percentile": 0.06791868,
+            "rank": 25701972,
             "score": 310.0
           },
           "330.0": {
-            "count": 78830,
-            "percentile": 0.07880539,
-            "rank": 25401773,
+            "count": 64192,
+            "percentile": 0.07258025,
+            "rank": 25573430,
             "score": 330.0
           },
           "320.0": {
-            "count": 76815,
-            "percentile": 0.07594662,
-            "rank": 25480603,
+            "count": 64350,
+            "percentile": 0.07025233,
+            "rank": 25637622,
             "score": 320.0
           },
           "350.0": {
-            "count": 90447,
-            "percentile": 0.08529029,
-            "rank": 25222953,
+            "count": 69778,
+            "percentile": 0.07766525,
+            "rank": 25433212,
             "score": 350.0
           },
           "340.0": {
-            "count": 88373,
-            "percentile": 0.08201023,
-            "rank": 25313400,
+            "count": 70440,
+            "percentile": 0.07513475,
+            "rank": 25502990,
             "score": 340.0
           },
           "360.0": {
-            "count": 103611,
-            "percentile": 0.08904774,
-            "rank": 25119342,
+            "count": 75194,
+            "percentile": 0.08039216,
+            "rank": 25358018,
             "score": 360.0
           },
           "380.0": {
-            "count": 123012,
-            "percentile": 0.09742154,
-            "rank": 24888436,
+            "count": 86645,
+            "percentile": 0.08640801,
+            "rank": 25192132,
             "score": 380.0
           },
           "370.0": {
-            "count": 107894,
-            "percentile": 0.09296051,
-            "rank": 25011448,
+            "count": 79241,
+            "percentile": 0.08326583,
+            "rank": 25278777,
             "score": 370.0
           },
           "390.0": {
-            "count": 139247,
-            "percentile": 0.10247133,
-            "rank": 24749189,
+            "count": 94214,
+            "percentile": 0.08982468,
+            "rank": 25097918,
             "score": 390.0
           },
           "410.0": {
-            "count": 187527,
-            "percentile": 0.11513633,
-            "rank": 24399954,
+            "count": 117396,
+            "percentile": 0.0979287,
+            "rank": 24874451,
             "score": 410.0
           },
           "400.0": {
-            "count": 161708,
-            "percentile": 0.10833566,
-            "rank": 24587481,
+            "count": 106071,
+            "percentile": 0.09367134,
+            "rank": 24991847,
             "score": 400.0
           },
           "430.0": {
-            "count": 256445,
-            "percentile": 0.13241677,
-            "rank": 23923449,
+            "count": 150772,
+            "percentile": 0.10825011,
+            "rank": 24589840,
             "score": 430.0
           },
           "420.0": {
-            "count": 220060,
-            "percentile": 0.1231168,
-            "rank": 24179894,
+            "count": 133839,
+            "percentile": 0.10278237,
+            "rank": 24740612,
             "score": 420.0
           },
           "440.0": {
-            "count": 302578,
-            "percentile": 0.14338975,
-            "rank": 23620871,
+            "count": 174391,
+            "percentile": 0.1145744,
+            "rank": 24415449,
             "score": 440.0
           },
           "460.0": {
-            "count": 424807,
-            "percentile": 0.17153355,
-            "rank": 22844811,
+            "count": 219392,
+            "percentile": 0.12949932,
+            "rank": 24003897,
             "score": 460.0
           },
           "450.0": {
-            "count": 351253,
-            "percentile": 0.15612793,
-            "rank": 23269618,
+            "count": 192160,
+            "percentile": 0.12154308,
+            "rank": 24223289,
             "score": 450.0
           },
           "470.0": {
-            "count": 473806,
-            "percentile": 0.18871611,
-            "rank": 22371005,
+            "count": 245172,
+            "percentile": 0.13839048,
+            "rank": 23758725,
             "score": 470.0
           },
           "490.0": {
-            "count": 621121,
-            "percentile": 0.23112796,
-            "rank": 21201506,
+            "count": 308574,
+            "percentile": 0.15963116,
+            "rank": 23173017,
             "score": 490.0
           },
           "480.0": {
-            "count": 548378,
-            "percentile": 0.20860302,
-            "rank": 21822627,
+            "count": 277134,
+            "percentile": 0.14844074,
+            "rank": 23481591,
             "score": 480.0
           },
           "510.0": {
-            "count": 792296,
-            "percentile": 0.28583843,
-            "rank": 19692875,
+            "count": 382224,
+            "percentile": 0.18606746,
+            "rank": 22444041,
             "score": 510.0
           },
           "500.0": {
-            "count": 716335,
-            "percentile": 0.25710583,
-            "rank": 20485171,
+            "count": 346752,
+            "percentile": 0.17220612,
+            "rank": 22826265,
             "score": 500.0
+          },
+          "540.0": {
+            "count": 512998,
+            "percentile": 0.23669975,
+            "rank": 21047865,
+            "score": 540.0
+          },
+          "530.0": {
+            "count": 460189,
+            "percentile": 0.21809589,
+            "rank": 21560863,
+            "score": 530.0
+          },
+          "520.0": {
+            "count": 422989,
+            "percentile": 0.20140715,
+            "rank": 22021052,
+            "score": 520.0
+          },
+          "570.0": {
+            "count": 623898,
+            "percentile": 0.30013074,
+            "rank": 19298767,
+            "score": 570.0
+          },
+          "560.0": {
+            "count": 586581,
+            "percentile": 0.2775051,
+            "rank": 19922665,
+            "score": 560.0
+          },
+          "550.0": {
+            "count": 538619,
+            "percentile": 0.25623275,
+            "rank": 20509246,
+            "score": 550.0
+          },
+          "600.0": {
+            "count": 747698,
+            "percentile": 0.37637013,
+            "rank": 17196480,
+            "score": 600.0
+          },
+          "590.0": {
+            "count": 686142,
+            "percentile": 0.34925488,
+            "rank": 17944178,
+            "score": 590.0
+          },
+          "580.0": {
+            "count": 668447,
+            "percentile": 0.32437196,
+            "rank": 18630320,
+            "score": 580.0
+          },
+          "630.0": {
+            "count": 821338,
+            "percentile": 0.46268236,
+            "rank": 14816436,
+            "score": 630.0
+          },
+          "620.0": {
+            "count": 790320,
+            "percentile": 0.43289656,
+            "rank": 15637774,
+            "score": 620.0
+          },
+          "610.0": {
+            "count": 768386,
+            "percentile": 0.40423563,
+            "rank": 16428094,
+            "score": 610.0
+          },
+          "670.0": {
+            "count": 926071,
+            "percentile": 0.5932098,
+            "rank": 11217166,
+            "score": 670.0
+          },
+          "660.0": {
+            "count": 903490,
+            "percentile": 0.55962586,
+            "rank": 12143237,
+            "score": 660.0
+          },
+          "650.0": {
+            "count": 916661,
+            "percentile": 0.52686081,
+            "rank": 13046727,
+            "score": 650.0
+          },
+          "640.0": {
+            "count": 853048,
+            "percentile": 0.49361813,
+            "rank": 13963388,
+            "score": 640.0
+          },
+          "700.0": {
+            "count": 978929,
+            "percentile": 0.69765996,
+            "rank": 8336972,
+            "score": 700.0
+          },
+          "690.0": {
+            "count": 966668,
+            "percentile": 0.66215912,
+            "rank": 9315901,
+            "score": 690.0
+          },
+          "680.0": {
+            "count": 934597,
+            "percentile": 0.62710293,
+            "rank": 10282569,
+            "score": 680.0
+          },
+          "730.0": {
+            "count": 834573,
+            "percentile": 0.79551555,
+            "rank": 5638622,
+            "score": 730.0
+          },
+          "720.0": {
+            "count": 982229,
+            "percentile": 0.76524978,
+            "rank": 6473195,
+            "score": 720.0
+          },
+          "710.0": {
+            "count": 881548,
+            "percentile": 0.72962927,
+            "rank": 7455424,
+            "score": 710.0
+          },
+          "760.0": {
+            "count": 1170568,
+            "percentile": 0.8893548,
+            "rank": 3051022,
+            "score": 760.0
+          },
+          "750.0": {
+            "count": 660969,
+            "percentile": 0.84690418,
+            "rank": 4221590,
+            "score": 750.0
+          },
+          "740.0": {
+            "count": 756063,
+            "percentile": 0.82293416,
+            "rank": 4882559,
+            "score": 740.0
+          },
+          "790.0": {
+            "count": 316869,
+            "percentile": 0.95214993,
+            "rank": 1319458,
+            "score": 790.0
+          },
+          "780.0": {
+            "count": 603966,
+            "percentile": 0.94065868,
+            "rank": 1636327,
+            "score": 780.0
+          },
+          "770.0": {
+            "count": 810729,
+            "percentile": 0.91875587,
+            "rank": 2240293,
+            "score": 770.0
+          },
+          "830.0": {
+            "count": 130012,
+            "percentile": 0.97907997,
+            "rank": 576867,
+            "score": 830.0
+          },
+          "820.0": {
+            "count": 158989,
+            "percentile": 0.97436509,
+            "rank": 706879,
+            "score": 820.0
+          },
+          "810.0": {
+            "count": 203363,
+            "percentile": 0.96859936,
+            "rank": 865868,
+            "score": 810.0
+          },
+          "800.0": {
+            "count": 250227,
+            "percentile": 0.9612244,
+            "rank": 1069231,
+            "score": 800.0
+          },
+          "860.0": {
+            "count": 78281,
+            "percentile": 0.98908395,
+            "rank": 301009,
+            "score": 860.0
+          },
+          "850.0": {
+            "count": 90964,
+            "percentile": 0.98624509,
+            "rank": 379290,
+            "score": 850.0
+          },
+          "840.0": {
+            "count": 106613,
+            "percentile": 0.98294629,
+            "rank": 470254,
+            "score": 840.0
+          },
+          "890.0": {
+            "count": 126035,
+            "percentile": 0.99749405,
+            "rank": 69102,
+            "score": 890.0
+          },
+          "880.0": {
+            "count": 46511,
+            "percentile": 0.9929234,
+            "rank": 195137,
+            "score": 880.0
+          },
+          "870.0": {
+            "count": 59361,
+            "percentile": 0.99123668,
+            "rank": 241648,
+            "score": 870.0
+          },
+          "920.0": {
+            "count": 10457,
+            "percentile": 0.99941555,
+            "rank": 16117,
+            "score": 920.0
+          },
+          "910.0": {
+            "count": 16351,
+            "percentile": 0.99903633,
+            "rank": 26574,
+            "score": 910.0
+          },
+          "900.0": {
+            "count": 26177,
+            "percentile": 0.99844336,
+            "rank": 42925,
+            "score": 900.0
+          },
+          "950.0": {
+            "count": 2304,
+            "percentile": 0.99989179,
+            "rank": 2985,
+            "score": 950.0
+          },
+          "940.0": {
+            "count": 3903,
+            "percentile": 0.99980823,
+            "rank": 5289,
+            "score": 940.0
+          },
+          "930.0": {
+            "count": 6925,
+            "percentile": 0.99966669,
+            "rank": 9192,
+            "score": 930.0
+          },
+          "990.0": {
+            "count": 237,
+            "percentile": 0.99999188,
+            "rank": 225,
+            "score": 990.0
+          },
+          "980.0": {
+            "count": 417,
+            "percentile": 0.99998328,
+            "rank": 462,
+            "score": 980.0
+          },
+          "970.0": {
+            "count": 749,
+            "percentile": 0.99996816,
+            "rank": 879,
+            "score": 970.0
+          },
+          "960.0": {
+            "count": 1357,
+            "percentile": 0.999941,
+            "rank": 1628,
+            "score": 960.0
+          },
+          "1020.0": {
+            "count": 31,
+            "percentile": 0.99999909,
+            "rank": 26,
+            "score": 1020.0
+          },
+          "1010.0": {
+            "count": 45,
+            "percentile": 0.99999797,
+            "rank": 57,
+            "score": 1010.0
+          },
+          "1000.0": {
+            "count": 123,
+            "percentile": 0.99999634,
+            "rank": 102,
+            "score": 1000.0
+          },
+          "1060.0": {
+            "count": 2,
+            "percentile": 1.0,
+            "rank": 1,
+            "score": 1060.0
+          },
+          "1050.0": {
+            "count": 2,
+            "percentile": 0.99999993,
+            "rank": 3,
+            "score": 1050.0
+          },
+          "1040.0": {
+            "count": 6,
+            "percentile": 0.99999985,
+            "rank": 5,
+            "score": 1040.0
+          },
+          "1030.0": {
+            "count": 15,
+            "percentile": 0.99999964,
+            "rank": 11,
+            "score": 1030.0
           }
         },
         "totalCount": 27574816
       }
     },
-    "latestScoringId": "01a2fa04-781b-4244-b7b2-ad7c9a470bde",
+    "latestScoringId": "0840ada7-618a-4ef4-8547-c2bd475383ef",
     "scoringExecuted": true,
     "scoringExecutionDetails": {
       "correctOutcomeIds": [
@@ -5646,6 +5792,7 @@
         "c913fc61-0695-11f1-af21-ff98afcfd072",
         "c912c3e1-0695-11f1-af21-ff98afcfd072",
         "c91052e3-0695-11f1-af21-ff98afcfd072",
+        "c91534e1-0695-11f1-af21-ff98afcfd072",
         "c907ee71-0695-11f1-af21-ff98afcfd072",
         "c90cd071-0695-11f1-af21-ff98afcfd072",
         "c90f4171-0695-11f1-af21-ff98afcfd072",
@@ -5654,6 +5801,7 @@
         "c9077941-0695-11f1-af21-ff98afcfd072",
         "c909ea41-0695-11f1-af21-ff98afcfd072",
         "c90d93c1-0695-11f1-af21-ff98afcfd072",
+        "c9150ddb-0695-11f1-af21-ff98afcfd072",
         "c90ecc41-0695-11f1-af21-ff98afcfd072",
         "c91275c3-0695-11f1-af21-ff98afcfd072",
         "c91004c1-0695-11f1-af21-ff98afcfd072",
@@ -5672,6 +5820,8 @@
         "c90d45a2-0695-11f1-af21-ff98afcfd072",
         "c91227a3-0695-11f1-af21-ff98afcfd072",
         "c910ef23-0695-11f1-af21-ff98afcfd072",
+        "c9136027-0695-11f1-af21-ff98afcfd072",
+        "c91498a1-0695-11f1-af21-ff98afcfd072",
         "c9088ab1-0695-11f1-af21-ff98afcfd072",
         "c90fddb1-0695-11f1-af21-ff98afcfd072",
         "c90c3432-0695-11f1-af21-ff98afcfd072",
@@ -5704,11 +5854,13 @@
         "c9118b60-0695-11f1-af21-ff98afcfd072",
         "c912c3e0-0695-11f1-af21-ff98afcfd072",
         "c913fc60-0695-11f1-af21-ff98afcfd072",
+        "c91534e0-0695-11f1-af21-ff98afcfd072",
         "c907ee70-0695-11f1-af21-ff98afcfd072",
         "c90cd070-0695-11f1-af21-ff98afcfd072",
         "c90e08f0-0695-11f1-af21-ff98afcfd072",
         "c90f4170-0695-11f1-af21-ff98afcfd072",
         "c913d550-0695-11f1-af21-ff98afcfd072",
+        "c9150dd0-0695-11f1-af21-ff98afcfd072",
         "c9077940-0695-11f1-af21-ff98afcfd072",
         "c909ea40-0695-11f1-af21-ff98afcfd072",
         "c90d93c0-0695-11f1-af21-ff98afcfd072",
@@ -5730,6 +5882,8 @@
         "c90fb6a0-0695-11f1-af21-ff98afcfd072",
         "c910ef20-0695-11f1-af21-ff98afcfd072",
         "c91227a0-0695-11f1-af21-ff98afcfd072",
+        "c9136020-0695-11f1-af21-ff98afcfd072",
+        "c91498a0-0695-11f1-af21-ff98afcfd072",
         "c9088ab0-0695-11f1-af21-ff98afcfd072",
         "c90c3430-0695-11f1-af21-ff98afcfd072",
         "c90ea530-0695-11f1-af21-ff98afcfd072",
