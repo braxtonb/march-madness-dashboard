@@ -307,6 +307,30 @@ export function ProbabilityJourneyChart({
     [checkpoints, visibleLines]
   );
 
+  const renderChampPill = ({ name, count, seed, alive }: typeof championOptions[number]) => {
+    const active = championFilter.includes(name);
+    const logo = teamLogos[name];
+    return (
+      <button
+        key={name}
+        onClick={() => toggleChampion(name)}
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-label transition-all border ${
+          active
+            ? "bg-secondary/15 text-on-surface font-semibold border-secondary/40"
+            : alive
+              ? "bg-surface-container text-on-surface-variant hover:text-on-surface border-transparent hover:border-on-surface-variant/20"
+              : "bg-surface-container/50 text-on-surface-variant/50 hover:text-on-surface-variant border-transparent hover:border-on-surface-variant/10"
+        }`}
+      >
+        {logo && <img src={logo} alt="" className={`w-4 h-4 object-contain ${!alive && !active ? "opacity-40" : ""}`} />}
+        <span>{seed ? `${seed} ` : ""}{name}</span>
+        {alive && <span className="inline-block h-2 w-2 rounded-full bg-secondary shrink-0" />}
+        {!alive && <span className="inline-block h-2 w-2 rounded-full bg-on-surface-variant/30 shrink-0" />}
+        <span className={active ? "text-on-surface-variant" : "text-on-surface-variant/50"}>({count})</span>
+      </button>
+    );
+  };
+
   if (checkpoints.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-on-surface-variant/50">
@@ -358,29 +382,19 @@ export function ProbabilityJourneyChart({
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {championOptions.map(({ name, count, seed, alive }) => {
-            const active = championFilter.includes(name);
-            const color = ensureContrast(teamColors[name] || FALLBACK_COLOR);
-            const logo = teamLogos[name];
+        <div className="flex flex-wrap gap-1.5 items-center">
+          {(() => {
+            const aliveTeams = championOptions.filter((o) => o.alive);
+            const elimTeams = championOptions.filter((o) => !o.alive);
             return (
-              <button
-                key={name}
-                onClick={() => toggleChampion(name)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-label transition-all border ${
-                  active
-                    ? "bg-secondary/15 text-on-surface font-semibold border-secondary/40"
-                    : "bg-surface-container text-on-surface-variant hover:text-on-surface border-transparent hover:border-on-surface-variant/20"
-                }`}
-              >
-                {logo && <img src={logo} alt="" className="w-4 h-4 object-contain" />}
-                <span>{seed ? `${seed} ` : ""}{name}</span>
-                {alive && <span className="inline-block h-2 w-2 rounded-full bg-secondary shrink-0" title="Still alive" />}
-                {!alive && <span className="inline-block h-2 w-2 rounded-full bg-on-surface-variant/30 shrink-0" title="Eliminated" />}
-                <span className={active ? "text-on-surface-variant" : "text-on-surface-variant/50"}>({count})</span>
-              </button>
+              <>
+                {aliveTeams.length > 0 && <span className="text-[10px] font-label text-on-surface-variant/60 mr-1">Still in it:</span>}
+                {aliveTeams.map((o) => renderChampPill(o))}
+                {elimTeams.length > 0 && <span className="text-[10px] font-label text-on-surface-variant/40 ml-2 mr-1">Eliminated:</span>}
+                {elimTeams.map((o) => renderChampPill(o))}
+              </>
             );
-          })}
+          })()}
         </div>
       </div>
 

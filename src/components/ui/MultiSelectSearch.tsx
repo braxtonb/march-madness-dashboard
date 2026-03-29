@@ -10,6 +10,12 @@ export interface MultiSelectOption {
   label: string;
   sublabel?: string;
   logo?: string;
+  group?: string;
+}
+
+export interface MultiSelectGroup {
+  label: string;
+  key: string;
 }
 
 interface MultiSelectSearchProps {
@@ -45,6 +51,9 @@ interface MultiSelectSearchProps {
 
   /** Whether search is enabled (default true) */
   searchable?: boolean;
+
+  /** Optional groups to split options into sections with headers */
+  groups?: MultiSelectGroup[];
 }
 
 /* -- helpers -- */
@@ -78,6 +87,7 @@ function MultiSelectSearchInner({
   className = "",
   inputLabel,
   searchable = true,
+  groups,
 }: MultiSelectSearchProps) {
   const { myBracketId } = useMyBracketState();
   const [open, setOpen] = useState(false);
@@ -266,6 +276,55 @@ function MultiSelectSearchInner({
 
   const showClear = hasSelections && !open;
 
+  const renderItem = (o: MultiSelectOption, idx: number) => {
+    const isItemSelected = isMulti ? selectedSet.has(o.value) : o.value === selectedId;
+    const isHighlighted = idx === highlightedIndex;
+    const isMyBracketOption = o.value === myBracketId;
+    return (
+      <button
+        key={o.value}
+        type="button"
+        data-dropdown-item
+        onClick={() => handleItemClick(o.value)}
+        className={`w-full text-left px-3 py-2.5 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors border-l-2 ${
+          isItemSelected
+            ? "bg-surface-bright border-l-primary"
+            : isMyBracketOption
+              ? "bg-secondary/5 border-l-secondary"
+              : "border-l-transparent"
+        } ${isHighlighted && !isItemSelected ? "bg-surface-bright" : ""}`}
+      >
+        {isMulti && (
+          <span
+            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+              isItemSelected ? "bg-primary border-primary text-surface" : "border-on-surface-variant/40"
+            }`}
+          >
+            {isItemSelected && (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </span>
+        )}
+        {!isMulti && isItemSelected && (
+          <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+        )}
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          {o.logo && (
+            <img src={o.logo} alt="" className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px] shrink-0" />
+          )}
+          <div className="min-w-0">
+            <div className="text-on-surface truncate">{highlightMatch(o.label, query)}</div>
+            {o.sublabel && o.sublabel !== o.label && (
+              <div className="text-[10px] text-on-surface-variant truncate">{highlightMatch(o.sublabel, query)}</div>
+            )}
+          </div>
+        </div>
+      </button>
+    );
+  };
+
   return (
     <div className={`space-y-1 ${className}`} ref={containerRef}>
       {inputLabel && (
@@ -374,78 +433,37 @@ function MultiSelectSearchInner({
 
             {/* Scrollable list -- scroll position preserved on item toggle */}
             <div ref={listRef} className="overflow-y-auto flex-1">
-              {filtered.map((o, idx) => {
-                const isItemSelected = isMulti
-                  ? selectedSet.has(o.value)
-                  : o.value === selectedId;
-                const isHighlighted = idx === highlightedIndex;
-                const isMyBracketOption = o.value === myBracketId;
-                return (
-                  <button
-                    key={o.value}
-                    type="button"
-                    data-dropdown-item
-                    onClick={() => handleItemClick(o.value)}
-                    className={`w-full text-left px-3 py-2.5 text-xs hover:bg-surface-bright flex items-center gap-2 min-h-[36px] transition-colors border-l-2 ${
-                      isItemSelected
-                        ? "bg-surface-bright border-l-primary"
-                        : isMyBracketOption
-                          ? "bg-secondary/5 border-l-secondary"
-                          : "border-l-transparent"
-                    } ${isHighlighted && !isItemSelected ? "bg-surface-bright" : ""}`}
-                  >
-                    {/* Checkbox: orange for multi-select filtering */}
-                    {isMulti && (
-                      <span
-                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                          isItemSelected
-                            ? "bg-primary border-primary text-surface"
-                            : "border-on-surface-variant/40"
-                        }`}
-                      >
-                        {isItemSelected && (
-                          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                            <path
-                              d="M2 6L5 9L10 3"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        )}
-                      </span>
-                    )}
-
-                    {/* Active indicator for single mode */}
-                    {!isMulti && isItemSelected && (
-                      <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                    )}
-
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                      {o.logo && (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={o.logo}
-                          alt=""
-                          className="w-5 h-5 rounded-full bg-on-surface/10 p-[2px] shrink-0"
-                        />
-                      )}
-                      {/* Fix 3: Bracket name (label) is PRIMARY, full name (sublabel) is secondary */}
-                      <div className="min-w-0">
-                        <div className="text-on-surface truncate">
-                          {highlightMatch(o.label, query)}
+              {groups && !query ? (
+                // Grouped rendering
+                <>
+                  {groups.map((group) => {
+                    const groupItems = filtered.filter((o) => o.group === group.key);
+                    if (groupItems.length === 0) return null;
+                    return (
+                      <div key={group.key}>
+                        <div className="sticky top-0 bg-surface-container/95 backdrop-blur-sm px-3 py-1 border-b border-outline-variant/10">
+                          <span className="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">{group.label} ({groupItems.length})</span>
                         </div>
-                        {o.sublabel && o.sublabel !== o.label && (
-                          <div className="text-[10px] text-on-surface-variant truncate">
-                            {highlightMatch(o.sublabel, query)}
-                          </div>
-                        )}
+                        {groupItems.map((o) => {
+                          const globalIdx = filtered.indexOf(o);
+                          return renderItem(o, globalIdx);
+                        })}
                       </div>
+                    );
+                  })}
+                  {/* Ungrouped items */}
+                  {filtered.filter((o) => !o.group || !groups.some((g) => g.key === o.group)).length > 0 && (
+                    <div>
+                      {filtered.filter((o) => !o.group || !groups.some((g) => g.key === o.group)).map((o) => {
+                        const globalIdx = filtered.indexOf(o);
+                        return renderItem(o, globalIdx);
+                      })}
                     </div>
-                  </button>
-                );
-              })}
+                  )}
+                </>
+              ) : (
+              filtered.map((o, idx) => renderItem(o, idx))
+              )}
               {filtered.length === 0 && (
                 <p className="text-on-surface-variant text-xs text-center py-4">
                   No matches
@@ -478,6 +496,11 @@ function MultiSelectSearchInner({
     </div>
   );
 }
+
+export const CHAMPION_GROUPS: MultiSelectGroup[] = [
+  { label: "Still in it", key: "alive" },
+  { label: "Eliminated", key: "eliminated" },
+];
 
 const MultiSelectSearch = React.memo(MultiSelectSearchInner);
 export default MultiSelectSearch;

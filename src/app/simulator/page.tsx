@@ -8,6 +8,7 @@ import type { DashboardData, Game, Pick, Round, Bracket } from "@/lib/types";
 import { ROUND_POINTS, ROUND_LABELS, ROUND_ORDER } from "@/lib/constants";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
+import { CHAMPION_GROUPS } from "@/components/ui/MultiSelectSearch";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import { TeamPill } from "@/components/ui/TeamPill";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
@@ -490,8 +491,17 @@ export default function SimulatorPage() {
   const simChampionOptions: MultiSelectOption[] = useMemo(() => {
     const map = new Set<string>();
     for (const r of simResults) if (r.champion) map.add(r.champion);
-    return [...map].sort().map((c) => ({ value: c, label: c }));
-  }, [simResults]);
+    const elimList: string[] = data?.derived?.eliminated_teams || [];
+    const elim = new Set(elimList);
+    return [...map]
+      .sort((a, b) => {
+        const aAlive = !elim.has(a);
+        const bAlive = !elim.has(b);
+        if (aAlive !== bAlive) return aAlive ? -1 : 1;
+        return a.localeCompare(b);
+      })
+      .map((c) => ({ value: c, label: c, group: elim.has(c) ? "eliminated" : "alive" }));
+  }, [simResults, data]);
 
   // Filter and sort sim results
   const filteredSimResults = useMemo(() => {
@@ -1080,6 +1090,7 @@ export default function SimulatorPage() {
                 selected={simChampionFilter}
                 onSelectedChange={setSimChampionFilter}
                 placeholder="Filter by champion..."
+                groups={CHAMPION_GROUPS}
               />
             </div>
           </div>

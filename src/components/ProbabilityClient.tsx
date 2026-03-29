@@ -10,6 +10,7 @@ import { TeamPill } from "@/components/ui/TeamPill";
 import CompareCheckbox from "@/components/ui/CompareCheckbox";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
+import { CHAMPION_GROUPS } from "@/components/ui/MultiSelectSearch";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Round } from "@/lib/types";
@@ -242,8 +243,15 @@ export function ProbabilityClient({
   const finishChampionOptions: MultiSelectOption[] = useMemo(() => {
     const map = new Set<string>();
     for (const d of probData) if (d.champion) map.add(d.champion);
-    return [...map].sort().map((c) => ({ value: c, label: c }));
-  }, [probData]);
+    return [...map]
+      .sort((a, b) => {
+        const aAlive = !eliminatedTeamsSet.has(a);
+        const bAlive = !eliminatedTeamsSet.has(b);
+        if (aAlive !== bAlive) return aAlive ? -1 : 1;
+        return a.localeCompare(b);
+      })
+      .map((c) => ({ value: c, label: c, group: eliminatedTeamsSet.has(c) ? "eliminated" : "alive" }));
+  }, [probData, eliminatedTeamsSet]);
   const handleFinishChampionChange = useCallback((ids: string[]) => {
     setFinishChampionFilter(ids);
     const url = new URL(window.location.href);
@@ -480,6 +488,7 @@ export function ProbabilityClient({
                 selected={finishChampionFilter}
                 onSelectedChange={handleFinishChampionChange}
                 placeholder="Filter by champion..."
+                groups={CHAMPION_GROUPS}
               />
             </div>
             <div className="w-full sm:w-48">

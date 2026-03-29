@@ -13,6 +13,7 @@ import { GamesToWatch } from "@/components/GamesToWatch";
 import { TeamPill } from "@/components/ui/TeamPill";
 import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
 import type { MultiSelectOption } from "@/components/ui/MultiSelectSearch";
+import { CHAMPION_GROUPS } from "@/components/ui/MultiSelectSearch";
 import { ROUND_LABELS } from "@/lib/constants";
 import type { Bracket, BracketAnalytics, Round } from "@/lib/types";
 
@@ -238,8 +239,15 @@ function LeaderboardContentInner({
   const championOptions: MultiSelectOption[] = useMemo(() => {
     const map = new Map<string, number>();
     for (const b of brackets) if (b.champion_pick) map.set(b.champion_pick, (map.get(b.champion_pick) || 0) + 1);
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([c]) => ({ value: c, label: c }));
-  }, [brackets]);
+    return [...map.entries()]
+      .sort((a, b) => {
+        const aAlive = !eliminatedTeams.has(a[0]);
+        const bAlive = !eliminatedTeams.has(b[0]);
+        if (aAlive !== bAlive) return aAlive ? -1 : 1;
+        return a[0].localeCompare(b[0]);
+      })
+      .map(([c]) => ({ value: c, label: c, group: eliminatedTeams.has(c) ? "eliminated" : "alive" }));
+  }, [brackets, eliminatedTeams]);
   const changeChampionFilter = useCallback((ids: string[]) => {
     setChampionFilter(ids);
     const url = new URL(window.location.href);
@@ -498,6 +506,7 @@ function LeaderboardContentInner({
                 selected={championFilter}
                 onSelectedChange={changeChampionFilter}
                 placeholder="Filter by champion..."
+                groups={CHAMPION_GROUPS}
               />
             </div>
             {aliveData && (
@@ -632,7 +641,7 @@ function LeaderboardContentInner({
           {/* Chart + legend side by side on large screens */}
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="rounded-card bg-surface-container p-5 flex-1 min-w-0">
-              <InsightFortuneScatter data={scatterData} />
+              <InsightFortuneScatter data={scatterData} eliminatedTeams={Array.from(eliminatedTeams)} />
             </div>
             <div className="lg:w-64 shrink-0 space-y-2">
               <div className="rounded-card bg-surface-container p-3">

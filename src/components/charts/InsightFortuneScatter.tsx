@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import MultiSelectSearch from "@/components/ui/MultiSelectSearch";
+import MultiSelectSearch, { CHAMPION_GROUPS } from "@/components/ui/MultiSelectSearch";
 import { useMyBracket } from "@/components/ui/MyBracketProvider";
 
 const ARCHETYPE_COLORS: Record<string, string> = {
@@ -57,7 +57,7 @@ function clusterPoints(data: ScatterPoint[], radius: number = 5): Cluster[] {
 
 type PointsOp = "gte" | "lte" | "eq";
 
-export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
+export function InsightFortuneScatter({ data, eliminatedTeams = [] }: { data: ScatterPoint[]; eliminatedTeams?: string[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeCluster, setActiveCluster] = useState<number | null>(null);
@@ -112,8 +112,16 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
   const championOptions = useMemo(() => {
     const map = new Map<string, string>();
     for (const d of data) if (d.champion) map.set(d.champion, d.logo || "");
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([c, logo]) => ({ value: c, label: c, logo }));
-  }, [data]);
+    const elim = new Set(eliminatedTeams || []);
+    return [...map.entries()]
+      .sort((a, b) => {
+        const aAlive = !elim.has(a[0]);
+        const bAlive = !elim.has(b[0]);
+        if (aAlive !== bAlive) return aAlive ? -1 : 1;
+        return a[0].localeCompare(b[0]);
+      })
+      .map(([c, logo]) => ({ value: c, label: c, logo, group: elim.has(c) ? "eliminated" : "alive" }));
+  }, [data, eliminatedTeams]);
 
   // Apply filters
   const filtered = useMemo(() => {
@@ -174,6 +182,7 @@ export function InsightFortuneScatter({ data }: { data: ScatterPoint[] }) {
           options={championOptions}
           selected={championFilter}
           onSelectedChange={changeChampionFilter}
+          groups={CHAMPION_GROUPS}
         />
         <div className="flex gap-1 items-center">
           <div className="flex rounded-lg bg-surface-container border border-outline overflow-hidden min-h-[36px]">
