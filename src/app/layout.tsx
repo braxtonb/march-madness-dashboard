@@ -8,6 +8,7 @@ import CompareBar from "@/components/ui/CompareBar";
 import MyBracketProvider from "@/components/ui/MyBracketProvider";
 import { LiveTicker } from "@/components/layout/LiveTicker";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { MaintenanceFallback } from "@/components/ui/MaintenanceFallback";
 
 export const metadata: Metadata = {
   title: "DoorDash AP 2026 Bracket Lab",
@@ -37,13 +38,15 @@ export default async function RootLayout({
   let meta = null;
   let brackets: import("@/lib/types").Bracket[] = [];
   let games: import("@/lib/types").Game[] = [];
+  let hasData = false;
   try {
     const data = await fetchDashboardData();
     meta = data.meta;
     brackets = data.brackets;
     games = data.games;
+    hasData = brackets.length > 0;
   } catch {
-    // Layout still renders without data — pages handle their own errors
+    // Layout still renders without data — fallback UI handles it
   }
 
   return (
@@ -63,7 +66,7 @@ export default async function RootLayout({
             <Sidebar />
             <main className="ml-0 md:ml-16 w-full min-h-[calc(100vh-52px)] px-4 py-4 sm:p-6 pb-20 md:pb-6">
               <div className="max-w-7xl mx-auto">
-                {children}
+                {hasData ? children : <MaintenanceFallback />}
               </div>
             </main>
           </div>

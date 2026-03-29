@@ -32,6 +32,12 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       join(process.cwd(), "data.json"),
     ];
 
+    // Also check backup locations
+    const backupCandidates = [
+      join(process.cwd(), "public", "data.backup.json"),
+      join(process.cwd(), "data.backup.json"),
+    ];
+
     let raw: string | null = null;
     for (const path of candidates) {
       if (existsSync(path)) {
@@ -40,8 +46,19 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       }
     }
 
+    // Fallback to backup if primary not found
     if (!raw) {
-      console.error("data.json not found. Run the scraper first: python -m scraper.scrape");
+      for (const path of backupCandidates) {
+        if (existsSync(path)) {
+          console.warn("data.json not found, using backup");
+          raw = readFileSync(path, "utf8");
+          break;
+        }
+      }
+    }
+
+    if (!raw) {
+      console.error("No data.json or backup found. Run the scraper first.");
       return EMPTY_DATA;
     }
 
