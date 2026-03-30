@@ -328,7 +328,18 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
         round_idx = {r: i for i, r in enumerate(ROUND_POINTS.keys())}
         remaining.sort(key=lambda g: round_idx.get(g.get('round', ''), 0))
 
-        # Build feeder map for this checkpoint's remaining games
+        # Build completed winners for this checkpoint
+        cp_completed_winners = {}
+        for cgid in completed_at_checkpoint:
+            cg = game_map.get(cgid, {})
+            if cg.get('winner'):
+                cp_completed_winners[cgid] = cg['winner']
+
+        # Build feeder map for ALL remaining games at this checkpoint.
+        # CRITICAL: We must build feeders even for games that currently have
+        # team1/team2, because the current data reflects games completed AFTER
+        # this checkpoint. At checkpoint N, a game's teams are only known if
+        # both feeder games are in completed_at_checkpoint.
         cp_game_by_rr = defaultdict(list)
         for g in games:
             cp_game_by_rr[(g.get('region', ''), g.get('round', ''))].append(g)
@@ -336,38 +347,37 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
         cp_ff_games = [g for g in remaining if g.get('round') == 'FF']
         cp_e8_games = [g for g in games if g.get('round') == 'E8']
         cp_feeders = {}
+        # Track which remaining games need propagation (feeders not all completed)
+        cp_needs_propagation = set()
         for g in remaining:
-            if g.get('team1') and g.get('team2'):
-                continue
             rnd = g.get('round', '')
             region = g.get('region', '')
             ri = ROUND_SEQ.index(rnd) if rnd in ROUND_SEQ else -1
             if ri <= 0:
+                # R64 games: teams are always known from the bracket
                 continue
+
             prev_round = ROUND_SEQ[ri - 1]
+            feeder_ids = []
             if rnd == 'FF':
                 ff_sorted = sorted(cp_ff_games, key=lambda x: x['game_id'])
                 e8_sorted = sorted(cp_e8_games, key=lambda x: x['game_id'])
                 idx = ff_sorted.index(g) if g in ff_sorted else -1
                 if idx == 0 and len(e8_sorted) >= 2:
-                    cp_feeders[g['game_id']] = [e8_sorted[0]['game_id'], e8_sorted[1]['game_id']]
+                    feeder_ids = [e8_sorted[0]['game_id'], e8_sorted[1]['game_id']]
                 elif idx == 1 and len(e8_sorted) >= 4:
-                    cp_feeders[g['game_id']] = [e8_sorted[2]['game_id'], e8_sorted[3]['game_id']]
+                    feeder_ids = [e8_sorted[2]['game_id'], e8_sorted[3]['game_id']]
             elif rnd == 'CHAMP':
-                ff_ids = sorted([fg['game_id'] for fg in cp_ff_games])
-                if len(ff_ids) >= 2:
-                    cp_feeders[g['game_id']] = ff_ids
+                feeder_ids = sorted([fg['game_id'] for fg in cp_ff_games])
             else:
                 prev_games = sorted(cp_game_by_rr.get((region, prev_round), []), key=lambda x: x['game_id'])
-                if len(prev_games) >= 2:
-                    cp_feeders[g['game_id']] = [pg['game_id'] for pg in prev_games[:2]]
+                feeder_ids = [pg['game_id'] for pg in prev_games[:2]]
 
-        # Build completed winners for this checkpoint
-        cp_completed_winners = {}
-        for cgid in completed_at_checkpoint:
-            cg = game_map.get(cgid, {})
-            if cg.get('winner'):
-                cp_completed_winners[cgid] = cg['winner']
+            if feeder_ids:
+                cp_feeders[g['game_id']] = feeder_ids
+                # If ANY feeder is not completed at this checkpoint, must propagate
+                if not all(fid in completed_at_checkpoint for fid in feeder_ids):
+                    cp_needs_propagation.add(g['game_id'])
 
         # Build seed lookup
         cp_team_seeds = {}
@@ -387,8 +397,13 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
             sim_winners = dict(cp_completed_winners)
             for g in remaining:
                 gid_inner = g['game_id']
-                t1 = g.get('team1', '')
-                t2 = g.get('team2', '')
+                # Use current team data ONLY if this game doesn't need propagation
+                # (i.e., all feeders are completed at this checkpoint)
+                if gid_inner in cp_needs_propagation:
+                    t1, t2 = '', ''
+                else:
+                    t1 = g.get('team1', '')
+                    t2 = g.get('team2', '')
                 if not t1 or not t2:
                     feeder_ids = cp_feeders.get(gid_inner, [])
                     feeder_winners = [sim_winners.get(fid, '') for fid in feeder_ids]
