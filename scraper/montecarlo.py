@@ -104,9 +104,11 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
     # For FF games, feeders come from specific region pairs
     # FF game 1 feeds from E8 winners of R1 + R2
     # FF game 2 feeds from E8 winners of R3 + R4
-    ff_games = [g for g in remaining if g.get('round') == 'FF']
+    # Use ALL FF/E8 games (not just remaining) for feeder lookups
+    # Completed feeders provide known winners; remaining feeders get simulated
+    ff_games_all = [g for g in games if g.get('round') == 'FF']
+    ff_games_remaining = [g for g in remaining if g.get('round') == 'FF']
     e8_games = [g for g in games if g.get('round') == 'E8']
-    champ_games = [g for g in remaining if g.get('round') == 'CHAMP']
 
     # Build feeder relationships for TBD games
     feeders = {}  # game_id -> list of 2 feeder game_ids
@@ -122,7 +124,7 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
 
         if rnd == 'FF':
             # FF feeders are E8 games; assign by sorted order
-            ff_sorted = sorted(ff_games, key=lambda x: x['game_id'])
+            ff_sorted = sorted(ff_games_remaining, key=lambda x: x['game_id'])
             e8_sorted = sorted(e8_games, key=lambda x: x['game_id'])
             idx = ff_sorted.index(g) if g in ff_sorted else -1
             if idx == 0 and len(e8_sorted) >= 2:
@@ -130,7 +132,8 @@ def run_monte_carlo(brackets, picks, games, iterations=10000):
             elif idx == 1 and len(e8_sorted) >= 4:
                 feeders[g['game_id']] = [e8_sorted[2]['game_id'], e8_sorted[3]['game_id']]
         elif rnd == 'CHAMP':
-            ff_ids = sorted([fg['game_id'] for fg in ff_games])
+            # CHAMP feeders are ALL FF games (completed + remaining)
+            ff_ids = sorted([fg['game_id'] for fg in ff_games_all])
             if len(ff_ids) >= 2:
                 feeders[g['game_id']] = ff_ids
         else:
@@ -344,7 +347,8 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
         for g in games:
             cp_game_by_rr[(g.get('region', ''), g.get('round', ''))].append(g)
         ROUND_SEQ = list(ROUND_POINTS.keys())
-        cp_ff_games = [g for g in remaining if g.get('round') == 'FF']
+        cp_ff_games_remaining = [g for g in remaining if g.get('round') == 'FF']
+        cp_ff_games_all = [g for g in games if g.get('round') == 'FF']
         cp_e8_games = [g for g in games if g.get('round') == 'E8']
         cp_feeders = {}
         # Track which remaining games need propagation (feeders not all completed)
@@ -360,7 +364,7 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
             prev_round = ROUND_SEQ[ri - 1]
             feeder_ids = []
             if rnd == 'FF':
-                ff_sorted = sorted(cp_ff_games, key=lambda x: x['game_id'])
+                ff_sorted = sorted(cp_ff_games_remaining, key=lambda x: x['game_id'])
                 e8_sorted = sorted(cp_e8_games, key=lambda x: x['game_id'])
                 idx = ff_sorted.index(g) if g in ff_sorted else -1
                 if idx == 0 and len(e8_sorted) >= 2:
@@ -368,7 +372,7 @@ def simulate_timeline(brackets, picks, games, checkpoint_path=None, iterations=1
                 elif idx == 1 and len(e8_sorted) >= 4:
                     feeder_ids = [e8_sorted[2]['game_id'], e8_sorted[3]['game_id']]
             elif rnd == 'CHAMP':
-                feeder_ids = sorted([fg['game_id'] for fg in cp_ff_games])
+                feeder_ids = sorted([fg['game_id'] for fg in cp_ff_games_all])
             else:
                 prev_games = sorted(cp_game_by_rr.get((region, prev_round), []), key=lambda x: x['game_id'])
                 feeder_ids = [pg['game_id'] for pg in prev_games[:2]]

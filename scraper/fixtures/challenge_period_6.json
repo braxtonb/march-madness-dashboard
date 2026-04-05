@@ -60,8 +60,8 @@
     "periodResultsNotificationsEnabled": true,
     "periodStartNotificationsEnabled": false,
     "supportedNotificationChannels": [
-      "GAMBIT",
-      "TC"
+      "TC",
+      "GAMBIT"
     ]
   },
   "clientFlags": {
@@ -84,16 +84,16 @@
     "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
   },
   "currentScoringPeriod": {
-    "abbrev": "E8",
+    "abbrev": "F4",
     "allPropositionsAutomated": true,
     "allPropositionsLocked": true,
-    "endDate": 1774872000000,
-    "firstPropositionLockDate": 1774735740000,
-    "id": 4,
-    "label": "Elite 8",
-    "startDate": 1774699200000,
-    "subLabel": "Mar 28 - 29",
-    "subLabelShort": ""
+    "endDate": 1775390400000,
+    "firstPropositionLockDate": 1775340540000,
+    "id": 5,
+    "label": "Final Four",
+    "startDate": 1774872000000,
+    "subLabel": "Apr 4",
+    "subLabelShort": "Indianapolis, IN"
   },
   "defaultGroupSettings": {
     "entriesPerMember": 1,
@@ -510,6 +510,20 @@
         "sendInProgress": false,
         "sentDate": 1774712784057,
         "type": "GAME_RESULTS"
+      },
+      {
+        "numberSent": 18042964,
+        "scoringPeriodId": 4,
+        "sendInProgress": false,
+        "sentDate": 1774876214757,
+        "type": "GAME_RESULTS_PUSH"
+      },
+      {
+        "numberSent": 10619387,
+        "scoringPeriodId": 4,
+        "sendInProgress": false,
+        "sentDate": 1774885881705,
+        "type": "GAME_RESULTS"
       }
     ]
   },
@@ -519,7 +533,9 @@
   "propositions": [
     {
       "active": false,
-      "actualOutcomeIds": [],
+      "actualOutcomeIds": [
+        "c9161f4f-0695-11f1-af21-ff98afcfd072"
+      ],
       "allowsTieScore": false,
       "automated": true,
       "availableDate": 1770737581876,
@@ -532,8 +548,8 @@
         "platform": "chui-admin",
         "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
       },
-      "date": 1775534280000,
-      "dateTBD": true,
+      "date": 1775523000000,
+      "dateTBD": false,
       "deleted": false,
       "description": "Who will win this matchup?",
       "display": true,
@@ -542,7 +558,7 @@
       "id": "c9161f40-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1773890847944,
+        "date": 1775349873340,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
@@ -554,9 +570,41 @@
         {
           "type": "LEAGUE",
           "value": "mens-college-basketball"
+        },
+        {
+          "type": "COMPETITION_ID",
+          "value": "401856600"
+        },
+        {
+          "type": "VIDEO_ID",
+          "value": "401856600"
+        },
+        {
+          "type": "URL_DESKTOP",
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856600/uconn-tbd"
+        },
+        {
+          "type": "URL_MOBILE",
+          "value": "https://www.espn.com/mens-college-basketball/game/_/gameId/401856600/uconn-tbd"
+        },
+        {
+          "type": "TV_INFO_PRIMARY",
+          "value": "TBS"
+        },
+        {
+          "type": "TV_INFO_SECONDARY",
+          "value": "truTV"
+        },
+        {
+          "type": "EVENT_ID",
+          "value": "401856600"
+        },
+        {
+          "type": "LIVE_SCORING_COMPETITION_ID",
+          "value": "401856600"
         }
       ],
-      "name": "Round 6, Matchup 1",
+      "name": "CONN @ TBD",
       "outcomeCardType": "DENSE",
       "poolId": 0,
       "possibleOutcomes": [
@@ -590,6 +638,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "150"
             },
@@ -604,6 +656,10 @@
             {
               "type": "RANKING",
               "value": "1"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -660,6 +716,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2561"
             },
@@ -674,6 +734,10 @@
             {
               "type": "RANKING",
               "value": "64"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -730,6 +794,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "194"
             },
@@ -744,6 +812,10 @@
             {
               "type": "RANKING",
               "value": "32"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -800,6 +872,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2628"
             },
@@ -814,6 +890,10 @@
             {
               "type": "RANKING",
               "value": "33"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -870,6 +950,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2599"
             },
@@ -884,6 +968,10 @@
             {
               "type": "RANKING",
               "value": "17"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -940,6 +1028,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2460"
             },
@@ -954,6 +1046,10 @@
             {
               "type": "RANKING",
               "value": "48"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1010,6 +1106,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2305"
             },
@@ -1024,6 +1124,10 @@
             {
               "type": "RANKING",
               "value": "16"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1080,6 +1184,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2856"
             },
@@ -1094,6 +1202,10 @@
             {
               "type": "RANKING",
               "value": "49"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1146,6 +1258,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "97"
             },
@@ -1160,6 +1276,10 @@
             {
               "type": "RANKING",
               "value": "24"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1216,6 +1336,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "58"
             },
@@ -1230,6 +1354,10 @@
             {
               "type": "RANKING",
               "value": "41"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1286,6 +1414,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "127"
             },
@@ -1300,6 +1432,10 @@
             {
               "type": "RANKING",
               "value": "9"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1356,6 +1492,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2449"
             },
@@ -1370,6 +1510,10 @@
             {
               "type": "RANKING",
               "value": "56"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1426,6 +1570,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "26"
             },
@@ -1440,6 +1588,10 @@
             {
               "type": "RANKING",
               "value": "25"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1496,6 +1648,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2116"
             },
@@ -1510,6 +1666,10 @@
             {
               "type": "RANKING",
               "value": "40"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1538,6 +1698,7 @@
         },
         {
           "abbrev": "CONN",
+          "additionalInfo": "34-5",
           "choiceCounters": [
             {
               "count": 822027,
@@ -1554,7 +1715,7 @@
           },
           "dateTBD": false,
           "description": "UConn Huskies",
-          "displayOrder": 0,
+          "displayOrder": 1,
           "id": "c9161f4f-0695-11f1-af21-ff98afcfd072",
           "mappings": [
             {
@@ -1564,6 +1725,10 @@
             {
               "type": "LEAGUE",
               "value": "mens-college-basketball"
+            },
+            {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
             },
             {
               "type": "COMPETITOR_ID",
@@ -1580,6 +1745,10 @@
             {
               "type": "RANKING",
               "value": "8"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1600,7 +1769,7 @@
           "regionId": 1,
           "regionSeed": 2,
           "status": "OPEN",
-          "subType": "HOME",
+          "subType": "AWAY",
           "tieScoreWinner": false,
           "type": "COMPETITOR",
           "unpickable": false,
@@ -1636,6 +1805,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "231"
             },
@@ -1650,6 +1823,10 @@
             {
               "type": "RANKING",
               "value": "57"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1706,6 +1883,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "57"
             },
@@ -1720,6 +1901,10 @@
             {
               "type": "RANKING",
               "value": "4"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1776,6 +1961,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2504"
             },
@@ -1790,6 +1979,10 @@
             {
               "type": "RANKING",
               "value": "61"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1846,6 +2039,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "228"
             },
@@ -1860,6 +2057,10 @@
             {
               "type": "RANKING",
               "value": "29"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1916,6 +2117,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2294"
             },
@@ -1930,6 +2135,10 @@
             {
               "type": "RANKING",
               "value": "36"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -1986,6 +2195,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "238"
             },
@@ -2000,6 +2213,10 @@
             {
               "type": "RANKING",
               "value": "20"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2056,6 +2273,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2377"
             },
@@ -2070,6 +2291,10 @@
             {
               "type": "RANKING",
               "value": "45"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2126,6 +2351,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "158"
             },
@@ -2140,6 +2369,10 @@
             {
               "type": "RANKING",
               "value": "13"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2196,6 +2429,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2653"
             },
@@ -2210,6 +2447,10 @@
             {
               "type": "RANKING",
               "value": "52"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2266,6 +2507,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "153"
             },
@@ -2280,6 +2525,10 @@
             {
               "type": "RANKING",
               "value": "21"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2336,6 +2585,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2670"
             },
@@ -2350,6 +2603,10 @@
             {
               "type": "RANKING",
               "value": "44"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2406,6 +2663,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "356"
             },
@@ -2420,6 +2681,10 @@
             {
               "type": "RANKING",
               "value": "12"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2476,6 +2741,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "219"
             },
@@ -2490,6 +2759,10 @@
             {
               "type": "RANKING",
               "value": "53"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2546,6 +2819,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2608"
             },
@@ -2560,6 +2837,10 @@
             {
               "type": "RANKING",
               "value": "28"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2616,6 +2897,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "245"
             },
@@ -2630,6 +2915,10 @@
             {
               "type": "RANKING",
               "value": "37"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2686,6 +2975,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "248"
             },
@@ -2700,6 +2993,10 @@
             {
               "type": "RANKING",
               "value": "5"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2756,6 +3053,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "70"
             },
@@ -2770,6 +3071,10 @@
             {
               "type": "RANKING",
               "value": "60"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2826,6 +3131,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "12"
             },
@@ -2840,6 +3149,10 @@
             {
               "type": "RANKING",
               "value": "2"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2896,6 +3209,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "112358"
             },
@@ -2910,6 +3227,10 @@
             {
               "type": "RANKING",
               "value": "63"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -2966,6 +3287,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "222"
             },
@@ -2980,6 +3305,10 @@
             {
               "type": "RANKING",
               "value": "31"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3036,6 +3365,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "328"
             },
@@ -3050,6 +3383,10 @@
             {
               "type": "RANKING",
               "value": "34"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3106,6 +3443,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "275"
             },
@@ -3120,6 +3461,10 @@
             {
               "type": "RANKING",
               "value": "18"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3176,6 +3521,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2272"
             },
@@ -3190,6 +3539,10 @@
             {
               "type": "RANKING",
               "value": "47"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3246,6 +3599,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "8"
             },
@@ -3260,6 +3617,10 @@
             {
               "type": "RANKING",
               "value": "15"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3316,6 +3677,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "62"
             },
@@ -3330,6 +3695,10 @@
             {
               "type": "RANKING",
               "value": "50"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3386,6 +3755,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "252"
             },
@@ -3400,6 +3773,10 @@
             {
               "type": "RANKING",
               "value": "23"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3456,6 +3833,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "251"
             },
@@ -3470,6 +3851,10 @@
             {
               "type": "RANKING",
               "value": "42"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3526,6 +3911,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2250"
             },
@@ -3540,6 +3929,10 @@
             {
               "type": "RANKING",
               "value": "10"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3596,6 +3989,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "338"
             },
@@ -3610,6 +4007,10 @@
             {
               "type": "RANKING",
               "value": "55"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3666,6 +4067,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2390"
             },
@@ -3680,6 +4085,10 @@
             {
               "type": "RANKING",
               "value": "26"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3736,6 +4145,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "142"
             },
@@ -3750,6 +4163,10 @@
             {
               "type": "RANKING",
               "value": "39"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3806,6 +4223,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2509"
             },
@@ -3820,6 +4241,10 @@
             {
               "type": "RANKING",
               "value": "7"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3876,6 +4301,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2511"
             },
@@ -3890,6 +4319,10 @@
             {
               "type": "RANKING",
               "value": "58"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -3946,6 +4379,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "130"
             },
@@ -3960,6 +4397,10 @@
             {
               "type": "RANKING",
               "value": "3"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4016,6 +4457,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "47"
             },
@@ -4030,6 +4475,10 @@
             {
               "type": "RANKING",
               "value": "62"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4086,6 +4535,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "61"
             },
@@ -4100,6 +4553,10 @@
             {
               "type": "RANKING",
               "value": "30"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4156,6 +4613,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "139"
             },
@@ -4170,6 +4631,10 @@
             {
               "type": "RANKING",
               "value": "35"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4226,6 +4691,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2641"
             },
@@ -4240,6 +4709,10 @@
             {
               "type": "RANKING",
               "value": "19"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4296,6 +4769,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2006"
             },
@@ -4310,6 +4787,10 @@
             {
               "type": "RANKING",
               "value": "46"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4366,6 +4847,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "333"
             },
@@ -4380,6 +4865,10 @@
             {
               "type": "RANKING",
               "value": "14"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4436,6 +4925,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2275"
             },
@@ -4450,6 +4943,10 @@
             {
               "type": "RANKING",
               "value": "51"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4506,6 +5003,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2633"
             },
@@ -4520,6 +5021,10 @@
             {
               "type": "RANKING",
               "value": "22"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4576,6 +5081,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "193"
             },
@@ -4590,6 +5099,10 @@
             {
               "type": "RANKING",
               "value": "43"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4646,6 +5159,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "258"
             },
@@ -4660,6 +5177,10 @@
             {
               "type": "RANKING",
               "value": "11"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4716,6 +5237,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2750"
             },
@@ -4730,6 +5255,10 @@
             {
               "type": "RANKING",
               "value": "54"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4786,6 +5315,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "96"
             },
@@ -4800,6 +5333,10 @@
             {
               "type": "RANKING",
               "value": "27"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4856,6 +5393,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2541"
             },
@@ -4870,6 +5411,10 @@
             {
               "type": "RANKING",
               "value": "38"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4926,6 +5471,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "66"
             },
@@ -4940,6 +5489,10 @@
             {
               "type": "RANKING",
               "value": "6"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -4996,6 +5549,10 @@
               "value": "mens-college-basketball"
             },
             {
+              "type": "COMPETITION_ID",
+              "value": "401856600"
+            },
+            {
               "type": "COMPETITOR_ID",
               "value": "2634"
             },
@@ -5010,6 +5567,10 @@
             {
               "type": "RANKING",
               "value": "59"
+            },
+            {
+              "type": "EVENT_ID",
+              "value": "401856600"
             },
             {
               "type": "COLOR_PRIMARY",
@@ -5102,7 +5663,7 @@
       "allPropositionsAutomated": true,
       "allPropositionsLocked": true,
       "endDate": 1775390400000,
-      "firstPropositionLockDate": 1775275200000,
+      "firstPropositionLockDate": 1775340540000,
       "id": 5,
       "label": "Final Four",
       "startDate": 1774872000000,
@@ -5114,7 +5675,7 @@
       "allPropositionsAutomated": true,
       "allPropositionsLocked": true,
       "endDate": 1775534280000,
-      "firstPropositionLockDate": 1775534280000,
+      "firstPropositionLockDate": 1775523000000,
       "groupLabel": "Mar 28 - Apr 6",
       "id": 6,
       "label": "National Championship",
@@ -5125,665 +5686,840 @@
   ],
   "scoringStatus": {
     "anyPropositionScored": true,
-    "completionDate": 1774754534266,
+    "completionDate": 1775349690347,
     "entryCount": 27968488,
-    "groupCount": 1984612,
+    "groupCount": 1984741,
     "groupEntryRankSummaryByLeaderboard": {
       "2228cbba-0301-4975-ab9c-eb7cfa6c3859": {
         "rankByScore": {
           "0.0": {
             "count": 1006690,
             "percentile": 0.0,
-            "rank": 26568127,
+            "rank": 26568128,
             "score": 0.0
           },
           "10.0": {
             "count": 2,
             "percentile": 0.03650766,
-            "rank": 26568125,
+            "rank": 26568126,
             "score": 10.0
           },
           "20.0": {
             "count": 30,
             "percentile": 0.03650875,
-            "rank": 26568095,
+            "rank": 26568096,
             "score": 20.0
           },
           "30.0": {
             "count": 227,
             "percentile": 0.03651698,
-            "rank": 26567868,
+            "rank": 26567869,
             "score": 30.0
           },
           "40.0": {
             "count": 1129,
             "percentile": 0.03655792,
-            "rank": 26566739,
+            "rank": 26566740,
             "score": 40.0
           },
           "50.0": {
             "count": 2699,
             "percentile": 0.0366558,
-            "rank": 26564040,
+            "rank": 26564041,
             "score": 50.0
           },
           "60.0": {
             "count": 6580,
-            "percentile": 0.03689443,
-            "rank": 26557460,
+            "percentile": 0.03689442,
+            "rank": 26557461,
             "score": 60.0
           },
           "70.0": {
             "count": 9440,
             "percentile": 0.03723677,
-            "rank": 26548020,
+            "rank": 26548021,
             "score": 70.0
           },
           "80.0": {
             "count": 70936,
             "percentile": 0.03980926,
-            "rank": 26477084,
+            "rank": 26477085,
             "score": 80.0
           },
           "90.0": {
             "count": 6652,
             "percentile": 0.04005049,
-            "rank": 26470432,
+            "rank": 26470433,
             "score": 90.0
           },
           "100.0": {
             "count": 11287,
             "percentile": 0.04045982,
-            "rank": 26459145,
+            "rank": 26459146,
             "score": 100.0
           },
           "110.0": {
-            "count": 5519,
-            "percentile": 0.04065996,
-            "rank": 26453626,
+            "count": 5515,
+            "percentile": 0.04065982,
+            "rank": 26453631,
             "score": 110.0
           },
           "120.0": {
-            "count": 8725,
-            "percentile": 0.04097637,
-            "rank": 26444901,
+            "count": 8707,
+            "percentile": 0.04097558,
+            "rank": 26444924,
             "score": 120.0
           },
           "130.0": {
-            "count": 7799,
-            "percentile": 0.04125921,
-            "rank": 26437102,
+            "count": 7747,
+            "percentile": 0.04125652,
+            "rank": 26437177,
             "score": 130.0
           },
           "140.0": {
-            "count": 11484,
-            "percentile": 0.04167567,
-            "rank": 26425618,
+            "count": 11355,
+            "percentile": 0.04166831,
+            "rank": 26425822,
             "score": 140.0
           },
           "150.0": {
-            "count": 13909,
-            "percentile": 0.04218008,
-            "rank": 26411709,
+            "count": 13517,
+            "percentile": 0.0421585,
+            "rank": 26412305,
             "score": 150.0
           },
           "160.0": {
-            "count": 22343,
-            "percentile": 0.04299035,
-            "rank": 26389366,
+            "count": 22051,
+            "percentile": 0.04295818,
+            "rank": 26390254,
             "score": 160.0
           },
           "170.0": {
-            "count": 21169,
-            "percentile": 0.04375804,
-            "rank": 26368197,
+            "count": 20692,
+            "percentile": 0.04370858,
+            "rank": 26369562,
             "score": 170.0
           },
           "180.0": {
-            "count": 25410,
-            "percentile": 0.04467954,
-            "rank": 26342787,
+            "count": 24751,
+            "percentile": 0.04460617,
+            "rank": 26344811,
             "score": 180.0
           },
           "190.0": {
-            "count": 29930,
-            "percentile": 0.04576495,
-            "rank": 26312857,
+            "count": 28912,
+            "percentile": 0.04565466,
+            "rank": 26315899,
             "score": 190.0
           },
           "200.0": {
-            "count": 34289,
-            "percentile": 0.04700844,
-            "rank": 26278568,
+            "count": 32883,
+            "percentile": 0.04684716,
+            "rank": 26283016,
             "score": 200.0
           },
           "210.0": {
-            "count": 38346,
-            "percentile": 0.04839905,
-            "rank": 26240222,
+            "count": 36254,
+            "percentile": 0.04816192,
+            "rank": 26246762,
             "score": 210.0
           },
           "220.0": {
-            "count": 42379,
-            "percentile": 0.04993593,
-            "rank": 26197843,
+            "count": 39761,
+            "percentile": 0.04960385,
+            "rank": 26207001,
             "score": 220.0
           },
           "230.0": {
-            "count": 46378,
-            "percentile": 0.05161782,
-            "rank": 26151465,
+            "count": 43051,
+            "percentile": 0.05116509,
+            "rank": 26163950,
             "score": 230.0
           },
           "240.0": {
-            "count": 51114,
-            "percentile": 0.05347147,
-            "rank": 26100351,
+            "count": 46693,
+            "percentile": 0.05285841,
+            "rank": 26117257,
             "score": 240.0
           },
           "250.0": {
-            "count": 51778,
-            "percentile": 0.0553492,
-            "rank": 26048573,
+            "count": 46920,
+            "percentile": 0.05455996,
+            "rank": 26070337,
             "score": 250.0
           },
           "270.0": {
-            "count": 55994,
-            "percentile": 0.05934397,
-            "rank": 25938418,
+            "count": 49601,
+            "percentile": 0.05811901,
+            "rank": 25972197,
             "score": 270.0
           },
           "260.0": {
-            "count": 54161,
-            "percentile": 0.05731335,
-            "rank": 25994412,
+            "count": 48539,
+            "percentile": 0.05632023,
+            "rank": 26021798,
             "score": 260.0
           },
           "280.0": {
-            "count": 57486,
-            "percentile": 0.0614287,
-            "rank": 25880932,
+            "count": 50655,
+            "percentile": 0.05995601,
+            "rank": 25921542,
             "score": 280.0
           },
           "300.0": {
-            "count": 59944,
-            "percentile": 0.06570368,
-            "rank": 25763050,
+            "count": 52308,
+            "percentile": 0.06369087,
+            "rank": 25818554,
             "score": 300.0
           },
           "290.0": {
-            "count": 57938,
-            "percentile": 0.06352982,
-            "rank": 25822994,
+            "count": 50680,
+            "percentile": 0.06179392,
+            "rank": 25870862,
             "score": 290.0
           },
           "310.0": {
-            "count": 61078,
-            "percentile": 0.06791868,
-            "rank": 25701972,
+            "count": 52920,
+            "percentile": 0.06561001,
+            "rank": 25765634,
             "score": 310.0
           },
           "330.0": {
-            "count": 64192,
-            "percentile": 0.07258025,
-            "rank": 25573430,
+            "count": 55197,
+            "percentile": 0.06963593,
+            "rank": 25654620,
             "score": 330.0
           },
           "320.0": {
-            "count": 64350,
-            "percentile": 0.07025233,
-            "rank": 25637622,
+            "count": 55817,
+            "percentile": 0.06763421,
+            "rank": 25709817,
             "score": 320.0
           },
           "350.0": {
-            "count": 69778,
-            "percentile": 0.07766525,
-            "rank": 25433212,
+            "count": 59103,
+            "percentile": 0.0739688,
+            "rank": 25535142,
             "score": 350.0
           },
           "340.0": {
-            "count": 70440,
-            "percentile": 0.07513475,
-            "rank": 25502990,
+            "count": 60375,
+            "percentile": 0.07182543,
+            "rank": 25594245,
             "score": 340.0
           },
           "360.0": {
-            "count": 75194,
-            "percentile": 0.08039216,
-            "rank": 25358018,
+            "count": 62427,
+            "percentile": 0.07623271,
+            "rank": 25472715,
             "score": 360.0
           },
           "380.0": {
-            "count": 86645,
-            "percentile": 0.08640801,
-            "rank": 25192132,
+            "count": 69028,
+            "percentile": 0.0810821,
+            "rank": 25338994,
             "score": 380.0
           },
           "370.0": {
-            "count": 79241,
-            "percentile": 0.08326583,
-            "rank": 25278777,
+            "count": 64693,
+            "percentile": 0.0785788,
+            "rank": 25408022,
             "score": 370.0
           },
           "390.0": {
-            "count": 94214,
-            "percentile": 0.08982468,
-            "rank": 25097918,
+            "count": 73771,
+            "percentile": 0.0837574,
+            "rank": 25265223,
             "score": 390.0
           },
           "410.0": {
-            "count": 117396,
-            "percentile": 0.0979287,
-            "rank": 24874451,
+            "count": 86978,
+            "percentile": 0.08984071,
+            "rank": 25097477,
             "score": 410.0
           },
           "400.0": {
-            "count": 106071,
-            "percentile": 0.09367134,
-            "rank": 24991847,
+            "count": 80768,
+            "percentile": 0.08668645,
+            "rank": 25184455,
             "score": 400.0
           },
           "430.0": {
-            "count": 150772,
-            "percentile": 0.10825011,
-            "rank": 24589840,
+            "count": 105355,
+            "percentile": 0.09718041,
+            "rank": 24895086,
             "score": 430.0
           },
           "420.0": {
-            "count": 133839,
-            "percentile": 0.10278237,
-            "rank": 24740612,
+            "count": 97036,
+            "percentile": 0.09335971,
+            "rank": 25000441,
             "score": 420.0
           },
           "440.0": {
-            "count": 174391,
-            "percentile": 0.1145744,
-            "rank": 24415449,
+            "count": 119823,
+            "percentile": 0.10152579,
+            "rank": 24775263,
             "score": 440.0
           },
           "460.0": {
-            "count": 219392,
-            "percentile": 0.12949932,
-            "rank": 24003897,
+            "count": 143055,
+            "percentile": 0.11133691,
+            "rank": 24504723,
             "score": 460.0
           },
           "450.0": {
-            "count": 192160,
-            "percentile": 0.12154308,
-            "rank": 24223289,
+            "count": 127485,
+            "percentile": 0.10614903,
+            "rank": 24647778,
             "score": 450.0
           },
           "470.0": {
-            "count": 245172,
-            "percentile": 0.13839048,
-            "rank": 23758725,
+            "count": 155658,
+            "percentile": 0.11698185,
+            "rank": 24349065,
             "score": 470.0
           },
           "490.0": {
-            "count": 308574,
-            "percentile": 0.15963116,
-            "rank": 23173017,
+            "count": 189387,
+            "percentile": 0.1301403,
+            "rank": 23986223,
             "score": 490.0
           },
           "480.0": {
-            "count": 277134,
-            "percentile": 0.14844074,
-            "rank": 23481591,
+            "count": 173455,
+            "percentile": 0.12327219,
+            "rank": 24175610,
             "score": 480.0
           },
           "510.0": {
-            "count": 382224,
-            "percentile": 0.18606746,
-            "rank": 22444041,
+            "count": 229324,
+            "percentile": 0.14605072,
+            "rank": 23547496,
             "score": 510.0
           },
           "500.0": {
-            "count": 346752,
-            "percentile": 0.17220612,
-            "rank": 22826265,
+            "count": 209403,
+            "percentile": 0.1377343,
+            "rank": 23776820,
             "score": 500.0
           },
           "540.0": {
-            "count": 512998,
-            "percentile": 0.23669975,
-            "rank": 21047865,
+            "count": 300764,
+            "percentile": 0.1760473,
+            "rank": 22720346,
             "score": 540.0
           },
           "530.0": {
-            "count": 460189,
-            "percentile": 0.21809589,
-            "rank": 21560863,
+            "count": 273706,
+            "percentile": 0.1651401,
+            "rank": 23021110,
             "score": 530.0
           },
           "520.0": {
-            "count": 422989,
-            "percentile": 0.20140715,
-            "rank": 22021052,
+            "count": 252680,
+            "percentile": 0.15521416,
+            "rank": 23294816,
             "score": 520.0
           },
           "570.0": {
-            "count": 623898,
-            "percentile": 0.30013074,
-            "rank": 19298767,
+            "count": 375993,
+            "percentile": 0.21408041,
+            "rank": 21671590,
             "score": 570.0
           },
           "560.0": {
-            "count": 586581,
-            "percentile": 0.2775051,
-            "rank": 19922665,
+            "count": 350125,
+            "percentile": 0.20044503,
+            "rank": 22047583,
             "score": 560.0
           },
           "550.0": {
-            "count": 538619,
-            "percentile": 0.25623275,
-            "rank": 20509246,
+            "count": 322638,
+            "percentile": 0.18774776,
+            "rank": 22397708,
             "score": 550.0
           },
           "600.0": {
-            "count": 747698,
-            "percentile": 0.37637013,
-            "rank": 17196480,
+            "count": 474759,
+            "percentile": 0.26178433,
+            "rank": 20356163,
             "score": 600.0
           },
           "590.0": {
-            "count": 686142,
-            "percentile": 0.34925488,
-            "rank": 17944178,
+            "count": 433730,
+            "percentile": 0.24456721,
+            "rank": 20830922,
             "score": 590.0
           },
           "580.0": {
-            "count": 668447,
-            "percentile": 0.32437196,
-            "rank": 18630320,
+            "count": 406938,
+            "percentile": 0.228838,
+            "rank": 21264652,
             "score": 580.0
           },
           "630.0": {
-            "count": 821338,
-            "percentile": 0.46268236,
-            "rank": 14816436,
+            "count": 556075,
+            "percentile": 0.31903653,
+            "rank": 18777444,
             "score": 630.0
           },
           "620.0": {
-            "count": 790320,
-            "percentile": 0.43289656,
-            "rank": 15637774,
+            "count": 528969,
+            "percentile": 0.29887049,
+            "rank": 19333519,
             "score": 620.0
           },
           "610.0": {
-            "count": 768386,
-            "percentile": 0.40423563,
-            "rank": 16428094,
+            "count": 493675,
+            "percentile": 0.27968744,
+            "rank": 19862488,
             "score": 610.0
           },
           "670.0": {
-            "count": 926071,
-            "percentile": 0.5932098,
-            "rank": 11217166,
+            "count": 669932,
+            "percentile": 0.41077977,
+            "rank": 16247641,
             "score": 670.0
           },
           "660.0": {
-            "count": 903490,
-            "percentile": 0.55962586,
-            "rank": 12143237,
+            "count": 647588,
+            "percentile": 0.3864847,
+            "rank": 16917573,
             "score": 660.0
           },
           "650.0": {
-            "count": 916661,
-            "percentile": 0.52686081,
-            "rank": 13046727,
+            "count": 623544,
+            "percentile": 0.36299994,
+            "rank": 17565161,
             "score": 650.0
           },
           "640.0": {
-            "count": 853048,
-            "percentile": 0.49361813,
-            "rank": 13963388,
+            "count": 588739,
+            "percentile": 0.34038714,
+            "rank": 18188705,
             "score": 640.0
           },
           "700.0": {
-            "count": 978929,
-            "percentile": 0.69765996,
-            "rank": 8336972,
+            "count": 702370,
+            "percentile": 0.48849967,
+            "rank": 14104529,
             "score": 700.0
           },
           "690.0": {
-            "count": 966668,
-            "percentile": 0.66215912,
-            "rank": 9315901,
+            "count": 743051,
+            "percentile": 0.46302824,
+            "rank": 14806899,
             "score": 690.0
           },
           "680.0": {
-            "count": 934597,
-            "percentile": 0.62710293,
-            "rank": 10282569,
+            "count": 697691,
+            "percentile": 0.43608152,
+            "rank": 15549950,
             "score": 680.0
           },
           "730.0": {
-            "count": 834573,
-            "percentile": 0.79551555,
-            "rank": 5638622,
+            "count": 790335,
+            "percentile": 0.57168456,
+            "rank": 11810721,
             "score": 730.0
           },
           "720.0": {
-            "count": 982229,
-            "percentile": 0.76524978,
-            "rank": 6473195,
+            "count": 784602,
+            "percentile": 0.54302308,
+            "rank": 12601056,
             "score": 720.0
           },
           "710.0": {
-            "count": 881548,
-            "percentile": 0.72962927,
-            "rank": 7455424,
+            "count": 718871,
+            "percentile": 0.51456951,
+            "rank": 13385658,
             "score": 710.0
           },
           "760.0": {
-            "count": 1170568,
-            "percentile": 0.8893548,
-            "rank": 3051022,
+            "count": 721707,
+            "percentile": 0.65079206,
+            "rank": 9629346,
             "score": 760.0
           },
           "750.0": {
-            "count": 660969,
-            "percentile": 0.84690418,
-            "rank": 4221590,
+            "count": 714521,
+            "percentile": 0.62461938,
+            "rank": 10351053,
             "score": 750.0
           },
           "740.0": {
-            "count": 756063,
-            "percentile": 0.82293416,
-            "rank": 4882559,
+            "count": 745147,
+            "percentile": 0.59870729,
+            "rank": 11065574,
             "score": 740.0
           },
           "790.0": {
-            "count": 316869,
-            "percentile": 0.95214993,
-            "rank": 1319458,
+            "count": 655999,
+            "percentile": 0.73387997,
+            "rank": 7338212,
             "score": 790.0
           },
           "780.0": {
-            "count": 603966,
-            "percentile": 0.94065868,
-            "rank": 1636327,
+            "count": 920838,
+            "percentile": 0.71009019,
+            "rank": 7994211,
             "score": 780.0
           },
           "770.0": {
-            "count": 810729,
-            "percentile": 0.91875587,
-            "rank": 2240293,
+            "count": 714297,
+            "percentile": 0.67669602,
+            "rank": 8915049,
             "score": 770.0
           },
           "830.0": {
-            "count": 130012,
-            "percentile": 0.97907997,
-            "rank": 576867,
+            "count": 527291,
+            "percentile": 0.82229648,
+            "rank": 4900143,
             "score": 830.0
           },
           "820.0": {
-            "count": 158989,
-            "percentile": 0.97436509,
-            "rank": 706879,
+            "count": 575985,
+            "percentile": 0.80317429,
+            "rank": 5427434,
             "score": 820.0
           },
           "810.0": {
-            "count": 203363,
-            "percentile": 0.96859936,
-            "rank": 865868,
+            "count": 622514,
+            "percentile": 0.78228621,
+            "rank": 6003419,
             "score": 810.0
           },
           "800.0": {
-            "count": 250227,
-            "percentile": 0.9612244,
-            "rank": 1069231,
+            "count": 712279,
+            "percentile": 0.75971075,
+            "rank": 6625933,
             "score": 800.0
           },
           "860.0": {
-            "count": 78281,
-            "percentile": 0.98908395,
-            "rank": 301009,
+            "count": 404427,
+            "percentile": 0.90012724,
+            "rank": 2753974,
             "score": 860.0
           },
           "850.0": {
-            "count": 90964,
-            "percentile": 0.98624509,
-            "rank": 379290,
+            "count": 727539,
+            "percentile": 0.88546071,
+            "rank": 3158401,
             "score": 850.0
           },
           "840.0": {
-            "count": 106613,
-            "percentile": 0.98294629,
-            "rank": 470254,
+            "count": 1014203,
+            "percentile": 0.85907653,
+            "rank": 3885940,
             "score": 840.0
           },
           "890.0": {
-            "count": 126035,
-            "percentile": 0.99749405,
-            "rank": 69102,
+            "count": 305488,
+            "percentile": 0.93137365,
+            "rank": 1892360,
             "score": 890.0
           },
           "880.0": {
-            "count": 46511,
-            "percentile": 0.9929234,
-            "rank": 195137,
+            "count": 255691,
+            "percentile": 0.92029514,
+            "rank": 2197848,
             "score": 880.0
           },
           "870.0": {
-            "count": 59361,
-            "percentile": 0.99123668,
-            "rank": 241648,
+            "count": 300435,
+            "percentile": 0.91102251,
+            "rank": 2453539,
             "score": 870.0
           },
           "920.0": {
-            "count": 10457,
-            "percentile": 0.99941555,
-            "rank": 16117,
+            "count": 157861,
+            "percentile": 0.95021907,
+            "rank": 1372701,
             "score": 920.0
           },
           "910.0": {
-            "count": 16351,
-            "percentile": 0.99903633,
-            "rank": 26574,
+            "count": 170290,
+            "percentile": 0.94449425,
+            "rank": 1530562,
             "score": 910.0
           },
           "900.0": {
-            "count": 26177,
-            "percentile": 0.99844336,
-            "rank": 42925,
+            "count": 191508,
+            "percentile": 0.93831868,
+            "rank": 1700852,
             "score": 900.0
           },
           "950.0": {
-            "count": 2304,
-            "percentile": 0.99989179,
-            "rank": 2985,
+            "count": 110405,
+            "percentile": 0.96390783,
+            "rank": 995236,
             "score": 950.0
           },
           "940.0": {
-            "count": 3903,
-            "percentile": 0.99980823,
-            "rank": 5289,
+            "count": 126610,
+            "percentile": 0.959904,
+            "rank": 1105641,
             "score": 940.0
           },
           "930.0": {
-            "count": 6925,
-            "percentile": 0.99966669,
-            "rank": 9192,
+            "count": 140450,
+            "percentile": 0.95531249,
+            "rank": 1232251,
             "score": 930.0
           },
           "990.0": {
-            "count": 237,
-            "percentile": 0.99999188,
-            "rank": 225,
+            "count": 72693,
+            "percentile": 0.97639585,
+            "rank": 650881,
             "score": 990.0
           },
           "980.0": {
-            "count": 417,
-            "percentile": 0.99998328,
-            "rank": 462,
+            "count": 81593,
+            "percentile": 0.97375964,
+            "rank": 723574,
             "score": 980.0
           },
           "970.0": {
-            "count": 749,
-            "percentile": 0.99996816,
-            "rank": 879,
+            "count": 90030,
+            "percentile": 0.97080068,
+            "rank": 805167,
             "score": 970.0
           },
           "960.0": {
-            "count": 1357,
-            "percentile": 0.999941,
-            "rank": 1628,
+            "count": 100039,
+            "percentile": 0.96753574,
+            "rank": 895197,
             "score": 960.0
           },
           "1020.0": {
-            "count": 31,
-            "percentile": 0.99999909,
-            "rank": 26,
+            "count": 58582,
+            "percentile": 0.9832936,
+            "rank": 460677,
             "score": 1020.0
           },
           "1010.0": {
-            "count": 45,
-            "percentile": 0.99999797,
-            "rank": 57,
+            "count": 62259,
+            "percentile": 0.98116912,
+            "rank": 519259,
             "score": 1010.0
           },
           "1000.0": {
-            "count": 123,
-            "percentile": 0.99999634,
-            "rank": 102,
+            "count": 69363,
+            "percentile": 0.9789113,
+            "rank": 581518,
             "score": 1000.0
           },
+          "1080.0": {
+            "count": 72035,
+            "percentile": 0.99422009,
+            "rank": 159381,
+            "score": 1080.0
+          },
+          "1070.0": {
+            "count": 37357,
+            "percentile": 0.99160774,
+            "rank": 231416,
+            "score": 1070.0
+          },
           "1060.0": {
-            "count": 2,
-            "percentile": 1.0,
-            "rank": 1,
+            "count": 42352,
+            "percentile": 0.99025299,
+            "rank": 268773,
             "score": 1060.0
           },
           "1050.0": {
-            "count": 2,
-            "percentile": 0.99999993,
-            "rank": 3,
+            "count": 45492,
+            "percentile": 0.9887171,
+            "rank": 311125,
             "score": 1050.0
           },
           "1040.0": {
-            "count": 6,
-            "percentile": 0.99999985,
-            "rank": 5,
+            "count": 50408,
+            "percentile": 0.98706733,
+            "rank": 356617,
             "score": 1040.0
           },
           "1030.0": {
-            "count": 15,
-            "percentile": 0.99999964,
-            "rank": 11,
+            "count": 53652,
+            "percentile": 0.98523929,
+            "rank": 407025,
             "score": 1030.0
+          },
+          "1150.0": {
+            "count": 8866,
+            "percentile": 0.99870124,
+            "rank": 35814,
+            "score": 1150.0
+          },
+          "1140.0": {
+            "count": 10806,
+            "percentile": 0.99837972,
+            "rank": 44680,
+            "score": 1140.0
+          },
+          "1130.0": {
+            "count": 12986,
+            "percentile": 0.99798784,
+            "rank": 55486,
+            "score": 1130.0
+          },
+          "1120.0": {
+            "count": 16404,
+            "percentile": 0.9975169,
+            "rank": 68472,
+            "score": 1120.0
+          },
+          "1110.0": {
+            "count": 19415,
+            "percentile": 0.99692201,
+            "rank": 84876,
+            "score": 1110.0
+          },
+          "1100.0": {
+            "count": 24641,
+            "percentile": 0.99621793,
+            "rank": 104291,
+            "score": 1100.0
+          },
+          "1090.0": {
+            "count": 30449,
+            "percentile": 0.99532432,
+            "rank": 128932,
+            "score": 1090.0
+          },
+          "1210.0": {
+            "count": 2743,
+            "percentile": 0.99977211,
+            "rank": 6285,
+            "score": 1210.0
+          },
+          "1200.0": {
+            "count": 3738,
+            "percentile": 0.99967264,
+            "rank": 9028,
+            "score": 1200.0
+          },
+          "1190.0": {
+            "count": 4146,
+            "percentile": 0.99953708,
+            "rank": 12766,
+            "score": 1190.0
+          },
+          "1180.0": {
+            "count": 5122,
+            "percentile": 0.99938672,
+            "rank": 16912,
+            "score": 1180.0
+          },
+          "1170.0": {
+            "count": 6431,
+            "percentile": 0.99920097,
+            "rank": 22034,
+            "score": 1170.0
+          },
+          "1160.0": {
+            "count": 7349,
+            "percentile": 0.99896775,
+            "rank": 28465,
+            "score": 1160.0
+          },
+          "1270.0": {
+            "count": 252,
+            "percentile": 0.99998662,
+            "rank": 370,
+            "score": 1270.0
+          },
+          "1260.0": {
+            "count": 439,
+            "percentile": 0.99997748,
+            "rank": 622,
+            "score": 1260.0
+          },
+          "1250.0": {
+            "count": 669,
+            "percentile": 0.99996156,
+            "rank": 1061,
+            "score": 1250.0
+          },
+          "1240.0": {
+            "count": 973,
+            "percentile": 0.9999373,
+            "rank": 1730,
+            "score": 1240.0
+          },
+          "1230.0": {
+            "count": 1482,
+            "percentile": 0.99990201,
+            "rank": 2703,
+            "score": 1230.0
+          },
+          "1220.0": {
+            "count": 2100,
+            "percentile": 0.99984827,
+            "rank": 4185,
+            "score": 1220.0
+          },
+          "1340.0": {
+            "count": 3,
+            "percentile": 0.99999996,
+            "rank": 2,
+            "score": 1340.0
+          },
+          "1330.0": {
+            "count": 5,
+            "percentile": 0.99999985,
+            "rank": 5,
+            "score": 1330.0
+          },
+          "1320.0": {
+            "count": 15,
+            "percentile": 0.99999967,
+            "rank": 10,
+            "score": 1320.0
+          },
+          "1310.0": {
+            "count": 27,
+            "percentile": 0.99999913,
+            "rank": 25,
+            "score": 1310.0
+          },
+          "1300.0": {
+            "count": 66,
+            "percentile": 0.99999815,
+            "rank": 52,
+            "score": 1300.0
+          },
+          "1290.0": {
+            "count": 90,
+            "percentile": 0.99999576,
+            "rank": 118,
+            "score": 1290.0
+          },
+          "1280.0": {
+            "count": 162,
+            "percentile": 0.99999249,
+            "rank": 208,
+            "score": 1280.0
+          },
+          "1370.0": {
+            "count": 1,
+            "percentile": 1.0,
+            "rank": 1,
+            "score": 1370.0
           }
         },
-        "totalCount": 27574816
+        "totalCount": 27574817
       }
     },
-    "latestScoringId": "0840ada7-618a-4ef4-8547-c2bd475383ef",
+    "latestScoringId": "bd35972b-975c-44fa-ba76-8fc9f0f7e380",
     "scoringExecuted": true,
     "scoringExecutionDetails": {
       "correctOutcomeIds": [
         "c912eaf3-0695-11f1-af21-ff98afcfd072",
         "c911b273-0695-11f1-af21-ff98afcfd072",
         "c91079f3-0695-11f1-af21-ff98afcfd072",
+        "c9155bf1-0695-11f1-af21-ff98afcfd072",
         "c9068ee1-0695-11f1-af21-ff98afcfd072",
         "c908ffe1-0695-11f1-af21-ff98afcfd072",
         "c90b70e1-0695-11f1-af21-ff98afcfd072",
@@ -5815,6 +6551,7 @@
         "c9124eb1-0695-11f1-af21-ff98afcfd072",
         "c9138734-0695-11f1-af21-ff98afcfd072",
         "c9099c22-0695-11f1-af21-ff98afcfd072",
+        "c914bfbf-0695-11f1-af21-ff98afcfd072",
         "c90c0d21-0695-11f1-af21-ff98afcfd072",
         "c90fb6a1-0695-11f1-af21-ff98afcfd072",
         "c90d45a2-0695-11f1-af21-ff98afcfd072",
@@ -5829,6 +6566,7 @@
         "c9147191-0695-11f1-af21-ff98afcfd072",
         "c9094e01-0695-11f1-af21-ff98afcfd072",
         "c90bbf02-0695-11f1-af21-ff98afcfd072",
+        "c915aa1f-0695-11f1-af21-ff98afcfd072",
         "c90e3001-0695-11f1-af21-ff98afcfd072",
         "c9131201-0695-11f1-af21-ff98afcfd072",
         "c911d982-0695-11f1-af21-ff98afcfd072",
@@ -5846,6 +6584,7 @@
         "c91079f0-0695-11f1-af21-ff98afcfd072",
         "c911b270-0695-11f1-af21-ff98afcfd072",
         "c912eaf0-0695-11f1-af21-ff98afcfd072",
+        "c9155bf0-0695-11f1-af21-ff98afcfd072",
         "c9068ee0-0695-11f1-af21-ff98afcfd072",
         "c908ffe0-0695-11f1-af21-ff98afcfd072",
         "c90b70e0-0695-11f1-af21-ff98afcfd072",
@@ -5876,6 +6615,7 @@
         "c9111630-0695-11f1-af21-ff98afcfd072",
         "c9124eb0-0695-11f1-af21-ff98afcfd072",
         "c9138730-0695-11f1-af21-ff98afcfd072",
+        "c914bfb0-0695-11f1-af21-ff98afcfd072",
         "c9099c20-0695-11f1-af21-ff98afcfd072",
         "c90c0d20-0695-11f1-af21-ff98afcfd072",
         "c90d45a0-0695-11f1-af21-ff98afcfd072",
@@ -5889,6 +6629,7 @@
         "c90ea530-0695-11f1-af21-ff98afcfd072",
         "c90fddb0-0695-11f1-af21-ff98afcfd072",
         "c9147190-0695-11f1-af21-ff98afcfd072",
+        "c915aa10-0695-11f1-af21-ff98afcfd072",
         "c9094e00-0695-11f1-af21-ff98afcfd072",
         "c90bbf00-0695-11f1-af21-ff98afcfd072",
         "c90e3000-0695-11f1-af21-ff98afcfd072",
@@ -6282,14 +7023,14 @@
         "platform": "chui-admin",
         "source": "{54D92334-E22C-46AF-9923-34E22CA6AFC9}"
       },
-      "date": 1775448000000,
+      "date": 1775523000000,
       "deleted": false,
       "display": true,
       "displayOrder": 0,
       "id": "c9169470-0695-11f1-af21-ff98afcfd072",
       "lastUpdateInfo": {
         "clientAddress": null,
-        "date": 1770911132450,
+        "date": 1774967142553,
         "platform": "gambit-processor",
         "source": "PropositionAutomationTaskProcessor"
       },
